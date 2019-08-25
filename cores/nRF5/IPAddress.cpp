@@ -1,6 +1,5 @@
 /*
-  IPAddress.cpp - Base class that provides IPAddress
-  Copyright (c) 2011 Adrian McEwen.  All right reserved.
+  Copyright (c) 2014-2018 Tokita, Hiroshi  All right reserved.
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -17,99 +16,209 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <Arduino.h>
-#include <IPAddress.h>
+#include "Print.h"
+#include "IPAddress.h"
+
+#include <lwip/sockets.h>
+
+#if defined(LWIP_IPV6)
+#define INIT_IPBYTES(a, b, c, d) {0,0,0,0,  0,0,0,0,  0,0,0xFF,0xFF,  a,b,c,d}
+#else
+#define INIT_IPBYTES(a, b, c, d) {a,b,c,d}
+#endif
+
+static bool parse_ipaddr(const char* addr, uint8_t* buf)
+{
+    struct sockaddr sa;
+    bool ret = true;//net_ipaddr_parse(addr, strlen(addr), &sa);
+    if(ret) {
+        if(sa.sa_family == AF_INET6) {
+#if defined(LWIP_IPV6)
+            memcpy(buf, ((struct sockaddr_in6*)(&sa))->sin6_addr.s6_addr, 16);
+#else
+	    return false;
+#endif
+	}
+	else if(sa.sa_family == AF_INET) {
+#if LWIP_IPV6
+            uint8_t prefix[12] = { 0,0,0,0,  0,0,0,0, 0,0,0xFF,0xFF};
+            memcpy(buf, prefix, 12);
+#endif
+            //memcpy(buf+12, ((struct sockaddr_in*)(&sa))->sin_addr.s_addr, 4);
+	}
+    }
+    return ret;
+}
+
 
 IPAddress::IPAddress()
+    : v6(_address.u16)
 {
-    _address.dword = 0;
+    uint8_t addrbytes[] = INIT_IPBYTES(0, 0, 0, 0);
+    memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
-IPAddress::IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_octet, uint8_t fourth_octet)
+IPAddress::IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3)
+    : v6(_address.u16)
 {
-    _address.bytes[0] = first_octet;
-    _address.bytes[1] = second_octet;
-    _address.bytes[2] = third_octet;
-    _address.bytes[3] = fourth_octet;
+    uint8_t addrbytes[] = INIT_IPBYTES(b0, b1, b2, b3);
+    memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
-IPAddress::IPAddress(uint32_t address)
+#if LWIP_IPV6
+IPAddress::IPAddress(uint16_t d0, uint16_t d1, uint16_t d2, uint16_t d3,
+                     uint16_t d4, uint16_t d5, uint16_t d6, uint16_t d7)
+    : v6(_address.u16)
 {
-    _address.dword = address;
+    _address.u16[0] = htons(d0); _address.u16[1] = htons(d1);
+    _address.u16[2] = htons(d2); _address.u16[3] = htons(d3);
+    _address.u16[4] = htons(d4); _address.u16[5] = htons(d5);
+    _address.u16[6] = htons(d6); _address.u16[7] = htons(d7);
 }
 
-IPAddress::IPAddress(const uint8_t *address)
+IPAddress::IPAddress(const uint16_t *a)
+    : v6(_address.u16)
 {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
-}
-
-bool IPAddress::fromString(const char *address)
-{
-    // TODO: add support for "a", "a.b", "a.b.c" formats
-
-    uint16_t acc = 0; // Accumulator
-    uint8_t dots = 0;
-
-    while (*address)
-    {
-        char c = *address++;
-        if (c >= '0' && c <= '9')
-        {
-            acc = acc * 10 + (c - '0');
-            if (acc > 255) {
-                // Value out of [0..255] range
-                return false;
-            }
-        }
-        else if (c == '.')
-        {
-            if (dots == 3) {
-                // Too much dots (there must be 3 dots)
-                return false;
-            }
-            _address.bytes[dots++] = acc;
-            acc = 0;
-        }
-        else
-        {
-            // Invalid char
-            return false;
-        }
+    if(a) {
+        memcpy(_address.u16, a, sizeof(_address.u16));
     }
-
-    if (dots != 3) {
-        // Too few dots (there must be 3 dots)
-        return false;
+    else {
+        memset(_address.u16, 0, sizeof(_address.u16));
     }
-    _address.bytes[3] = acc;
-    return true;
+}
+#endif
+
+IPAddress::IPAddress(uint32_t addr)
+    : v6(_address.u16)
+{
+    uint8_t addrbytes[] = INIT_IPBYTES(
+        (uint8_t)((addr & 0xFF000000) >> 24),
+        (uint8_t)((addr & 0x00FF0000) >> 16),
+        (uint8_t)((addr & 0x0000FF00) >>  8),
+        (uint8_t)((addr & 0x000000FF) >>  0) );
+    memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
-IPAddress& IPAddress::operator=(const uint8_t *address)
+IPAddress::IPAddress(const uint8_t *addr)
+    : v6(_address.u16)
 {
-    memcpy(_address.bytes, address, sizeof(_address.bytes));
+    if(addr) {
+        const uint8_t addrbytes[] = INIT_IPBYTES(addr[0], addr[1], addr[2], addr[3]);
+        memcpy(_address.u8, addrbytes, sizeof(addrbytes));
+    }
+    else {
+        const uint8_t addrbytes[] = INIT_IPBYTES(0, 0, 0, 0);
+        memcpy(_address.u8, addrbytes, sizeof(addrbytes));
+    }
+}
+
+bool IPAddress::fromString(const char *addr)
+{
+    return parse_ipaddr(addr, _address.u8);
+}
+
+IPAddress& IPAddress::operator=(const uint8_t *addr)
+{
+    if(addr) {
+        const uint8_t addrbytes[] = INIT_IPBYTES(addr[0], addr[1], addr[2], addr[3]);
+        memcpy(_address.bytes, addrbytes, sizeof(addrbytes));
+    }
+    else {
+        const uint8_t addrbytes[] = INIT_IPBYTES(0, 0, 0, 0);
+        memcpy(_address.bytes, addrbytes, sizeof(addrbytes));
+    }
     return *this;
 }
 
-IPAddress& IPAddress::operator=(uint32_t address)
+IPAddress& IPAddress::operator=(uint32_t addr)
 {
-    _address.dword = address;
+    uint8_t addrbytes[] = INIT_IPBYTES(
+        (uint8_t)((addr & 0xFF000000) >> 24),
+        (uint8_t)((addr & 0x00FF0000) >> 16),
+        (uint8_t)((addr & 0x0000FF00) >>  8),
+        (uint8_t)((addr & 0x000000FF) >>  0) );
+    memcpy(_address.u8, addrbytes, sizeof(addrbytes));
     return *this;
 }
 
 bool IPAddress::operator==(const uint8_t* addr) const
 {
+    if(!addr) return false;
     return memcmp(addr, _address.bytes, sizeof(_address.bytes)) == 0;
+}
+
+#if LWIP_IPV6
+bool IPAddress::operator==(const uint16_t* addr) const
+{
+    if(!addr) return false;
+    return memcmp(addr, _address.u16, sizeof(_address.u16)) == 0;
+}
+#endif
+
+#if LWIP_IPV6
+IPAddress& IPAddress::operator=(const IPAddress& addr)
+{
+    *this = addr._address.u16;
+    return *this;
+}
+
+IPAddress& IPAddress::operator=(const uint16_t *addr)
+{
+    if(addr) {
+        memcpy(_address.u16, addr, sizeof(_address.u16));
+    }
+    else {
+        memset(_address.u16, 0, sizeof(_address.u16));
+    }
+    return *this;
+}
+#endif
+
+bool IPAddress::isV6MappedAddress() const
+{
+#if LWIP_IPV6
+    if( _address.u16[0] == 0 && _address.u16[1] == 0 &&
+        _address.u16[3] == 0 && _address.u16[4] == 0 &&
+	_address.u16[5] == 0xFFFF)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+#else
+    return false;
+#endif
 }
 
 size_t IPAddress::printTo(Print& p) const
 {
-    size_t n = 0;
-    for (int i =0; i < 3; i++)
-    {
-        n += p.print(_address.bytes[i], DEC);
-        n += p.print('.');
+    if( isV6MappedAddress() || sizeof(_address.prefix) == 0) {
+        char buf[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, _address.bytes, buf, sizeof(buf));
+        return p.print(buf);
     }
-    n += p.print(_address.bytes[3], DEC);
-    return n;
+    else
+    {
+        return p.print(v6);
+    }
 }
+
+size_t IPAddress::V6RawAccessor::printTo(Print& p) const
+{
+    char buf[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, addr, buf, sizeof(buf));
+    return p.print(buf);
+}
+
+const IPAddress INADDR::NONE(0, 0, 0, 0);
+const IPAddress INADDR::ANY(0, 0, 0, 0);
+
+const IPAddress IN6ADDR::ANY_INIT(0, 0, 0, 0, 0, 0, 0, 0);
+const IPAddress IN6ADDR::LOOPBACK_INIT(0, 0, 0, 0, 0, 0, 0, 1);
+const IPAddress IN6ADDR::LINKLOCAL_ALLNODES_INIT(  0xff02,0,0,0, 0,0,0,1);
+const IPAddress IN6ADDR::INKLOCAL_ALLROUTERS_INIT(0xff02,0,0,0, 0,0,0,2);
+const IPAddress IN6ADDR::INTERFACELOCAL_ALLNODES_INIT(0xff01,0,0,0, 0,0,0,1);
+const IPAddress IN6ADDR::INTERFACELOCAL_ALLROUTERS_INIT(0xff01,0,0,0, 0,0,0,2);
+const IPAddress IN6ADDR::SITELOCAL_ALLROUTERS_INIT(0xff05,0,0,0, 0,0,0,2);
