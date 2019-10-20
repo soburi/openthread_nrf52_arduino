@@ -86,8 +86,8 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL_RX       (33)
-#define PIN_SERIAL_TX       (34)
+#define PIN_SERIAL_RX       (8) //(33)
+#define PIN_SERIAL_TX       (6) //(34)
 
 //#define PIN_SERIAL2_RX      (8)
 //#define PIN_SERIAL2_TX      (6)
@@ -127,6 +127,12 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 #define USB_MSC_BLOCK_SIZE    512
 #define USB_MSC_BLOCK_COUNT   ((8*1024*1024) / USB_MSC_BLOCK_SIZE)
+
+#define SERIAL_PORT_MONITOR         Serial
+#define SERIAL_PORT_USBVIRTUAL      SerialACM
+
+#define SERIAL_PORT_HARDWARE        Serial
+#define SERIAL_PORT_HARDWARE_OPEN   Serial
 
 #ifdef __cplusplus
 }
