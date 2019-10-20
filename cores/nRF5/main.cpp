@@ -48,7 +48,7 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  if ( !Serial ) Serial.begin(115200);
+  if ( !SERIAL_PORT_MONITOR ) SERIAL_PORT_MONITOR.begin(115200);
   dbgPrintVersion();
   // dbgMemInfo();
   Bluefruit_printInfo();
@@ -105,9 +105,9 @@ int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
 
-  if ( Serial )
+  if ( SERIAL_PORT_MONITOR )
   {
-    return Serial.write( (const uint8_t *) buf, count);
+    return SERIAL_PORT_MONITOR.write( (const uint8_t *) buf, count);
   }
   return 0;
 }
