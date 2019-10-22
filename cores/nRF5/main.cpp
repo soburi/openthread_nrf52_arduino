@@ -16,6 +16,10 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <openthread/openthread-freertos.h>
+
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -65,7 +69,18 @@ static void loop_task(void* arg)
 }
 
 // \brief Main entry point of Arduino application
-int main( void )
+int main(int argc, char *argv[])
+{
+  otrInit(argc, argv);
+  //otCliUartInit(otrGetInstance());
+  otrUserInit();
+  otrStart();
+
+  NVIC_SystemReset();
+  return 0;
+}
+
+void otrUserInit( void )
 {
   init();
   initVariant();
@@ -85,11 +100,11 @@ int main( void )
   ada_callback_init(CALLBACK_STACK_SZ);
 
   // Start FreeRTOS scheduler.
-  vTaskStartScheduler();
+  //vTaskStartScheduler();
 
-  NVIC_SystemReset();
+  //NVIC_SystemReset();
 
-  return 0;
+  return;
 }
 
 void suspendLoop(void)
