@@ -1,0 +1,133 @@
+cmake_minimum_required(VERSION 3.8.2)
+
+project(arduino_build)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os")
+set(CMAKE_C_FLAGS_RELEASE "-Os")
+
+set(ARDUINO_PROJECT_NAME ### <<<ARDUINO_PROJECT_NAME>>> ###)
+if("${ARDUINO_PROJECT_NAME}" STREQUAL "")
+    set(ARDUINO_PROJECT_NAME preproc)
+endif()
+
+set(ELF_FILE ${ARDUINO_PROJECT_NAME}.elf)
+set(HEX_FILE ${ARDUINO_PROJECT_NAME}.hex)
+
+set(ARDUINO_SYSTEM_PATH ### <<<ARDUINO_SYSTEM_PATH>>> ###)
+
+add_subdirectory(${ARDUINO_SYSTEM_PATH}/ot-rtos ot-rtos)
+
+add_library(arduino_core
+    ${ARDUINO_SYSTEM_PATH}/../cores/nRF5/hooks.c
+    ### <<<ARDUINO_CORES_SRCS>>> ###
+    ### <<<ARDUINO_VARIANT_SRCS>>> ###
+    ### <<<ARDUINO_LIBRARIES_SRCS>>> ###
+)
+
+target_compile_definitions(arduino_core
+PUBLIC
+    ### <<<ARDUINO_DEFINE_MACROS>>> ###
+)
+
+target_include_directories(arduino_core
+PUBLIC
+    ${ARDUINO_SYSTEM_PATH}/support/
+    ### <<<ARDUINO_PREPROC_MACROS_INCLUDE_DIRS>>> ###
+    ### <<<ARDUINO_INCLUDE_DIRS>>> ###
+    ### <<<ARDUINO_VARIANT_PATH>>> ###
+)
+
+target_link_libraries(arduino_core
+PUBLIC
+    otr_core
+    otr_frameworks
+    freertos
+    openthread_config
+)
+
+add_executable(${ELF_FILE}
+    ### <<<ARDUINO_PREPROC_MACROS_SOURCE>>> ###
+    ### <<<ARDUINO_SKETCH_SRCS>>> ###
+)
+
+link_directories( ### <<<ARDUINO_LIBRARY_DIRS>>> ### )
+
+target_link_libraries(${ELF_FILE}
+PUBLIC
+    arduino_core
+)
+
+target_compile_definitions(${ELF_FILE}
+PUBLIC
+    __HEAP_SIZE=8192
+    __STACK_SIZE=8192
+)
+
+if(DEFINED ARDUINO_PREPROC)
+  target_compile_definitions(arduino_build -DARDUINO_PREPROC=1)
+endif()
+
+set(linker_dir ${ARDUINO_SYSTEM_PATH}/ot-rtos/third_party/openthread/repo/examples/platforms/nrf528xx/nrf52840)
+set(linker_script nrf52840.ld)
+
+set_target_properties(${ELF_FILE} PROPERTIES LINK_DEPENDS ${linker_dir}/${linker_script})
+set_target_properties(${ELF_FILE} PROPERTIES LINK_FLAGS "-L ${linker_dir} -T ${linker_script} -Wl,-Map=${ARDUINO_PROJECT_NAME}.map -lc -lnosys -lm -lstdc++")
+
+add_custom_command(OUTPUT ${HEX_FILE}
+    COMMAND arm-none-eabi-objcopy -O ihex ${ELF_FILE} ${HEX_FILE}
+    DEPENDS ${ELF_FILE}
+)
+add_custom_target(create_${HEX_FILE} ALL DEPENDS ${HEX_FILE})
+
+macro(recur_links)
+    set(recur_libs ${ELF_FILE})
+    set(check "")
+    while(NOT check)
+        set(check 1)
+        foreach(x ${recur_libs})
+            get_target_property(deps ${x} INTERFACE_LINK_LIBRARIES)
+            foreach(y IN LISTS deps)
+		if("${y}" MATCHES "^.<[A-Z_]*:(.*)>$") # TODO match $ sign
+                    set(y ${CMAKE_MATCH_1})
+		    message(STATUS "match ${CMAKE_MATCH_1}")
+		endif()
+                if (TARGET ${y})
+                    if (NOT ${y} IN_LIST recur_libs)
+                        list(APPEND recur_libs ${y})
+                        get_target_property(xdefs ${y} INTERFACE_COMPILE_DEFINITIONS)
+                        if(xdefs)
+                            list(APPEND defs ${xdefs})
+                        endif()
+                        get_target_property(xincs ${y} INTERFACE_INCLUDE_DIRECTORIES)
+                        if(xincs)
+                            list(APPEND incs ${xincs})
+                        endif()
+                        set(check "")
+                    endif()
+                else()
+                    message(STATUS "not taget ${y}")
+                endif()
+            endforeach()
+        endforeach()
+    endwhile()
+    message(STATUS "recur_libs ${recur_libs}")
+endmacro()
+
+get_target_property(defs ${ELF_FILE} INTERFACE_COMPILE_DEFINITIONS)
+get_target_property(incs ${ELF_FILE} INTERFACE_INCLUDE_DIRECTORIES)
+
+recur_links()
+
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preproc$<$<COMPILE_LANGUAGE:C>:.c>$<$<COMPILE_LANGUAGE:ASM>:.asm>.sh
+	CONTENT
+"#! /bin/sh
+INCS=$(grep target_include_directories `dirname $0`/_cmakefile/CMakeLists.txt | grep -v '$ENV' | sed 's/.*INTERFACE//' | sed 's/)$//' | awk ' { for (i=1; i<NF; i++ ) printf \"-I\"$i\" \" ; printf \"-I\"$NF}')
+${CMAKE_CXX_COMPILER} -D$<JOIN:${defs}, -D> $<JOIN:${copts}, > -I. -I$<JOIN:${incs}, -I> $INCS -w -x c++ -E -CC -c $1 -o $2")
+
+
