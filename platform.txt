@@ -16,7 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-name=Adafruit nRF52 Boards
+name=OpenThread nRF52 Boards
 version=0.14.5
 
 # Compile variables
@@ -26,7 +26,7 @@ compiler.warning_flags=-w
 compiler.warning_flags.none=-w
 compiler.warning_flags.default=
 compiler.warning_flags.more=-Wall
-compiler.warning_flags.all=-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-pointer-arith
+compiler.warning_flags.all=-Wall -Wextra
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
@@ -53,11 +53,11 @@ build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.debug_flags=-DCFG_DEBUG=0
 
 # common compiler for nrf
-rtos.path={build.core.path}/freertos
-nordic.path={build.core.path}/nordic
+nordic.path={build.system.path}/ot-rtos/third_party/openthread/repo/third_party/NordicSemiconductor
+rtos.path={build.system.path}/ot-rtos/third_party/freertos
 
 
-build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DLFS_NAME_MAX=64 -Ofast {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/Adafruit_TinyUSB_Core" "-I{build.core.path}/Adafruit_TinyUSB_Core/tinyusb/src"
+build.flags.nrf= -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DLFS_NAME_MAX=64 -Ofast {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/s140/headers" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/Adafruit_TinyUSB_Core" "-I{build.core.path}/Adafruit_TinyUSB_Core/tinyusb/src"
 
 # usb flags
 build.flags.usb= -DUSBCON -DUSE_TINYUSB -DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
@@ -72,23 +72,53 @@ compiler.elf2bin.extra_flags=
 compiler.elf2hex.extra_flags=
 
 
-# Compile patterns
-# ----------------
+# Makefile generate patterns
+# --------------------
+build.make.command=cmake
+build.make.command.windows=C:\msys64\usr\bin\cmake
+build.intiki.verbose=-1
+build.openthread.env.compiler=
+build.openthread.env.compiler.macosx=
+build.openthread.env=CONFIG_SITE=/etc/config.site
+build.openthread.args.arduino=-DARDUINO_COMPILER_PATH={compiler.path} -DARDUINO_BUILD_PATH={build.path} -DARDUINO_VARIANT_PATH={build.variant.path} -DARDUINO_SYSTEM_PATH={build.system.path} -DARDUINO_PREPROC_SOURCE={source_file} -DARDUINO_PREPROC_TARGET={preprocessed_file_path}
+build.openthread.args.board=
+build.openthread.args.configs=
+build.openthread.args={build.openthread.args.arduino} {build.openthread.args.board} {build.openthread.args.configs}
+intiki.cmd={runtime.tools.intiki.path}/intiki
+intiki.cmd-v={intiki.cmd} {compiler.warning_flags} -verbose {build.intiki.verbose}
+intiki.opts=
+intiki.opts.windows=-path.format msys -build.usr.bin.path=C:/msys64/usr/bin
+intiki.opts.macosx=-build.usr.bin.path=/usr/local/bin
+intiki.paths=-build.system.path "{build.system.path}" -build.variant.path "{build.variant.path}" -build.core.path "{build.core.path}" -build.path "{build.path}" -build.variant {build.variant} -runtime.platform.path {runtime.platform.path} -platform.version {version} {intiki.opts}
+make.args=-E env {build.openthread.env} {build.make.command} {build.openthread.args}
+
+arduino.defines=-DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}"
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.c.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern={intiki.cmd-v} -recipe c.o   {intiki.paths} -source "{source_file}" -target "{object_file}" -- {build.flags.nrf} {arduino.defines} {includes}
 
 ## Compile c++ files
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.cpp.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern={intiki.cmd-v} -recipe cpp.o {intiki.paths} -source "{source_file}" -target "{object_file}" -- {build.flags.nrf} {arduino.defines} {includes}
 
 ## Compile S files
-recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {compiler.S.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
+recipe.S.o.pattern={intiki.cmd-v} -recipe S.o {intiki.paths} -source "{source_file}" -target "{object_file}" -- {build.flags.nrf} {ardino.defines} {includes}
 
 ## Create archives
-recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
+recipe.ar.pattern={intiki.cmd-v} -recipe ar    {intiki.paths} -source "{object_file}" -target "{archive_file_path}" -- {compiler.ar.flags} {compiler.ar.extra_flags}
 
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
+recipe.c.combine.pattern={intiki.cmd-v} -recipe ld    {intiki.paths} -target "{build.path}/{build.project_name}.elf" -project_name {build.project_name} -archive_file {archive_file}
+
+## Preprocessor
+preproc.macros.flags=-w -x c++ -E -CC -DF_CPU={build.f_cpu} {arduino.defines} {compiler.cpp.extra_flags} {build.flags.nrf} {includes} -make-args {make.args}
+recipe.preproc.macros={intiki.cmd-v} -recipe preproc.macros {intiki.paths} -make.command {build.make.command} -source "{source_file}" -target "{preprocessed_file_path}" -template {build.system.path}/support/CMakeLists.txt.template -makefile {build.path}/preproc/_cmakefile/CMakeLists.txt -- {preproc.macros.flags} -P {build.system.path}/support/build.cmake
+
+recipe.hooks.sketch.prebuild.1.pattern={intiki.cmd-v} -recipe stage -stage sketch {intiki.paths}
+recipe.hooks.libraries.prebuild.1.pattern={intiki.cmd-v} -recipe stage -stage libraries {intiki.paths}
+recipe.hooks.core.prebuild.1.pattern={intiki.cmd-v} -recipe stage -stage core {intiki.paths}
+recipe.hooks.linking.prelink.1.pattern={intiki.cmd-v} -recipe stage -stage link {intiki.paths}
+recipe.hooks.objcopy.preobjcopy.1.pattern={intiki.cmd-v} -recipe makefile {intiki.paths} -template {build.system.path}/support/CMakeLists.txt.template -makefile {build.path}/_cmakefile/CMakeLists.txt
+recipe.hooks.objcopy.preobjcopy.2.pattern={intiki.cmd-v} -recipe make {intiki.paths} -make.command {build.make.command} -- {make.args} -P {build.system.path}/support/build.cmake
 
 ## Create output (bin file)
 #recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
@@ -97,7 +127,7 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
 ## Create dfu package zip file
-recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --sd-req {build.sd_fwid} --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+#recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --sd-req {build.sd_fwid} --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
 
 ## Create uf2 file
 #recipe.objcopy.uf2.pattern=python "{runtime.platform.path}/tools/uf2conv/uf2conv.py" -f 0xADA52840 -c -o "{build.path}/{build.project_name}.uf2" "{build.path}/{build.project_name}.hex"
@@ -131,6 +161,11 @@ tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/ad
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200 --singlebank
+
+tools.nrfjprog.cmd=nrfjprog
+tools.nrfjprog.upload.params.verbose=
+tools.nrfjprog.upload.params.quiet=
+tools.nrfjprog.upload.pattern="{cmd}" -f nrf52 --chiperase --program "{build.path}/{build.project_name}.hex" --reset
 
 #***************************************************
 # Burning bootloader with either jlink or nrfutil
