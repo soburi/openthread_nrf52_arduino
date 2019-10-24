@@ -56,7 +56,7 @@ enum BitOrder {
 //#define DEFAULT 1
 //#define EXTERNAL 0
 
-typedef uint32_t err_t;
+//typedef uint32_t err_t;
 
 enum
 {

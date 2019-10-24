@@ -37,6 +37,8 @@
 #include "adafruit_fifo.h"
 #include <string.h>
 
+using namespace std;
+
 /******************************************************************************/
 /*!
     @brief  Constructor

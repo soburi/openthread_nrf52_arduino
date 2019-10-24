@@ -50,8 +50,8 @@ extern uint32_t __bss_end__[];
 extern unsigned char __HeapBase[];
 extern unsigned char __HeapLimit[];
 
-extern uint32_t __StackTop[];
-extern uint32_t __StackLimit[];
+//extern uint32_t __StackTop[];
+//extern uint32_t __StackLimit[];
 
 extern "C"
 {
