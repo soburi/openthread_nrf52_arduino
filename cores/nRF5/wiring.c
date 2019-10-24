@@ -19,9 +19,9 @@
 
 #include "Arduino.h"
 #include "nrf.h"
-#include "nrf_nvic.h"
+//#include "nrf_nvic.h"
 
-nrf_nvic_state_t nrf_nvic_state;
+//nrf_nvic_state_t nrf_nvic_state;
 
 #define DFU_MAGIC_SERIAL_ONLY_RESET   0x4e
 #define DFU_MAGIC_UF2_RESET           0x57
@@ -94,11 +94,11 @@ void waitForEvent(void)
 #endif
 
   uint8_t sd_en = 0;
-  (void) sd_softdevice_is_enabled(&sd_en);
+//  (void) sd_softdevice_is_enabled(&sd_en);
 
   if ( sd_en )
   {
-    (void) sd_app_evt_wait();
+//    (void) sd_app_evt_wait();
   }else
   {
     // SoftDevice is not enabled.
@@ -126,13 +126,13 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
     nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
   }
 
-  uint8_t sd_en;
-  (void) sd_softdevice_is_enabled(&sd_en);
+  uint8_t sd_en = 0;
+//  (void) sd_softdevice_is_enabled(&sd_en);
 
   // Enter System OFF state
   if ( sd_en )
   {
-    sd_power_system_off();
+//    sd_power_system_off();
   }else
   {
     NRF_POWER->SYSTEMOFF = 1;

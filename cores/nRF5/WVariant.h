@@ -21,8 +21,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "nrf.h"
-#include "nrf_soc.h"
-#include "nrf_sdm.h"
+//#include "nrf_soc.h"
+//#include "nrf_sdm.h"
+#include "nrf_error.h"
 #include "nrf_gpio.h"
 
 #ifdef __cplusplus
