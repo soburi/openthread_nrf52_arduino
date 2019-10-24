@@ -7,6 +7,14 @@ else()
 endif()
 
 message(STATUS "${ARDUINO_PREPROC_TARGET} STREQUAL ${STR_PREPROCESSED_FILE_PATH}")
+message(STATUS "CFG_DEBUG=${CFG_DEBUG}")
+
+if("${CFG_DEBUG}" STREQUAL "0")
+  set(cmake_build_type "Release")
+else()
+  set(cmake_build_type "Debug")
+endif()
+
 
 if("${ARDUINO_PREPROC_TARGET}" STREQUAL ${STR_PREPROCESSED_FILE_PATH})
   set(build_dir ${ARDUINO_BUILD_PATH})
@@ -34,16 +42,16 @@ else()
   if("${ARDUINO_PREPROC_TARGET}" STREQUAL ${STR_PREPROCESSED_FILE_PATH})
     message(STATUS "cmake")
     execute_process(
-      COMMAND ${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1
+      COMMAND ${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=${cmake_build_type} -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1
       WORKING_DIRECTORY ${build_dir}
     )
   else()
     message(STATUS "cmake preproc")
     #if(NOT EXISTS ${ARDUINO_BUILD_PATH}/preproc/preproc.sh )
       message(STATUS "create preproc.sh")
-      message(STATUS "${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1")
+      message(STATUS "${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=${cmake_build_type} -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1")
       execute_process(
-	COMMAND ${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1
+	COMMAND ${CMAKE_COMMAND} _cmakefile -DCMAKE_TOOLCHAIN_FILE=${ARDUINO_SYSTEM_PATH}/ot-rtos/cmake/arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=${cmake_build_type} -DPLATFORM_NAME=nrf52 -DWITHOUT_APPS=1 -DWITHOUT_CLI=1
         WORKING_DIRECTORY ${build_dir}
 	#OUTPUT_QUIET
 	#ERROR_QUIET
