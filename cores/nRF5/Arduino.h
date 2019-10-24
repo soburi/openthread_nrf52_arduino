@@ -37,6 +37,9 @@ void loop( void ) ;
 
 void suspendLoop(void);
 
+void wait_mainloop(uint32_t signal);
+void signal_mainloop(uint32_t signal);
+
 #include "WVariant.h"
 
 #ifdef __cplusplus
