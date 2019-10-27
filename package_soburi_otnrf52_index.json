@@ -1,0 +1,124 @@
+{
+  "packages": [
+    {
+      "platforms": [
+        {
+          "name": "OpenThread nRF52840 Boards",
+          "architecture": "otnrf52",
+          "category": "Contributed",
+          "version": "0.0.20191024",
+          "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20191027/openthread_nrf52_arduino_0.0.20191027.tar.bz2",
+          "archiveFileName": "openthread_nrf52_arduino_20191027.tar.bz2",
+          "checksum": "SHA-256:3132edbc690b71a06e18090d9f0886601c39fcda20b183435ff7b2c509a331d4",
+          "size": "31275952",
+          "boards": [
+            {
+              "name": "OpenThread nRF52840 boards"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "soburi",
+              "name": "intiki",
+              "version": "1.0.4"
+            },
+	    {
+              "packager": "arduino",
+              "name": "arm-none-eabi-gcc",
+              "version": "7-2017q4"
+            }
+          ]
+        }
+      ],
+      "tools": [
+        {
+          "name": "intiki",
+          "version": "1.0.4",
+          "systems": [
+            {
+              "archiveFileName": "intiki_x86_64-apple-darwin_1.0.4.tar.bz2",
+              "url": "https://github.com/soburi/intiki/releases/download/1.0.4/intiki_x86_64-apple-darwin_1.0.4.tar.bz2",
+              "host": "x86_64-apple-darwin",
+              "checksum": "SHA-256:30155c1d55d26ec235436cb90cebd91e038aaa322a5f828f51f2017e31b2ddcc",
+              "size": "1239308"
+            },
+            {
+              "archiveFileName": "intiki_x86_64-pc-linux-gnu_1.0.4.tar.bz2",
+              "url": "https://github.com/soburi/intiki/releases/download/1.0.4/intiki_x86_64-pc-linux-gnu_1.0.4.tar.bz2",
+              "host": "x86_64-pc-linux-gnu",
+              "checksum": "SHA-256:1fe6383bee912e6bf702e6806cc067a4c9b7a811b96576735efc845449292b4d",
+              "size": "1261595"
+            },
+            {
+              "archiveFileName": "intiki_i686-mingw32_1.0.4.tar.bz2",
+              "url": "https://github.com/soburi/intiki/releases/download/1.0.4/intiki_i686-mingw32_1.0.4.tar.bz2",
+              "host": "i686-mingw32",
+              "checksum": "SHA-256:2e75e3ded38e91bc3dff92c677db48b897549e22ea9d352c2370462a52386b61",
+              "size": "1019633"
+            },
+            {
+              "archiveFileName": "intiki_arm-linux-gnueabihf_1.0.4.tar.bz2",
+              "url": "https://github.com/soburi/intiki/releases/download/1.0.4/intiki_arm-linux-gnueabihf_1.0.4.tar.bz2",
+              "host": "arm-linux-gnueabihf",
+              "checksum": "SHA-256:aefdde840fae0c7181ce84c4eea8cfff8c8b116f84b3ca5d78a1f633b02dfad0",
+              "size": "1167955"
+            }
+          ]
+        },
+        {
+          "name": "arm-none-eabi-gcc",
+          "version": "7-2017q4",
+          "systems": [
+            {
+              "host": "arm-linux-gnueabihf",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-4.8.3-2014q1-arm.tar.bz2",
+              "archiveFileName": "gcc-arm-none-eabi-4.8.3-2014q1-arm.tar.bz2",
+              "checksum": "SHA-256:ebe96b34c4f434667cab0187b881ed585e7c7eb990fe6b69be3c81ec7e11e845",
+              "size": "44423906"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-7-2018-q2-update-linuxarm64.tar.bz2",
+              "archiveFileName": "gcc-arm-none-eabi-7-2018-q2-update-linuxarm64.tar.bz2",
+              "checksum": "SHA-256:6fb5752fb4d11012bd0a1ceb93a19d0641ff7cf29d289b3e6b86b99768e66f76",
+              "size": "99558726"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-7-2017-q4-major-win32-arduino1.zip",
+              "archiveFileName": "gcc-arm-none-eabi-7-2017-q4-major-win32-arduino1.zip",
+              "checksum": "SHA-256:96dd0091856f4d2eb21046eba571321feecf7d50b9c156f708b2a8b683903382",
+              "size": "131761924"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-7-2017-q4-major-mac.tar.bz2",
+              "archiveFileName": "gcc-arm-none-eabi-7-2017-q4-major-mac.tar.bz2",
+              "checksum": "SHA-256:89b776c7cf0591c810b5b60067e4dc113b5b71bc50084a536e71b894a97fdccb",
+              "size": "104550003"
+            },
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-7-2017-q4-major-linux64.tar.bz2",
+              "archiveFileName": "gcc-arm-none-eabi-7-2017-q4-major-linux64.tar.bz2",
+              "checksum": "SHA-256:96a029e2ae130a1210eaa69e309ea40463028eab18ba19c1086e4c2dafe69a6a",
+              "size": "99857645"
+            },
+            {
+              "host": "i686-pc-linux-gnu",
+              "url": "http://downloads.arduino.cc/tools/gcc-arm-none-eabi-7-2018-q2-update-linux32.tar.bz2",
+              "archiveFileName": "gcc-arm-none-eabi-7-2018-q2-update-linux32.tar.bz2",
+              "checksum": "SHA-256:090a0bc2b1956bc49392dff924a6c30fa57c88130097b1972204d67a45ce3cf3",
+              "size": "97427309"
+            }
+          ]
+        }
+      ],
+      "name": "soburi",
+      "maintainer": "soburi",
+      "websiteURL": "https://github.com/soburi/openthread_nrf52_arduino",
+      "email": "soburi@gmail.com"
+    }
+  ]
+}
+
