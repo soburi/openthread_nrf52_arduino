@@ -6,7 +6,7 @@
           "name": "OpenThread nRF52840 Boards",
           "architecture": "otnrf52",
           "category": "Contributed",
-          "version": "0.0.20191024",
+          "version": "0.0.20191028",
           "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20191028/openthread_nrf52_arduino_0.0.20191028.tar.bz2",
           "archiveFileName": "openthread_nrf52_arduino_20191028.tar.bz2",
           "checksum": "SHA-256:ff5d9d44f21e96c19aafe29382d75a531069aba571614b6d137c9799d5739ca6",
