@@ -7,10 +7,10 @@
           "architecture": "otnrf52",
           "category": "Contributed",
           "version": "0.0.20191024",
-          "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20191027/openthread_nrf52_arduino_0.0.20191027.tar.bz2",
-          "archiveFileName": "openthread_nrf52_arduino_20191027.tar.bz2",
-          "checksum": "SHA-256:3132edbc690b71a06e18090d9f0886601c39fcda20b183435ff7b2c509a331d4",
-          "size": "31275952",
+          "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20191028/openthread_nrf52_arduino_0.0.20191028.tar.bz2",
+          "archiveFileName": "openthread_nrf52_arduino_20191028.tar.bz2",
+          "checksum": "SHA-256:ff5d9d44f21e96c19aafe29382d75a531069aba571614b6d137c9799d5739ca6",
+          "size": "31278315",
           "boards": [
             {
               "name": "OpenThread nRF52840 boards"
