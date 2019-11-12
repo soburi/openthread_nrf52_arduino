@@ -7,6 +7,11 @@ original [README.md rename to BlueFruit_nRF52.md](BlueFruit_nRF52.md)
 ot-arduino is a arduino package for nRF52840 that integrated with openthread subsystem.
 This package provides API that is able to communicate by OpenThread protocol.
 
+Resources
+----------------
+
+- Gitter: https://gitter.im/openthread_nrf52_arduino/community
+
 Installation
 --------------
 
