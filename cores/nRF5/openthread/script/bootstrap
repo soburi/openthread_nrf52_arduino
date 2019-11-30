@@ -1,0 +1,119 @@
+#!/bin/sh
+#
+#  Copyright (c) 2017, The OpenThread Authors.
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of the copyright holder nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+#    Description:
+#      This file installs all needed dependencies and toolchains needed for
+#      example compilation and programming.
+#
+
+die()
+{
+    echo " *** ERROR: " $*
+    exit 1
+}
+
+install_packages_apt()
+{
+    # apt update and install dependencies
+    sudo apt-get update || die
+    sudo apt-get -y install automake g++ libtool lsb-release make || die
+
+    PLATFORM=$(lsb_release -is)
+
+    if [ $PLATFORM = "Raspbian" ]; then
+        sudo apt-get -y install binutils-arm-none-eabi gcc-arm-none-eabi gdb-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib || die
+    else
+        # add gcc-arm-embedded ppa
+        sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa || die
+        sudo apt-get update || die
+        sudo apt-get -y install gcc-arm-embedded || die
+    fi
+
+    # add clang-format for pretty
+    sudo apt-get -y install clang-format-6.0
+}
+
+install_packages_opkg()
+{
+    echo 'opkg not supported currently' && false
+}
+
+install_packages_rpm()
+{
+    echo 'rpm not supported currently' && false
+}
+
+install_packages_brew()
+{
+    # add autotools
+    brew install automake libtool
+
+    # add ARM toolchain
+    brew tap PX4/homebrew-px4
+    brew install gcc-arm-none-eabi
+
+    # check for gcc for posix examples
+    if ! which gcc; then
+        echo 'warning: clang/gcc needed for posix examples'
+        echo 'warning: please install Command Line Tools from https://developer.apple.com/download/more/'
+    fi
+
+    # add clang-format for pretty
+    CLANG_FORMAT_VERSION="clang-format version 6.0"
+    which clang-format-6.0 || (which clang-format && (clang-format --version | grep -q "${CLANG_FORMAT_VERSION}")) || {
+        brew install llvm@6
+        sudo ln -s "$(brew --prefix llvm@6)/bin/clang-format" /usr/local/bin/clang-format-6.0
+    }
+}
+
+install_packages_source()
+{
+    echo 'source not supported currently' && false
+}
+
+install_packages()
+{
+    PM=source
+    if which apt-get; then
+        PM=apt
+    elif which rpm; then
+        PM=rpm
+    elif which opkg; then
+        PM=opkg
+    elif which brew; then
+        PM=brew
+    fi
+    install_packages_$PM
+}
+
+main()
+{
+    install_packages
+}
+
+main

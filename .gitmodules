@@ -1,3 +1,0 @@
-[submodule "system/ot-rtos"]
-	path = system/ot-rtos
-	url = https://github.com/soburi/ot-rtos
