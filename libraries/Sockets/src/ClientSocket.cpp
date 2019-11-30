@@ -1,3 +1,4 @@
+#if 0
 /*
   Client.h - Client class for Raspberry Pi
   Copyright (c) 2016 Hristo Gochkov  All right reserved.
@@ -628,3 +629,4 @@ int ClientSocket::fd() const
     }
 }
 
+#endif
