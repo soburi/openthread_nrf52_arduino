@@ -19,13 +19,9 @@
 #include "OpenThread.h"
 
 #include <openthread/openthread-freertos.h>
-#include <lwip/def.h>
 
 #include <Print.h>
 
-//#include <autoconf.h>
-
-#ifndef ARDUINO_PREPROC
 #include <openthread/config.h>
 #include <openthread/commissioner.h>
 #include <openthread/icmp6.h>
@@ -33,7 +29,6 @@
 #include <openthread/link.h>
 #if OPENTHREAD_CONFIG_ENABLE_TIME_SYNC
 #include <openthread/network_time.h>
-#endif
 
 #if OPENTHREAD_ENABLE_FTD
 #include <openthread/dataset_ftd.h>
@@ -201,14 +196,14 @@ void OpenThreadClass:: na (ty a1) \
   OT_V_SETTER_IMPL(ty, na, cat, n2)
 
 #define OT_COPY_IP6(ip6, addr) {\
-    ip6.mFields.m16[0] = htons(addr.v6[0]); \
-    ip6.mFields.m16[1] = htons(addr.v6[1]); \
-    ip6.mFields.m16[2] = htons(addr.v6[2]); \
-    ip6.mFields.m16[3] = htons(addr.v6[3]); \
-    ip6.mFields.m16[4] = htons(addr.v6[4]); \
-    ip6.mFields.m16[5] = htons(addr.v6[5]); \
-    ip6.mFields.m16[6] = htons(addr.v6[6]); \
-    ip6.mFields.m16[7] = htons(addr.v6[7]); \
+    ip6.mFields.m16[0] = addr.v6[0]; \
+    ip6.mFields.m16[1] = addr.v6[1]; \
+    ip6.mFields.m16[2] = addr.v6[2]; \
+    ip6.mFields.m16[3] = addr.v6[3]; \
+    ip6.mFields.m16[4] = addr.v6[4]; \
+    ip6.mFields.m16[5] = addr.v6[5]; \
+    ip6.mFields.m16[6] = addr.v6[6]; \
+    ip6.mFields.m16[7] = addr.v6[7]; \
 }
 
 // x help
