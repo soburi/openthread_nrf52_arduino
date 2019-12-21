@@ -19,37 +19,15 @@
 #include "Print.h"
 #include "IPAddress.h"
 
-#include <lwip/sockets.h>
 
-#if defined(LWIP_IPV6)
+#if defined(ENABLE_IPV6)
 #define INIT_IPBYTES(a, b, c, d) {0,0,0,0,  0,0,0,0,  0,0,0xFF,0xFF,  a,b,c,d}
 #else
 #define INIT_IPBYTES(a, b, c, d) {a,b,c,d}
 #endif
 
-static bool parse_ipaddr(const char* addr, uint8_t* buf)
-{
-    struct sockaddr sa;
-    bool ret = true;//net_ipaddr_parse(addr, strlen(addr), &sa);
-    if(ret) {
-        if(sa.sa_family == AF_INET6) {
-#if defined(LWIP_IPV6)
-            memcpy(buf, ((struct sockaddr_in6*)(&sa))->sin6_addr.s6_addr, 16);
-#else
-	    return false;
-#endif
-	}
-	else if(sa.sa_family == AF_INET) {
-#if LWIP_IPV6
-            uint8_t prefix[12] = { 0,0,0,0,  0,0,0,0, 0,0,0xFF,0xFF};
-            memcpy(buf, prefix, 12);
-#endif
-            //memcpy(buf+12, ((struct sockaddr_in*)(&sa))->sin_addr.s_addr, 4);
-	}
-    }
-    return ret;
-}
-
+#define INET_ADDRSTRLEN 4
+#define INET6_ADDRSTRLEN 4
 
 IPAddress::IPAddress()
     : v6(_address.u16)
@@ -65,7 +43,7 @@ IPAddress::IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3)
     memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
-#if LWIP_IPV6
+#if ENABLE_IPV6
 IPAddress::IPAddress(uint16_t d0, uint16_t d1, uint16_t d2, uint16_t d3,
                      uint16_t d4, uint16_t d5, uint16_t d6, uint16_t d7)
     : v6(_address.u16)
@@ -114,7 +92,7 @@ IPAddress::IPAddress(const uint8_t *addr)
 
 bool IPAddress::fromString(const char *addr)
 {
-    return parse_ipaddr(addr, _address.u8);
+    return (otIp6AddressFromString(addr, &_address.ot) == OT_ERROR_NONE);
 }
 
 IPAddress& IPAddress::operator=(const uint8_t *addr)
@@ -147,7 +125,7 @@ bool IPAddress::operator==(const uint8_t* addr) const
     return memcmp(addr, _address.bytes, sizeof(_address.bytes)) == 0;
 }
 
-#if LWIP_IPV6
+#if ENABLE_IPV6
 bool IPAddress::operator==(const uint16_t* addr) const
 {
     if(!addr) return false;
@@ -155,7 +133,7 @@ bool IPAddress::operator==(const uint16_t* addr) const
 }
 #endif
 
-#if LWIP_IPV6
+#if ENABLE_IPV6
 IPAddress& IPAddress::operator=(const IPAddress& addr)
 {
     *this = addr._address.u16;
@@ -176,7 +154,7 @@ IPAddress& IPAddress::operator=(const uint16_t *addr)
 
 bool IPAddress::isV6MappedAddress() const
 {
-#if LWIP_IPV6
+#if ENABLE_IPV6
     if( _address.u16[0] == 0 && _address.u16[1] == 0 &&
         _address.u16[3] == 0 && _address.u16[4] == 0 &&
 	_address.u16[5] == 0xFFFF)
@@ -196,7 +174,7 @@ size_t IPAddress::printTo(Print& p) const
 {
     if( isV6MappedAddress() || sizeof(_address.prefix) == 0) {
         char buf[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, _address.bytes, buf, sizeof(buf));
+        //inet_ntop(AF_INET, _address.bytes, buf, sizeof(buf));
         return p.print(buf);
     }
     else
@@ -207,9 +185,14 @@ size_t IPAddress::printTo(Print& p) const
 
 size_t IPAddress::V6RawAccessor::printTo(Print& p) const
 {
-    char buf[INET6_ADDRSTRLEN];
-    inet_ntop(AF_INET6, addr, buf, sizeof(buf));
-    return p.print(buf);
+    size_t count = 0;
+
+    count += p.print(addr[0], HEX);
+    for(int i=1; i<8; i++) {
+	count += p.print(":");
+        count += p.print(addr[i], HEX);
+    }
+    return count;
 }
 
 const IPAddress INADDR::NONE(0, 0, 0, 0);
