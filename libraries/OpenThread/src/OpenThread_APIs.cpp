@@ -47,6 +47,7 @@ void OpenThreadClass::OTInstance::RemoveStateChangeCallback(otStateChangedCallba
 OT_DECL_VFUNC(0, Instance, void, Reset);
 OT_DECL_VFUNC(0, Instance, void, FactoryReset);
 
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 OT_DECL__FUNC(3, BorderRouter, otError, GetNetData, bool, uint8_t*, uint8_t*)
 OT_DECL__FUNC(1, BorderRouter, otError, AddOnMeshPrefix, const otBorderRouterConfig*)
 OT_DECL__FUNC(1, BorderRouter, otError, RemoveOnMeshPrefix, const otIp6Prefix*)
@@ -55,7 +56,9 @@ OT_DECL__FUNC(1, BorderRouter, otError, AddRoute, const otExternalRouteConfig*)
 OT_DECL__FUNC(1, BorderRouter, otError, RemoveRoute, const otIp6Prefix*)
 OT_DECL__FUNC(2, BorderRouter, otError, GetNextRoute, otNetworkDataIterator*, otExternalRouteConfig*)
 OT_DECL__FUNC(0, BorderRouter, otError, Register)
+#endif
 
+#if OPENTHREAD_CONFIG_COMISSIONER_ENABLE
 OT_DECL__FUNC(3, Commissioner, otError, Start, otCommissionerStateCallback, otCommissionerJoinerCallback, void*)
 OT_DECL__FUNC(0, Commissioner, otError, Stop)
 OT_DECL__FUNC(3, Commissioner, otError, AddJoiner, const otExtAddress*, const char*, uint32_t)
@@ -69,6 +72,7 @@ OT_DECL__FUNC(3, Commissioner, otError, SendMgmtSet, const otCommissioningDatase
 OT_DECL__FUNC(0, Commissioner, uint16_t, GetSessionId)
 OT_DECL__FUNC(0, Commissioner, otCommissionerState, GetState)
 OT_DECL__FUNC(4, Commissioner, otError, GeneratePskc, const char*, const char*, const otExtendedPanId*, uint8_t*)
+#endif
 
 OT_DECL__FUNC(0, Dataset, bool, IsCommissioned)
 OT_DECL__FUNC(1, Dataset, otError, GetActive, otOperationalDataset*)
@@ -88,10 +92,12 @@ OT_DECL__FUNC(1, Ip6, otError, AddUnicastAddress, const otNetifAddress*)
 OT_DECL__FUNC(1, Ip6, otError, RemoveUnicastAddress, const otIp6Address*)
 OT_DECL__FUNC(0, Ip6, const otNetifAddress*, GetUnicastAddresses)
 
+#if OPENTHREAD_CONFIG_JOINER_ENABLE
 OT_DECL__FUNC(8, Joiner, otError, Start, const char*, const char*, const char*, const char*, const char*, const char*, otJoinerCallback, void*)
 OT_DECL_VFUNC(0, Joiner, void, Stop)
 OT_DECL__FUNC(0, Joiner, otJoinerState, GetState)
 OT_DECL_VFUNC(1, Joiner, void, GetId, otExtAddress*)
+#endif
 
 OT_DECL__FUNC(4, Link, otError, ActiveScan, uint32_t, uint16_t, otHandleActiveScanResult, void*)
 OT_DECL__FUNC(0, Link, bool, IsActiveScanInProgress)
@@ -110,6 +116,7 @@ OT_DECL__FUNC(1, Link, otError, SetPanId, otPanId)
 OT_DECL__FUNC(0, Link, uint32_t, GetPollPeriod)
 OT_DECL__FUNC(1, Link, otError, SetPollPeriod, uint32_t)
 OT_DECL__FUNC(0, Link, otShortAddress, GetShortAddress)
+#if OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
 OT_DECL__FUNC(0, Link, otMacFilterAddressMode, FilterGetAddressMode)
 OT_DECL__FUNC(1, Link, otError, FilterSetAddressMode, otMacFilterAddressMode)
 OT_DECL__FUNC(1, Link, otError, FilterAddAddress, const otExtAddress*)
@@ -120,6 +127,7 @@ OT_DECL__FUNC(2, Link, otError, FilterAddRssIn, const otExtAddress*, int8_t)
 OT_DECL__FUNC(1, Link, otError, FilterRemoveRssIn, const otExtAddress*)
 OT_DECL_VFUNC(0, Link, void, FilterClearRssIn)
 OT_DECL__FUNC(2, Link, otError, FilterGetNextRssIn, otMacFilterIterator*, otMacFilterEntry*)
+#endif
 OT_DECL__FUNC(0, Link, const otMacCounters*, GetCounters)
 
 OT_DECL_VFUNC(1, Message, void, GetBufferInfo, otBufferInfo*)
@@ -129,12 +137,13 @@ OT_DECL__FUNC(2, NetData, otError, GetNextOnMeshPrefix, otNetworkDataIterator*, 
 OT_DECL__FUNC(0, NetData, uint8_t, GetVersion)
 OT_DECL__FUNC(0, NetData, uint8_t, GetStableVersion)
 
+#if OPENTHREAD_CONFIG_SERVICE_ENABLE
 OT_DECL__FUNC(3, Server, otError, GetNetDataLocal, bool, uint8_t*, uint8_t*)
 OT_DECL__FUNC(1, Server, otError, AddService, const otServiceConfig*)
 OT_DECL__FUNC(3, Server, otError, RemoveService, uint32_t, uint8_t*, uint8_t)
 OT_DECL__FUNC(2, Server, otError, GetNextService, otNetworkDataIterator*, otServiceConfig*)
-OT_DECL__FUNC(2, Server, otError, GetNextLeaderService, otNetworkDataIterator*, otServiceConfig*)
 OT_DECL__FUNC(0, Server, otError, Register)
+#endif
 
 OT_DECL__FUNC(1, Thread, otError, SetEnabled, bool)
 OT_DECL__FUNC(0, Thread, bool, IsSingleton)
@@ -176,8 +185,6 @@ OT_DECL__FUNC(0, Thread, const otIpCounters*, GetIp6Counters)
 OT_DECL_VFUNC(2, Thread, void, RegisterParentResponseCallback, otThreadParentResponseCallback, void*)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxAllowedChildren)
 OT_DECL__FUNC(1, Thread, otError, SetMaxAllowedChildren, uint8_t)
-OT_DECL__FUNC(0, Thread, bool, IsRouterRoleEnabled)
-OT_DECL_VFUNC(1, Thread, void, SetRouterRoleEnabled, bool)
 OT_DECL__FUNC(1, Thread, otError, SetPreferredRouterId, uint8_t)
 OT_DECL__FUNC(0, Thread, uint8_t, GetLocalLeaderWeight)
 OT_DECL_VFUNC(1, Thread, void, SetLocalLeaderWeight, uint8_t)
@@ -198,12 +205,16 @@ OT_DECL__FUNC(0, Thread, uint8_t, GetRouterDowngradeThreshold)
 OT_DECL_VFUNC(1, Thread, void, SetRouterDowngradeThreshold, uint8_t)
 OT_DECL__FUNC(0, Thread, uint8_t, GetRouterSelectionJitter)
 OT_DECL_VFUNC(1, Thread, void, SetRouterSelectionJitter, uint8_t)
+#if OPENTHREAD_FTD
 OT_DECL__FUNC(2, Thread, otError, GetChildInfoById, uint16_t, otChildInfo*)
 OT_DECL__FUNC(2, Thread, otError, GetChildInfoByIndex, uint8_t, otChildInfo*)
+#endif
 OT_DECL__FUNC(0, Thread, uint8_t, GetRouterIdSequence)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxRouterId)
 OT_DECL__FUNC(2, Thread, otError, GetRouterInfo, uint16_t, otRouterInfo*)
+#if OPENTHREAD_FTD
 OT_DECL__FUNC(2, Thread, otError, GetEidCacheEntry, uint8_t, otEidCacheEntry*)
+#endif
 OT_DECL__FUNC(0, Thread, const otPskc*, GetPskc)
 OT_DECL__FUNC(1, Thread, otError, SetPskc, const otPskc*)
 OT_DECL__FUNC(0, Thread, int8_t, GetParentPriority)
