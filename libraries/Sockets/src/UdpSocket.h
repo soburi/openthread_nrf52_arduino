@@ -1,79 +1,78 @@
 /*
- *  Udp.cpp: Library to send/receive UDP packets.
- *
- * NOTE: UDP is fast, but has some important limitations (thanks to Warren Gray for mentioning these)
- * 1) UDP does not guarantee the order in which assembled UDP packets are received. This
- * might not happen often in practice, but in larger network topologies, a UDP
- * packet can be received out of sequence.
- * 2) UDP does not guard against lost packets - so packets *can* disappear without the sender being
- * aware of it. Again, this may not be a concern in practice on small local networks.
- * For more information, see http://www.cafeaulait.org/course/week12/35.html
- *
- * MIT License:
- * Copyright (c) 2008 Bjoern Hartmann
- * Copyright (c) 2019 Tokita, Hiroshi
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * bjoern@cs.stanford.edu 12/30/2008
- */
+  Copyright (c) 2016-2019 Tokita, Hiroshi  All right reserved.
 
-#ifndef _UDPSOCKET_H_
-#define _UDPSOCKET_H_
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+#ifndef UDPSocket_h
+#define UDPSocket_h
 
 #include <Arduino.h>
 #include <Udp.h>
-#include <cbuf.h>
+#include <openthread/udp.h>
+#include "ringbuf.h"
 
 class UDPSocket : public UDP {
 private:
-  int udp_server;
-  IPAddress multicast_ip;
-  IPAddress remote_ip;
-  uint16_t server_port;
+  otUdpSocket socket;
+  otMessageInfo msginfo;
+
+  otIp6Address remote_ip;
   uint16_t remote_port;
-  char * tx_buffer;
+  uint16_t remaining;
+
+  char   tx_buffer[1460];
   size_t tx_buffer_len;
-  cbuf * rx_buffer;
+  char   rx_buffer[1460];
+  size_t rx_buffer_len;
+
+  struct ringbuf rxbuf;
+
+  struct received_packet {
+    uint16_t length;
+    struct otIp6Address ipaddr;
+    uint16_t port;
+  };
+
 public:
   UDPSocket();
   ~UDPSocket();
   uint8_t begin(IPAddress a, uint16_t p);
-  uint8_t begin(uint16_t p);
-  uint8_t beginMulticast(IPAddress a, uint16_t p);
+  inline uint8_t begin(uint16_t p) { return begin(IN6ADDR.ANY_INIT, p); }
   void stop();
-  int beginMulticastPacket();
-  int beginPacket();
   int beginPacket(IPAddress ip, uint16_t port);
   int beginPacket(const char *host, uint16_t port);
   int endPacket();
-  size_t write(uint8_t);
+  inline size_t write(uint8_t b) { return write(&b, 1); }
   size_t write(const uint8_t *buffer, size_t size);
   int parsePacket();
-  int available();
-  int read();
-  int read(unsigned char* buffer, size_t len);
+  inline int available() { return remaining; }
+  inline int read() { uint8_t ch = 0; int err = read(&ch, 1); return err ? err : ch; }
+  inline int read(unsigned char* buffer, size_t len) { return read(reinterpret_cast<char*>(buffer), len); }
   int read(char* buffer, size_t len);
   int peek();
-  void flush();
-  IPAddress remoteIP();
-  uint16_t remotePort();
+  inline void flush() { }
+  inline IPAddress remoteIP() { return remote_ip.mFields.m16; }
+  inline uint16_t remotePort() { return remote_port; }
   using Print::write; // pull in write(str) and write(buf, size) from Print
+
+private:
+  void onReceived(otMessage *aMessage, const otMessageInfo *aMessageInfo);
+  static inline void receive_handler(void *aContext, otMessage *aMessage, const otMessageInfo *aMessageInfo) {
+    reinterpret_cast<UDPSocket*>(aContext)->onReceived(aMessage, aMessageInfo);
+  }
 };
 
-#endif /* _WIFIUDP_H_ */
+#endif /* UDPSocket_h */

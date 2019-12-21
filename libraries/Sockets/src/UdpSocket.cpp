@@ -1,7 +1,5 @@
 /*
-  Udp.cpp - UDP class for Raspberry Pi
-  Copyright (c) 2016 Hristo Gochkov  All right reserved.
-  Copyright (c) 2019 Tokita, Hiroshi All right reserved.
+  Copyright (c) 2016-2019 Tokita, Hiroshi  All right reserved.
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -10,163 +8,90 @@
 
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include "UdpSocket.h"
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-#include "common_func.h"
 
-#undef write
-#undef read
+#include "UdpSocket.h"
+#include <openthread/udp.h>
+#include <openthread/openthread-freertos.h>
 
 #define log_e(...) ADALOG("UDPSKT", __VA_ARGS__)
 
-UDPSocket::UDPSocket()
-: udp_server(-1)
-, server_port(0)
-, remote_port(0)
-, tx_buffer(0)
-, tx_buffer_len(0)
-, rx_buffer(0)
-{}
+UDPSocket::UDPSocket(){
+  ringbuf_init(&rxbuf, rx_buffer, sizeof(rx_buffer) );
+}
 
 UDPSocket::~UDPSocket(){
    stop();
 }
 
-uint8_t UDPSocket::begin(IPAddress address, uint16_t port){
-  stop();
+static int _begin(otUdpSocket* socket, otSockAddr* addr, otUdpReceive handler, void* context) {
+  otError err = OT_ERROR_NONE;
 
-  server_port = port;
-
-  tx_buffer = new char[1460];
-  if(!tx_buffer){
-    log_e("could not create tx buffer: %d", errno);
+  err = otUdpClose(socket);
+  if(err != OT_ERROR_NONE) {
+    log_e("could not close socket: %s", otThreadErrorToString(err));
     return 0;
   }
 
-  if ((udp_server=socket(AF_INET6, SOCK_DGRAM, 0)) == -1){
-    log_e("could not create socket: %d", errno);
+  socket->mContext = NULL;
+
+  err = otUdpOpen(otrGetInstance(), socket, handler, context);
+  if(err != OT_ERROR_NONE) {
+    log_e("could not create socket: %s", otThreadErrorToString(err));
     return 0;
   }
 
-  int yes = 1;
-  if (setsockopt(udp_server,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) < 0) {
-      log_e("could not set socket option: %d", errno);
-      stop();
-      return 0;
-  }
-
-  struct sockaddr_in6 addr;
-  memset((char *) &addr, 0, sizeof(addr));
-  addr.sin6_family = AF_INET6;
-  addr.sin6_port = htons(server_port);
-  COPY_V6ADDR(addr.sin6_addr.s6_addr, address.v6);
-  if(bind(udp_server , (struct sockaddr*)&addr, sizeof(addr)) == -1){
-    log_e("could not bind socket: %d", errno);
-    stop();
+  err = otUdpBind(socket, addr);
+  if(err != OT_ERROR_NONE) {
+    log_e("could not bind socket: %s", otThreadErrorToString(err));
+    otUdpClose(socket);
+    socket->mContext = NULL;
     return 0;
   }
-  lwip_fcntl(udp_server, F_SETFL, O_NONBLOCK);
   return 1;
 }
 
-uint8_t UDPSocket::begin(uint16_t p){
-  return begin(IPAddress(IN6ADDR.ANY_INIT), p);
-}
+uint8_t UDPSocket::begin(IPAddress address, uint16_t port){
+  int ret = 0;
+  struct otSockAddr addr = {0};
+  addr.mPort = port;
+  COPY_V6ADDR(addr.mAddress.mFields.m16, address.v6);
+  //scope id
 
-uint8_t UDPSocket::beginMulticast(IPAddress a, uint16_t p){
-  if(begin(IPAddress(IN6ADDR.ANY_INIT), p)){
-    if(a != 0){
-      struct ipv6_mreq mreq;
-      COPY_V6ADDR(mreq.ipv6mr_multiaddr.s6_addr, a.v6);
-      mreq.ipv6mr_interface = 0;
-      if (setsockopt(udp_server, IPPROTO_IP, IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
-          log_e("could not join igmp: %d", errno);
-          stop();
-          return 0;
-      }
-      multicast_ip = a;
-    }
-    return 1;
-  }
-  return 0;
+  tx_buffer_len = 0;
+  OT_API_CALL(ret = _begin(&socket, &addr, receive_handler, this) );
+
+  return ret;
 }
 
 void UDPSocket::stop(){
-  if(tx_buffer){
-    delete[] tx_buffer;
-    tx_buffer = NULL;
+  otError err = OT_ERROR_NONE;
+  OT_API_CALL(err = otUdpClose(&socket));
+  if(err != OT_ERROR_NONE) {
+    log_e("could not close socket: %s", otThreadErrorToString(err));
   }
+  socket.mContext = NULL;
   tx_buffer_len = 0;
-  if(rx_buffer){
-    cbuf *b = rx_buffer;
-    rx_buffer = NULL;
-    delete b;
-  }
-  if(udp_server == -1)
-    return;
-  if(multicast_ip != 0){
-    struct ipv6_mreq mreq;
-    COPY_V6ADDR(mreq.ipv6mr_multiaddr.s6_addr, multicast_ip.v6);
-    mreq.ipv6mr_interface = 0;
-    setsockopt(udp_server, IPPROTO_IP, IPV6_DROP_MEMBERSHIP, &mreq, sizeof(mreq));
-    multicast_ip = IN6ADDR.ANY_INIT;
-  }
-  lwip_close(udp_server);
-  udp_server = -1;
-}
-
-int UDPSocket::beginMulticastPacket(){
-  if(!server_port || multicast_ip == IN6ADDR.ANY_INIT)
-    return 0;
-  remote_ip = multicast_ip;
-  remote_port = server_port;
-  return beginPacket();
-}
-
-int UDPSocket::beginPacket(){
-  if(!remote_port)
-    return 0;
-
-  // allocate tx_buffer if is necessary
-  if(!tx_buffer){
-    tx_buffer = new char[1460];
-    if(!tx_buffer){
-      log_e("could not create tx buffer: %d", errno);
-      return 0;
-    }
-  }
-
-  tx_buffer_len = 0;
-
-  // check whereas socket is already open
-  if (udp_server != -1)
-    return 1;
-
-  if ((udp_server=socket(AF_INET6, SOCK_DGRAM, 0)) == -1){
-    log_e("could not create socket: %d", errno);
-    return 0;
-  }
-
-  lwip_fcntl(udp_server, F_SETFL, O_NONBLOCK);
-
-  return 1;
 }
 
 int UDPSocket::beginPacket(IPAddress ip, uint16_t port){
-  remote_ip = ip;
-  remote_port = port;
-  return beginPacket();
+  if(!port) return 0;
+
+  COPY_V6ADDR(msginfo.mPeerAddr.mFields.m16, ip.v6);
+  msginfo.mPeerPort = port;
+
+  tx_buffer_len = 0;
+  return 1;
 }
 
 int UDPSocket::beginPacket(const char *host, uint16_t port){
+/* TODO
   struct hostent *server;
   server = gethostbyname(host);
   if (server == NULL){
@@ -174,111 +99,120 @@ int UDPSocket::beginPacket(const char *host, uint16_t port){
     return 0;
   }
   return beginPacket(IPAddress((const uint16_t *)(server->h_addr_list[0])), port);
+*/
+  return 0;
+}
+
+static int _endPacket(otUdpSocket* socket, const char* buf, size_t buflen, otMessageInfo* msginfo) {
+  otError err = OT_ERROR_NONE;
+
+  otMessage* msg = otUdpNewMessage(otrGetInstance(), NULL);
+  if(!msg) {
+    log_e("could not allocate message: ");
+    return 0;
+  }
+
+  err = otMessageAppend(msg, buf, buflen);
+  if(err != OT_ERROR_NONE) {
+    log_e("could not append data to message: %s", otThreadErrorToString(err));
+    if(msg != NULL) otMessageFree(msg);
+    return 0;
+  }
+
+  err = otUdpSend(socket, msg, msginfo);
+  if(err != OT_ERROR_NONE){
+    log_e("could not send data: %s", otThreadErrorToString(err));
+    if(msg != NULL) otMessageFree(msg);
+    return 0;
+  }
+
+  return 1;
 }
 
 int UDPSocket::endPacket(){
-  struct sockaddr_in6 recipient;
-  COPY_V6ADDR(recipient.sin6_addr.s6_addr, remote_ip.v6);
-  recipient.sin6_family = AF_INET6;
-  recipient.sin6_port = htons(remote_port);
-  int sent = sendto(udp_server, tx_buffer, tx_buffer_len, 0, (struct sockaddr*) &recipient, sizeof(recipient));
-  if(sent < 0){
-    log_e("could not send data: %d", errno);
-    return 0;
-  }
-  return 1;
+  int ret = 0;
+  OT_API_CALL(ret = _endPacket(&socket, tx_buffer, tx_buffer_len, &msginfo) );
+  return ret;
 }
 
-size_t UDPSocket::write(uint8_t data){
-  if(tx_buffer_len == 1460){
-    endPacket();
-    tx_buffer_len = 0;
+int UDPSocket::parsePacket() {
+  
+  if(ringbuf_elements(&rxbuf) < (sizeof(struct received_packet)-remaining) ) {
+    return 0;
   }
-  tx_buffer[tx_buffer_len++] = data;
-  return 1;
+
+  // discard old packet
+  while(remaining) {
+    read();
+  }
+
+  struct received_packet pack;
+
+  for(uint32_t i=0; i<sizeof(struct received_packet); i++) {
+    reinterpret_cast<char*>(&pack)[i] = static_cast<char>(ringbuf_get(&rxbuf));
+  }
+
+  remaining   = pack.length - sizeof(struct received_packet);
+  remote_port = pack.port;
+  remote_ip   = pack.ipaddr;
+  
+  return remaining;
+}
+
+void UDPSocket::onReceived(otMessage *aMessage, const otMessageInfo *aMessageInfo) {
+  const uint16_t msg_len = otMessageGetLength(aMessage);
+  const uint16_t store_size = static_cast<uint16_t>(sizeof(struct received_packet) + msg_len);
+  struct received_packet pack = { store_size, aMessageInfo->mPeerAddr, aMessageInfo->mPeerPort };
+  //log_e("UDPSocket::receive %d %d %d\n", sizeof(struct received_packet), store_size, msg_len );
+
+  if( store_size > (ringbuf_size(&rxbuf)-remaining) ) {
+    //too large packet.
+    return;
+  }
+
+  //log_e("UDPSocket::receive ringbuf_size() %d ringbuf_elements() %d\n", ringbuf_size(&rxbuf) , ringbuf_elements(&rxbuf) );
+  while( store_size < ringbuf_elements(&rxbuf) ) {
+    // discard old packet.
+    parsePacket();
+  }
+
+  for(uint32_t i=0; i<sizeof(struct received_packet); i++) {
+    int r = ringbuf_put(&rxbuf, ((uint8_t*)&pack)[i]);
+    if(r == 0) {
+      break;
+    }
+  }
+
+  for(int i=0; i<msg_len; i++) {
+    char readbuf = 0;
+    otMessageRead(aMessage, i, &readbuf, 1);
+    int r = ringbuf_put(&rxbuf, readbuf);
+    if(r == 0) {
+      break;
+    }
+  }
+  //log_e("UDPSocket::receive ringbuf_size() %d ringbuf_elements() %d\n", ringbuf_size(&rxbuf) , ringbuf_elements(&rxbuf) );
 }
 
 size_t UDPSocket::write(const uint8_t *buffer, size_t size){
   size_t i;
-  for(i=0;i<size;i++)
-    write(buffer[i]);
+  for(i=0; (i<size) && (tx_buffer_len<sizeof(tx_buffer)); i++) {
+    tx_buffer[tx_buffer_len++] = buffer[i];
+  }
   return i;
 }
 
-int UDPSocket::parsePacket(){
-  if(rx_buffer)
-    return 0;
-  struct sockaddr_in6 si_other;
-  int slen = sizeof(si_other) , len;
-  char * buf = new char[1460];
-  if(!buf){
-    return 0;
-  }
-  if ((len = recvfrom(udp_server, buf, 1460, MSG_DONTWAIT, (struct sockaddr *) &si_other, (socklen_t *)&slen)) == -1){
-    delete[] buf;
-    if(errno == EWOULDBLOCK){
-      return 0;
-    }
-    log_e("could not receive data: %d", errno);
-    return 0;
-  }
-  remote_ip = V6Address_from_bytes(si_other.sin6_addr.s6_addr);
-  remote_port = ntohs(si_other.sin6_port);
-  if (len > 0) {
-    rx_buffer = new cbuf(len);
-    rx_buffer->write(buf, len);
-  }
-  delete[] buf;
-  return len;
-}
-
-int UDPSocket::available(){
-  if(!rx_buffer) return 0;
-  return rx_buffer->available();
-}
-
-int UDPSocket::read(){
-  if(!rx_buffer) return -1;
-  int out = rx_buffer->read();
-  if(!rx_buffer->available()){
-    cbuf *b = rx_buffer;
-    rx_buffer = 0;
-    delete b;
-  }
-  return out;
-}
-
-int UDPSocket::read(unsigned char* buffer, size_t len){
-  return read((char *)buffer, len);
-}
-
 int UDPSocket::read(char* buffer, size_t len){
-  if(!rx_buffer) return 0;
-  int out = rx_buffer->read(buffer, len);
-  if(!rx_buffer->available()){
-    cbuf *b = rx_buffer;
-    rx_buffer = 0;
-    delete b;
+  size_t toread = (remaining < len ? remaining : len);
+  for(size_t i=0; i<toread; i++) {
+    int r = ringbuf_get(&rxbuf);
+    buffer[i] = static_cast<char>(r);
+    remaining--;
   }
-  return out;
+  return toread;
 }
 
 int UDPSocket::peek(){
-  if(!rx_buffer) return -1;
-  return rx_buffer->peek();
+  return ringbuf_peek(&rxbuf);
 }
 
-void UDPSocket::flush(){
-  if(!rx_buffer) return;
-  cbuf *b = rx_buffer;
-  rx_buffer = 0;
-  delete b;
-}
-
-IPAddress UDPSocket::remoteIP(){
-  return remote_ip;
-}
-
-uint16_t UDPSocket::remotePort(){
-  return remote_port;
-}
