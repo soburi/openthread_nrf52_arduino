@@ -1,3 +1,4 @@
+#if 0
 /*
   Server.cpp - Server class for Raspberry Pi
   Copyright (c) 2016 Hristo Gochkov  All right reserved.
@@ -160,3 +161,4 @@ void ServerSocket::stop(){
   end();
 }
 
+#endif

@@ -1,11 +1,11 @@
-= uIP library =
+= Sockets library =
 
-This library enable to connect TCP/IP networks. This is frontend-API of lwip's socket functions. Specification and limitation depends on lwip's implementation.
+This library enable to connect TCP/IP networks.
+This is a frontend-API of OpenThread's functions.
+Specification and limitation depends on OpenThread's implementation.
 
 == License ==
 
-Copyright (c) 2011 Adrian McEwen.  All right reserved.
-Copyright (c) 2016 Hristo Gochkov  All right reserved.
 Copyright (c) 2019 Tokita, Hiroshi All right reserved.
 
 This library is free software; you can redistribute it and/or

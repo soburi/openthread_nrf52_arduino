@@ -21,34 +21,36 @@
 #ifndef IPAddress_h
 #define IPAddress_h
 
-#define LWIP_POSIX_SOCKETS_IO_NAMES 0
-
 #include <stdint.h>
-#include <lwipopts.h>
-#include <lwip/def.h>
+#include <machine/endian.h>
+#include <openthread/ip6.h>
 
 #include "Printable.h"
 #include "WString.h"
 
+#define ENABLE_IPV6 1
+
 #define COPY_V6ADDR(addr, u16addr) \
 { \
   uint16_t* ptr16= reinterpret_cast<uint16_t*>(addr); \
-  for(int i=0; i<8; i++) { ptr16[i] = ntohs(u16addr[i]); } \
+  for(int i=0; i<8; i++) { ptr16[i] = u16addr[i]; } \
 }
 
 #define V6Address_from_bytes(bytes) \
-  IPAddress(ntohs(*reinterpret_cast<uint16_t*>(&bytes[0])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[2])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[4])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[6])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[8])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[10])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[12])), \
-            ntohs(*reinterpret_cast<uint16_t*>(&bytes[14])) )
+  IPAddress(IPAddress::ntohs(bytes[0]), \
+            IPAddress::ntohs(bytes[2]), \
+            IPAddress::ntohs(bytes[4]), \
+            IPAddress::ntohs(bytes[6]), \
+            IPAddress::ntohs(bytes[8]), \
+            IPAddress::ntohs(bytes[10]), \
+            IPAddress::ntohs(bytes[12]), \
+            IPAddress::ntohs(bytes[14]) )
 
+OT_TOOL_PACKED_BEGIN
 struct z_in_addr {
-  union {
-#if LWIP_IPV6
+  union OT_TOOL_PACKED_FIELD {
+    otIp6Address ot;
+#if ENABLE_IPV6
     uint16_t u16[8];
     uint8_t u8[16];
 #else
@@ -56,7 +58,7 @@ struct z_in_addr {
     uint8_t u8[4];
 #endif
     struct {
-#if LWIP_IPV6
+#if ENABLE_IPV6
       uint8_t prefix[12];
 #else
       uint8_t prefix[0];
@@ -66,7 +68,7 @@ struct z_in_addr {
 
     };
   };
-};
+} OT_TOOL_PACKED_END;
 
 // A class to make it easier to handle and pass around IP addresses
 
@@ -88,7 +90,7 @@ public:
     IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_octet, uint8_t fourth_octet);
     IPAddress(uint32_t address);
     IPAddress(const uint8_t *address);
-#if defined(LWIP_IPV6)
+#if defined(ENABLE_IPV6)
     IPAddress(uint16_t d1, uint16_t d2, uint16_t d3, uint16_t d4,
               uint16_t d5, uint16_t d6, uint16_t d7, uint16_t d8);
     IPAddress(const uint16_t *address);
@@ -100,13 +102,13 @@ public:
     // Overloaded cast operator to allow IPAddress objects to be used where a pointer
     // to a four-byte uint8_t array is expected
     operator uint32_t() const { return _address.dword; };
-#if defined(LWIP_IPV6)
+#if defined(ENABLE_IPV6)
     bool operator==(const IPAddress& addr) const { return ((*this) == addr._address.u16); };
 #else
     bool operator==(const IPAddress& addr) const { return ((*this) == addr._address.u8); };
 #endif
     bool operator==(const uint8_t* addr) const;
-#if defined(LWIP_IPV6)
+#if defined(ENABLE_IPV6)
     bool operator==(const uint16_t* addr) const;
 #endif
 
@@ -117,7 +119,7 @@ public:
     // Overloaded copy operators to allow initialisation of IPAddress objects from other types
     IPAddress& operator=(const uint8_t *address);
     IPAddress& operator=(uint32_t address);
-#if defined(LWIP_IPV6)
+#if defined(ENABLE_IPV6)
     IPAddress& operator=(const IPAddress& addr);
     IPAddress& operator=(const uint16_t *address);
 #endif
@@ -138,14 +140,44 @@ public:
         uint16_t* raw_address() { return addr; }
 
         public:
-        uint16_t operator[](int index) const { return htons(addr[index]); }
-        //uint16_t& operator[](int index) { return sys_be16_to_cpu(addr[index]); }
+        uint16_t operator[](int index) const { return IPAddress::htons(addr[index]); }
+        uint16_t& operator[](int index) { return addr[index]; }
         virtual size_t printTo(Print& p) const;
 
         friend class IPAddress;
     };
 
-#if !defined(LWIP_IPV6)
+    static inline uint16_t bswap16(uint16_t _x) {
+        return (uint16_t)((_x >> 8) | ((_x << 8) & 0xff00));
+    }
+    
+    static inline uint32_t bswap32(uint32_t _x) {
+	return (uint32_t)(((_x >> 24) & 0x000000ffL) |
+			  ((_x >>  8) & 0x0000ff00L) |
+			  ((_x <<  8) & 0x00ff0000L) |
+			  ((_x << 24) & 0xff000000L) );
+    }
+    
+    static inline uint16_t htons(uint16_t _x) {
+#if BYTE_ORDER == LITTLE_ENDIAN
+        return bswap16(_x);
+#else
+	return _x;
+#endif
+    }
+
+    static inline uint32_t htonl(uint32_t _x) {
+#if BYTE_ORDER == LITTLE_ENDIAN
+        return bswap32(_x);
+#else
+	return _x;
+#endif
+    }
+
+    static inline uint16_t ntohs(uint16_t _x) { return htons(_x); }
+    static inline uint32_t ntohl(uint32_t _x) { return htonl(_x); }
+
+#if !defined(ENABLE_IPV6)
 private:
 #endif
     V6RawAccessor v6;
@@ -160,7 +192,7 @@ public:
 };
 
 const INADDR INADDR;
-#if LWIP_IPV6
+#if ENABLE_IPV6
 class IN6ADDR {
 public:
   static const IPAddress ANY_INIT;
