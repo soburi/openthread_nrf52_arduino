@@ -30,15 +30,15 @@
 #if OPENTHREAD_CONFIG_ENABLE_TIME_SYNC
 #include <openthread/network_time.h>
 
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 #include <openthread/dataset_ftd.h>
 #include <openthread/thread_ftd.h>
 #endif
 
-#if OPENTHREAD_ENABLE_BORDER_ROUTER
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 #include <openthread/border_router.h>
 #endif
-#if OPENTHREAD_ENABLE_SERVICE
+#if OPENTHREAD_CONFIG_SERVICE_ENABLE
 #include <openthread/server.h>
 #endif
 #endif
@@ -49,6 +49,17 @@
 #include "Arduino.h"
 
 #define COMMISSION_BIT (1 << 1)
+
+template<>
+otExtAddress OTm8Buffer<otExtAddress>::default_value = { .m8 = { 0,0,0,0,0,0,0,0 } };
+template<>
+otExtendedPanId OTm8Buffer<otExtendedPanId>::default_value = { .m8 = { 0,0,0,0,0,0,0,0 } };
+template<>
+otMasterKey OTm8Buffer<otMasterKey>::default_value = { .m8 = { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0 } };
+template<>
+otNetworkName OTm8Buffer<otNetworkName>::default_value = { .m8 = { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0 } };
+template<>
+otPskc OTm8Buffer<otPskc>::default_value = { .m8 = { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0 } };
 
 int OpenThreadClass::begin()
 {
@@ -73,7 +84,7 @@ int OpenThreadClass::dump(Print& p)
   OTExtAddress e64 = eui64();
   n += p.print("eui64="); n += p.println(e64);
 
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
   OTPskc pk = pskc();
   n += p.print("pskc="); n += p.println(pk);
 #endif
@@ -84,15 +95,15 @@ int OpenThreadClass::dump(Print& p)
   DUMP(ipaddr);
   DUMP(version);
 
-#if OPENTHREAD_ENABLE_COMMISSIONER
+#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
   DUMP(commissioner);
 #endif
   DUMP(ifconfig);
   OTLinkModeConfig lmode = mode();
   n += p.print("mode="); n += p.println(lmode);
   DUMP(promiscuous);
-#if OPENTHREAD_ENABLE_FTD
-  DUMP(routerrole);
+#if OPENTHREAD_FTD
+  DUMP(routereligible);
 #endif
   DUMP(state);
   DUMP(singleton);
@@ -210,14 +221,14 @@ void OpenThreadClass:: na (ty a1) \
 
 OT_V_FUNC_1_IMPL(bufferinfo, Message, GetBufferInfo, otBufferInfo*);
 OT_SETGET_IMPL(uint8_t, channel, Link, Channel);
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_FUNC_2_IMPL(otError, child, Thread, GetChildInfoByIndex, int, otChildInfo*);
 OT_SETGET_IMPL(uint8_t, childmax, Thread, MaxAllowedChildren);
 #endif
 OT_V_SETGET_IMPL(uint32_t, childtimeout, Thread, ChildTimeout);
 // x coap
 // x coaps
-#if OPENTHREAD_ENABLE_COMMISSIONER
+#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
 OT_GETTER_IMPL(otCommissionerState, commissioner, Commissioner, State);
 OT_FUNC_0_IMPL(otError, commissioner_start, Commissioner, Start);
 OT_FUNC_0_IMPL(otError, commissioner_stop, Commissioner, Stop);
@@ -227,7 +238,7 @@ OT_SETTER_IMPL(const char*, commissioner_provisioningurl, Commissioner, Provisio
 //otError commissioner_panid(uint16_t, uint32_t, IPAddress&, otCommissionerPanIdConflictCallback, void* ctx);
 OT_GETTER_IMPL(uint16_t, commissioner_sessionid, Commissioner, SessionId);
 #endif
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_V_SETGET_IMPL(uint32_t, contextreusedelay, Thread, ContextIdReuseDelay);
 #endif
 //uint32_t counter(int type);
@@ -243,14 +254,14 @@ OT_FUNC_4_IMPL(otError, dataset_mgmtget_pending, Dataset, SendMgmtPendingGet, ot
 //otError dataset_mgmtget_pending(otOperationalDatasetComponents* dataset, uint8_t* tlvs, uint8_t len, IPAddress& addr);
 OT_FUNC_3_IMPL(otError, dataset_mgmtset_active, Dataset, SendMgmtActiveSet, otOperationalDataset*, uint8_t*, uint8_t);
 OT_FUNC_3_IMPL(otError, dataset_mgmtset_pending, Dataset, SendMgmtPendingSet, otOperationalDataset*, uint8_t*, uint8_t);
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_SETGET_IMPL(uint32_t, delaytimermin, Dataset, DelayTimerMinimal);
 #endif
 // x diag
 //otError discover(uint32_t chbits, otHandleActiveScanResult callback, void* context);
 // x dns
 //int eidcache_num();
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_FUNC_2_IMPL(otError, eidcache, Thread, GetEidCacheEntry, int, otEidCacheEntry*);
 #endif
 //OTExtAddress eui64();
@@ -270,38 +281,38 @@ OT_SET_IS_IMPL(bool, ifconfig, Ip6, Enabled);
 //IPAddress ipmaddr(int idx=0);
 //otError ipmaddr_add(IPAddress& addr);
 //otError ipmaddr_del(IPAddress& addr);
-#if OPENTHREAD_ENABLE_JOINER
+#if OPENTHREAD_CONFIG_JOINER_ENABLE
 //otError joiner_start(char* pskc, char* provision, otJoinerCallback, void*);
 OT_V_FUNC_0_IMPL(joiner_stop, Joiner, Stop);
 //OTExtaddress joinerid();
 #endif
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_GETTER_IMPL(uint16_t, joinerport, Thread, JoinerUdpPort);
 #endif
 OT_V_SETGET_IMPL(uint32_t, keysequencecounter, Thread, KeySequenceCounter);
 OT_V_SETGET_IMPL(uint32_t, keyswitchguadtime, Thread, KeySwitchGuardTime);
 OT_FUNC_1_IMPL(otError, leaderdata, Thread, GetLeaderData, otLeaderData*);
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_V_SETGET_IMPL(uint32_t, leaderpartitionid, Thread, LocalLeaderPartitionId);
 OT_V_SETGET_IMPL(uint8_t, leaderweight, Thread, LocalLeaderWeight);
 #endif
 // x macfilter
 OT_SETGET_IMPL(OTMasterKey, masterkey, Thread, MasterKey);
 OT_SETGET_IMPL(otLinkModeConfig, mode, Thread, LinkMode);
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 //otError neighbor(int idx, otNeighborInfo*);
 #endif
 // x neighborregister
 // x neighborshow
 // x networkdiagnostic
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_V_SETGET_IMPL(uint8_t, networkidtimeout, Thread, NetworkIdTimeout);
 #endif
 //OT_GETTER_IMPL(OTNetworkName, networkname, Thread, NetworkName);
 // x networktime
 OT_SETGET_IMPL(uint16_t, panid, Link, PanId);
 //otError parent(otRouterInfo* parent);
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_SETGET_IMPL(uint8_t, parentpriority, Thread, ParentPriority);
 #endif
 //otError ping(IPAddress& addr, const uint8_t*, uint16_t);
@@ -309,17 +320,17 @@ OT_SETGET_IMPL(uint32_t, pollperiod, Link, PollPeriod);
 OT_SET_IS_IMPL(bool, promiscuous, Link, Promiscuous);
 //otError promiscuous(otLinkPcapCallback, void* ctx=NULL);
 // x prefix
-#if OPENTHREAD_ENABLE_FTD
-//OT_SETGET_IMPL(uint8_t*, pskc, Thread, Pskc);
+#if OPENTHREAD_FTD
+OT_SETGET_IMPL(OTPskc, pskc, Thread, Pskc);
 OT_FUNC_1_IMPL(otError, releaserouterid, Thread, ReleaseRouterId, uint8_t);
 #endif
 OT_V_FUNC_0_IMPL(reset, Instance, Reset);
 OT_GETTER_IMPL(uint16_t, rloc16, Thread, Rloc16);
 // x route
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 OT_FUNC_2_IMPL(otError, router, Thread, GetRouterInfo, int, otRouterInfo*);
 OT_V_SETGET_IMPL(uint8_t, routerdowngradethreshold, Thread, RouterDowngradeThreshold);
-OT_V_SET_IS_IMPL(bool, routerrole, Thread, RouterRoleEnabled);
+OT_SET_IS_IMPL(bool, routereligible, Thread, RouterEligible);
 OT_V_SETGET_IMPL(uint8_t, routerselectionjitter, Thread, RouterSelectionJitter);
 OT_V_SETGET_IMPL(uint8_t, routerupgradethreshold, Thread, RouterUpgradeThreshold);
 #endif
@@ -335,7 +346,7 @@ OT_FUNC_1_IMPL(otError, txpower, PlatRadio, GetTransmitPower, int8_t*);
 //const char* version() { return otGetVersionString(); }
 
 
-#if OPENTHREAD_ENABLE_COMMISSIONER
+#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
 otError OpenThreadClass::commissioner_announce(uint32_t mask, uint8_t count, uint16_t period, IPAddress& addr)
 {
   OT_API_CALL_RET(otError,
@@ -465,7 +476,7 @@ const OTExtAddress OpenThreadClass::eui64()
   return &extadr;
 }
 
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 int OpenThreadClass::eidcache_num()
 {
   OT_API_CALL_RET(int,
@@ -633,7 +644,7 @@ otError OpenThreadClass::_ipmaddr_del(IPAddress& addr)
   return error;
 }
 
-#if OPENTHREAD_ENABLE_JOINER
+#if OPENTHREAD_CONFIG_JOINER_ENABLE
 
 const OTExtAddress OpenThreadClass::joinerid()
 {
@@ -684,7 +695,7 @@ otError OpenThreadClass::joiner_start(const char* pskc, const char* provision)
 
 #endif
 
-#if OPENTHREAD_ENABLE_FTD
+#if OPENTHREAD_FTD
 otError OpenThreadClass::neighbor(int index, otNeighborInfo* neighborInfo)
 {
   OT_API_CALL_RET(otError,
