@@ -68,7 +68,7 @@ static void mbedtlsFree(void *aPointer)
 
 static void mainloop(void *aContext)
 {
-    int         i        = 0;
+    //int         i        = 0;
     otInstance *instance = (otInstance *)aContext;
 
     otrSystemProcess(instance);
