@@ -81,9 +81,9 @@
 #define OT_DECL_ARGS7(T1, T2, T3, T4, T5, T6, T7) T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7
 #define OT_DECL_ARGS8(T1, T2, T3, T4, T5, T6, T7, T8) T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8
 
-#define OT_IS_DECL(ty, na, cat, n2)  const ty na ();
-#define OT_GETTER_DECL(ty, na, cat, n2)  const ty na ();
-#define OT_SETTER_DECL(ty, na, cat, n2)  const otError na (ty arg);
+#define OT_IS_DECL(ty, na, cat, n2)  ty na ();
+#define OT_GETTER_DECL(ty, na, cat, n2)  ty na ();
+#define OT_SETTER_DECL(ty, na, cat, n2)  otError na (ty arg);
 #define OT_V_SETTER_DECL(ty, na, cat, n2)  void na (ty arg);
 
 #define OT_SETGET_DECL(ty, na, cat, n2)  \
@@ -106,22 +106,22 @@
   void na()
 
 #define OT_FUNC_0_DECL(ty, na, cat, n2) \
-  const ty na()
+  ty na()
 
 #define OT_V_FUNC_1_DECL(na, cat, n2, t1) \
   void na(t1)
 
 #define OT_FUNC_1_DECL(ty, na, cat, n2, t1) \
-  const ty na(t1)
+  ty na(t1)
 
 #define OT_FUNC_2_DECL(ty, na, cat, n2, t1, t2) \
-  const ty na(t1, t2)
+  ty na(t1, t2)
 
 #define OT_FUNC_3_DECL(ty, na, cat, n2, t1, t2, t3) \
-  const ty na(t1, t2, t3)
+  ty na(t1, t2, t3)
 
 #define OT_FUNC_4_DECL(ty, na, cat, n2, t1, t2, t3, t4) \
-  const ty na(t1, t2, t3, t4)
+  ty na(t1, t2, t3, t4)
 
 template<typename T> class OTm8Buffer : public Printable {
 public:

@@ -125,7 +125,7 @@ int OpenThreadClass::dump(Print& p)
 
 
 #define OT_GETTER_IMPL(ty, na, cat, n2)  \
-const ty OpenThreadClass::  na  () \
+ty OpenThreadClass::  na  () \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC0(cat, Get ## n2) ); \
 }
@@ -137,7 +137,7 @@ void OpenThreadClass::  na  () \
 }
 
 #define OT_FUNC_0_IMPL(ty, na, cat, n2)  \
-const ty OpenThreadClass::  na  () \
+ty OpenThreadClass::  na  () \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC0(cat, n2) ); \
 }
@@ -149,37 +149,37 @@ void OpenThreadClass::  na  (t1 a1) \
 }
 
 #define OT_FUNC_1_IMPL(ty, na, cat, n2, t1)  \
-const ty OpenThreadClass::  na  (t1 a1) \
+ty OpenThreadClass::  na  (t1 a1) \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC1(cat, n2) ); \
 }
 
 #define OT_FUNC_2_IMPL(ty, na, cat, n2, t1, t2)  \
-const ty OpenThreadClass::  na  (t1 a1, t2 a2) \
+ty OpenThreadClass::  na  (t1 a1, t2 a2) \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC2(cat, n2) ); \
 }
 
 #define OT_FUNC_3_IMPL(ty, na, cat, n2, t1, t2, t3)  \
-const ty OpenThreadClass::  na  (t1 a1, t2 a2, t3 a3) \
+ty OpenThreadClass::  na  (t1 a1, t2 a2, t3 a3) \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC3(cat, n2) ); \
 }
 
 #define OT_FUNC_4_IMPL(ty, na, cat, n2, t1, t2, t3, t4)  \
-const ty OpenThreadClass::  na  (t1 a1, t2 a2, t3 a3, t4 a4) \
+ty OpenThreadClass::  na  (t1 a1, t2 a2, t3 a3, t4 a4) \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC4(cat, n2) ); \
 }
 
 #define OT_IS_IMPL(ty, na, cat, n2)  \
-const ty OpenThreadClass::  na  () \
+ty OpenThreadClass::  na  () \
 { \
   OT_API_CALL_RET(ty, OT_CALL_FUNC0(cat, Is ## n2) ); \
 }
 
 #define OT_SETTER_IMPL(ty, na, cat, n2)  \
-const otError OpenThreadClass:: na (ty a1) \
+otError OpenThreadClass:: na (ty a1) \
 { \
   OT_API_CALL_RET(otError, OT_CALL_FUNC1(cat, Set ## n2) ); \
 }
@@ -715,14 +715,14 @@ otError OpenThreadClass::_neighbor(int index, otNeighborInfo* neighborInfo)
 #endif
 
 //OT_GETTER_IMPL(OTNetworkName, networkname, Thread, NetworkName);
-const OTNetworkName OpenThreadClass::networkname()
+OTNetworkName OpenThreadClass::networkname()
 {
   OT_API_CALL_RET(const char*,
     otThreadGetNetworkName(otrGetInstance())
   );
 }
 
-const otError OpenThreadClass::networkname(OTNetworkName netname)
+otError OpenThreadClass::networkname(OTNetworkName netname)
 {
   OT_API_CALL_RET(otError,
     otThreadSetNetworkName(otrGetInstance(), netname)
