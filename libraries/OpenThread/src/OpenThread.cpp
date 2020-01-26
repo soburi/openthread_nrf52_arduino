@@ -230,7 +230,7 @@ OT_V_SETGET_IMPL(uint32_t, childtimeout, Thread, ChildTimeout);
 // x coaps
 #if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
 OT_GETTER_IMPL(otCommissionerState, commissioner, Commissioner, State);
-OT_FUNC_0_IMPL(otError, commissioner_start, Commissioner, Start);
+OT_FUNC_3_IMPL(otError, commissioner_start, Commissioner, Start, otCommissionerStateCallback, otCommissionerJoinerCallback, void*);
 OT_FUNC_0_IMPL(otError, commissioner_stop, Commissioner, Stop);
 OT_SETTER_IMPL(const char*, commissioner_provisioningurl, Commissioner, ProvisioningUrl);
 //otError commissioner_announce(uint32_t mask, uint8_t count, uint16_t period, IPAddress& addr);
