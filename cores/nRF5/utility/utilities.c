@@ -95,7 +95,7 @@ const char* getMcuUniqueID(void)
   // Skip if already created
   if ( serial_str[0] == 0 )
   {
-    sprintf(serial_str, "%08lu%08lu", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
+    sprintf(serial_str, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
   }
 
   return serial_str;

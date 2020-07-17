@@ -1,5 +1,121 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.20.5 - 2020.07.05
+
+- Updated toolchain from gcc 7-2017q4 to 9-2019q4
+- Fixed GPIOTE channel conflict between libraries
+- Added type-safe for arrcount() macros
+- Added truncate() and rename() to Internal Filesystem (LittleFS).
+- Update CMSIS from v4 to v5 to build with TensorFlow
+- Update TinyUSB core to commit 0749077
+
+Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
+
+## 0.20.1 - 2020.04.23
+
+- Update TinyUSB to commit c59fa77 due to a bug in the stack
+
+## 0.20.0 - 2020.04.21
+
+- Fixed Wire write ambiguous
+- Improved debugging with log and sysview, thanks to @henrygab
+- Fixed recipe to compute SRAM and ROM of sketch
+- Removed the force waiting Serial when debug is enabled
+- Updated nrfx to v2.1.0
+- Updated TinyUSB to commit 718db7e
+
+## 0.19.0 - 2020.03.12
+
+- Add BLECharacteristic::isFixedLen()
+- Enhance and add new Playground sensor services
+  - Quaternion
+  - Sound
+  - Color
+  - Proximity
+  - Gesture
+- Fix sporadic hangup when stopping notifies, thanks to @FariSoftware PR #444
+- Rename image_upload sketch to image_transfer
+- Update bluefruit_playground sketch to work with CPB, CLUE and Sense
+- Upgrade SystemView to v3.10, thanks to @henrygab PR #437
+- Fix D13 LED_BUILTIN for Feather Sense
+- Skip waiting for Serial in some examples, force wait for Serial when Debug is enabled
+- Update bootloader binary from 0.3.0 to 0.3.2
+
+## 0.18.5 - 2020.02.19
+
+- Add macro `SPI_32MHZ_INTERFACE` to variant to select SPI or SPI1 to use 32mhz SPIM3
+- Add PIN_BUZZER to variants with built-in speaker
+- Enhance Particle Xenon support, PR #435 thanks to @outlandnish and @jaswope
+- Rename cplay_ble.ino to bluefruit_playground.ino
+- Use USB_PRODUCT string for default bledis model
+- Increase attr table size for 840 to from 0xC00 to 0x1000
+- Add more Adafruit sensor service: Gyro, Magento, Humid, Baro
+- Upadte `image_upload.ino` to support CLUE with built-in TFT
+
+## 0.18.0 - 2020.02.03
+
+- Add EXTERNAL_FLASH_USE_QSPI to all variants that has on-board flash
+
+## 0.17.0 - 2020.02.01
+
+### Core
+
+- Add board support for Adafruit CLUE, Feather nRF52840 Sense
+- Add board support Raytac MDBT50Q_RX dongle, thanks to @pyro9 PR #328
+- Update bootloader binary to 0.3.0
+- Addd PIN_BUTTON for variants
+- Add SoftwareTimer getID/setID
+- Add **INPUT_PULLUP/DOWN_SENSE** mode, PR #427, thanks to @jpconstantineau
+- Support Serial event parity SERIAL_8E1, PR #369, thanks to @prjh
+- Support Serial2, migrate uart driver to UARTE, PR #315, thanks to @ogatatsu
+- Fix various bugs
+
+### BLE
+
+- Add **image_eink_upload8* example sketch
+- Add Nordic Led Button service example **nrf_blinky** sketch
+- Increase SD RAM for nRF52832
+- Fix Discovery bug, PR #413, thanks to @ogatatsu
+
+## 0.16.0 - 2020.01.10
+
+- Fix Little FileSystem (LFS) reentrance issue, by serialize access to lfs_* API(). Huge thanks to @hentrygab for spending lots of his time on PR #397
+- Fix SPIM transfer with length > 64 KB bytes
+- Fix #352 PDM issue
+- SchedulerRTOS::startLoop() support stack size and task priority parameters
+
+## 0.15.1 - 2019.12.31
+
+- Print::availableForWrite() return int instead of size_t
+- Migrate CI from travis to actions
+
+## 0.15.0 - 2019.12.30
+
+### Core
+
+- Add Clue variant
+- Clean up warnings, thanks to @henrygab
+- Enhance Software Timer
+
+### BLE
+ 
+- Increase sd attribute table size from 0x800 to 0xC00, increase linker memory for SD 840 from 3400 to 6000
+- Add Adafruit BLE Service library (used by Circuit Playground Bluefruit App): Temperature, Addressable Pixel, Accel, Button
+  - Add `cplay_ble.ino` example sketch
+- Change BLEUuid begin's return type to bool
+- BLECharacteristic allow user to set buffer
+
+### USB
+
+- Moved TinyUSB core into submodule at https://github.com/adafruit/Adafruit_TinyUSB_ArduinoCore
+- Added USBD detach/attach API
+- Synced TinyUSB with upstream
+
+## 0.14.6 - 2019.10.30
+
+- Added power switch pin for Circuit Playground Bluefruit
+- Make min/max templates
+
 ## 0.14.5 - 2019.10.21
 
 - Added Itsy nRF52840 Express support

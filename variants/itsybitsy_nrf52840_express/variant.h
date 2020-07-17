@@ -73,6 +73,7 @@ extern "C"
 #define PIN_A4               (18)
 #define PIN_A5               (19)
 #define PIN_A6               (20)
+#define PIN_A7               (0xff) // to compile with Firmata library
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -83,14 +84,13 @@ static const uint8_t A5  = PIN_A5 ;
 static const uint8_t A6  = PIN_A6 ;
 #define ADC_RESOLUTION    14
 
-  //static const uint8_t AREF = PIN_AREF;
+//static const uint8_t AREF = PIN_AREF;
 
 /*
  * Serial interfaces
  */
-// Serial
-#define PIN_SERIAL_RX       (1)
-#define PIN_SERIAL_TX       (0)
+#define PIN_SERIAL1_RX       (0)
+#define PIN_SERIAL1_TX       (1)
 
 /*
  * SPI Interfaces
@@ -124,9 +124,7 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
-
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
+#define EXTERNAL_FLASH_USE_QSPI
 
 #ifdef __cplusplus
 }

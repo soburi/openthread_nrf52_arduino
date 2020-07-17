@@ -91,7 +91,7 @@
 #define configUSE_TIMERS                                         1
 #define configTIMER_TASK_PRIORITY                                ( 2 ) // Normal
 #define configTIMER_QUEUE_LENGTH                                 32
-#define configTIMER_TASK_STACK_DEPTH                             ( 100 )
+#define configTIMER_TASK_STACK_DEPTH                             ( 256 )
 
 /* Tickless Idle configuration. */
 #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP                    2
@@ -196,8 +196,8 @@ standard names - or at least those used in the unmodified vector table. */
      */
 #define configUSE_DISABLE_TICK_AUTO_CORRECTION_DEBUG     0
 
-// Sysview require at least debug level 3
-#if CFG_DEBUG >= 3
+// Sysview is enabled by default at debug level 3
+#if CFG_SYSVIEW
 #include "sysview/SEGGER_SYSVIEW_FreeRTOS.h"
 #endif
 
