@@ -24,9 +24,7 @@
 
 void serialEventRun(void)
 {
-#if defined(PIN_SERIAL_RX) && defined(PIN_SERIAL_TX)
   if (serialEvent && Serial.available() ) serialEvent();
-#endif
 
 #if defined(PIN_SERIAL1_RX) && defined(PIN_SERIAL1_TX)
   if (serialEvent1 && Serial1.available() ) serialEvent1();

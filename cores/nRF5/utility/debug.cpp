@@ -51,8 +51,10 @@ extern uint32_t __bss_end__[];
 extern unsigned char __HeapBase[];
 extern unsigned char __HeapLimit[];
 
-//extern uint32_t __StackTop[];
-//extern uint32_t __StackLimit[];
+#ifndef SOFTDEVICE_PRESENT
+extern uint32_t __StackTop[];
+extern uint32_t __StackLimit[];
+#endif
 
 extern "C"
 {
@@ -377,7 +379,6 @@ static lookup_entry_t const _strerr_lookup[] =
     { .key = NRF_ERROR_CONN_COUNT                              , .data = "NRF_ERROR_CONN_COUNT"                              },
     { .key = NRF_ERROR_RESOURCES                               , .data = "NRF_ERROR_RESOURCES"                               },
 
-#if 0
     // SDM: 0x1000
     { .key = NRF_ERROR_SDM_LFCLK_SOURCE_UNKNOWN                , .data = "NRF_ERROR_SDM_LFCLK_SOURCE_UNKNOWN"                },
     { .key = NRF_ERROR_SDM_INCORRECT_INTERRUPT_CONFIGURATION   , .data = "NRF_ERROR_SDM_INCORRECT_INTERRUPT_CONFIGURATION"   },
@@ -394,7 +395,6 @@ static lookup_entry_t const _strerr_lookup[] =
     { .key = NRF_ERROR_SOC_RAND_NOT_ENOUGH_VALUES              , .data = "NRF_ERROR_SOC_RAND_NOT_ENOUGH_VALUES"              },
     { .key = NRF_ERROR_SOC_PPI_INVALID_CHANNEL                 , .data = "NRF_ERROR_SOC_PPI_INVALID_CHANNEL"                 },
     { .key = NRF_ERROR_SOC_PPI_INVALID_GROUP                   , .data = "NRF_ERROR_SOC_PPI_INVALID_GROUP"                   },
-#endif
 
     // BLE Generic: 0x2000
     { .key = BLE_ERROR_NOT_ENABLED                             , .data = "BLE_ERROR_NOT_ENABLED"                             },

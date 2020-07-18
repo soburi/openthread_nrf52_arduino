@@ -363,8 +363,8 @@ pca10056.name=Nordic nRF52840DK (PCA10056)
 pca10056.bootloader.tool=bootburn
 
 # Upload
-pca10056.upload.tool=nrfjprog
-pca10056.upload.protocol=nrfjprog
+pca10056.upload.tool=nrfutil
+pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
 pca10056.upload.wait_for_upload_port=true
 pca10056.upload.maximum_size=815104

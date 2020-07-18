@@ -19,9 +19,12 @@
 
 #include "Arduino.h"
 #include "nrf.h"
-//#include "nrf_nvic.h"
+#include "nrf_nvic.h"
+#include "nrf_sdm.h"
 
-//nrf_nvic_state_t nrf_nvic_state;
+#ifndef SOFTDEVICE_PRESENT
+nrf_nvic_state_t nrf_nvic_state;
+#endif
 
 #define DFU_MAGIC_SERIAL_ONLY_RESET   0x4e
 #define DFU_MAGIC_UF2_RESET           0x57
@@ -36,6 +39,7 @@ void init( void )
   // Retrieve bootloader version
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 
+#if 0
   // Select Clock Source : XTAL or RC
 #if defined( USE_LFXO )
   // 32Khz XTAL
@@ -60,6 +64,7 @@ void init( void )
   NRF_P0->OUTSET = UINT32_MAX;
 #ifdef NRF_P1
   NRF_P1->OUTSET = UINT32_MAX;
+#endif
 #endif
 }
 
@@ -94,11 +99,11 @@ void waitForEvent(void)
 #endif
 
   uint8_t sd_en = 0;
-//  (void) sd_softdevice_is_enabled(&sd_en);
+  (void) sd_softdevice_is_enabled(&sd_en);
 
   if ( sd_en )
   {
-//    (void) sd_app_evt_wait();
+    (void) sd_app_evt_wait();
   }else
   {
     // SoftDevice is not enabled.
@@ -126,13 +131,13 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
     nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
   }
 
-  uint8_t sd_en = 0;
-//  (void) sd_softdevice_is_enabled(&sd_en);
+  uint8_t sd_en;
+  (void) sd_softdevice_is_enabled(&sd_en);
 
   // Enter System OFF state
   if ( sd_en )
   {
-//    sd_power_system_off();
+    sd_power_system_off();
   }else
   {
     NRF_POWER->SYSTEMOFF = 1;
