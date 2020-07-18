@@ -37,6 +37,9 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
+#include "nrf_sdh_ble.h"
+#include "nrf_sdh_soc.h"
+
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
@@ -53,33 +56,6 @@
 #define CFG_SOC_TASK_STACKSIZE    (200)
 #endif
 
-#ifdef USE_TINYUSB
-#include "nrfx_power.h"
-
-/* tinyusb function that handles power event (detected, ready, removed)
- * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */
-extern "C" void tusb_hal_nrf_power_event(uint32_t event);
-
-// Must be called before sd_softdevice_enable()
-// NRF_POWER is restricted prph used by Softdevice, must be release before enable SD
-void usb_softdevice_pre_enable(void)
-{
-  nrfx_power_usbevt_disable();
-  nrfx_power_usbevt_uninit();
-  nrfx_power_uninit();
-}
-
-// Must be called after sd_softdevice_enable()
-// To re-enable USB
-void usb_softdevice_post_enable(void)
-{
-  sd_power_usbdetected_enable(true);
-  sd_power_usbpwrrdy_enable(true);
-  sd_power_usbremoved_enable(true);
-}
-
-#endif
-
 AdafruitBluefruit Bluefruit;
 
 /*------------------------------------------------------------------*/
@@ -90,9 +66,6 @@ extern "C"
 void flash_nrf5x_event_cb (uint32_t event) ATTR_WEAK;
 }
 
-void adafruit_ble_task(void* arg);
-void adafruit_soc_task(void* arg);
-
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
  *------------------------------------------------------------------*/
@@ -102,29 +75,6 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
   digitalToggle(LED_BLUE);
 }
 
-static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
-{
-#if CFG_DEBUG
-  PRINT_INT(id);
-  PRINT_HEX(pc);
-  PRINT_HEX(info);
-
-  if ( id == NRF_FAULT_ID_SD_ASSERT && info != 0)
-  {
-    typedef struct
-    {
-        uint16_t        line_num;    /**< The line number where the error occurred. */
-        uint8_t const * p_file_name; /**< The file in which the error occurred. */
-    } assert_info_t;
-
-    assert_info_t* assert_info = (assert_info_t*) info;
-
-    LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
-  }
-
-  while(1) yield();
-#endif
-}
 
 // Constructor
 AdafruitBluefruit::AdafruitBluefruit(void)
@@ -283,39 +233,6 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   _prph_count    = prph_count;
   _central_count = central_count;
 
-#ifdef USE_TINYUSB
-  usb_softdevice_pre_enable();
-#endif
-
-  // Configure Clock
-#if defined( USE_LFXO )
-  nrf_clock_lf_cfg_t clock_cfg =
-  {
-      // LFXO
-      .source        = NRF_CLOCK_LF_SRC_XTAL,
-      .rc_ctiv       = 0,
-      .rc_temp_ctiv  = 0,
-      .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
-  };
-#elif defined( USE_LFRC )
-  nrf_clock_lf_cfg_t clock_cfg = 
-  {
-      // LXRC
-      .source        = NRF_CLOCK_LF_SRC_RC,
-      .rc_ctiv       = 16,
-      .rc_temp_ctiv  = 2,
-      .accuracy      = NRF_CLOCK_LF_ACCURACY_250_PPM
-  };
-#else
-  #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board in variant.h
-#endif
-
-  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb), false );
-
-#ifdef USE_TINYUSB
-  usb_softdevice_post_enable();
-#endif
-
   /*------------------------------------------------------------------*/
   /*  SoftDevice Default Configuration depending on the number of
    * prph and central connections for optimal SRAM usage.
@@ -453,31 +370,11 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
 
-  //------------- USB -------------//
-#ifdef USE_TINYUSB
-  sd_power_usbdetected_enable(true);
-  sd_power_usbpwrrdy_enable(true);
-  sd_power_usbremoved_enable(true);
-#endif
-
   // Init Central role
   if (_central_count)  Central.begin();
 
-  // Create RTOS Semaphore & Task for BLE Event
-  _ble_event_sem = xSemaphoreCreateBinary();
-  VERIFY(_ble_event_sem);
-
-  TaskHandle_t ble_task_hdl;
-  xTaskCreate( adafruit_ble_task, "BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
-
-  // Create RTOS Semaphore & Task for SOC Event
-  _soc_event_sem = xSemaphoreCreateBinary();
-  VERIFY(_soc_event_sem);
-
-  TaskHandle_t soc_task_hdl;
-  xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
-
-  NVIC_EnableIRQ(SD_EVT_IRQn); // enable SD interrupt
+  NRF_SDH_BLE_OBSERVER(m_ble_observer, NRF_SDH_BLE_STACK_OBSERVER_PRIO, ble_evt_handler, NULL);
+  NRF_SDH_SOC_OBSERVER(m_soc_observer, NRF_SDH_SOC_STACK_OBSERVER_PRIO, AdafruitBluefruit::soc_evt_handler, NULL);
 
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL/2), true, NULL, bluefruit_blinky_cb);
@@ -668,102 +565,28 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 }
 )
 
-/*------------------------------------------------------------------*/
-/* Thread & SoftDevice Event handler
- *------------------------------------------------------------------*/
-void SD_EVT_IRQHandler(void)
+void AdafruitBluefruit::soc_evt_handler(uint32_t soc_evt, void * p_context)
 {
-  // Notify both BLE & SOC Task
-  xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
-  xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
-}
-
-/**
- * Handle SOC event such as FLASH operation
- */
-void adafruit_soc_task(void* arg)
-{
-  (void) arg;
-
-  while (1)
+  switch (soc_evt)
   {
-    if ( xSemaphoreTake(Bluefruit._soc_event_sem, portMAX_DELAY) )
-    {
-      uint32_t soc_evt;
-      uint32_t err = ERROR_NONE;
+    // Flash
+    case NRF_EVT_FLASH_OPERATION_SUCCESS:
+    case NRF_EVT_FLASH_OPERATION_ERROR:
+      LOG_LV1("SOC", "NRF_EVT_FLASH_OPERATION_%s", soc_evt == NRF_EVT_FLASH_OPERATION_SUCCESS ? "SUCCESS" : "ERROR");
+      if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
+    break;
 
-      // until no more pending events
-      while ( NRF_ERROR_NOT_FOUND != (err = sd_evt_get(&soc_evt)) )
-      {
-        if (ERROR_NONE == err)
-        {
-          switch (soc_evt)
-          {
-            // Flash
-            case NRF_EVT_FLASH_OPERATION_SUCCESS:
-            case NRF_EVT_FLASH_OPERATION_ERROR:
-              LOG_LV1("SOC", "NRF_EVT_FLASH_OPERATION_%s", soc_evt == NRF_EVT_FLASH_OPERATION_SUCCESS ? "SUCCESS" : "ERROR");
-              if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
-            break;
-
-            #ifdef USE_TINYUSB
-            /*------------- usb power event handler -------------*/
-            case NRF_EVT_POWER_USB_DETECTED:
-            case NRF_EVT_POWER_USB_POWER_READY:
-            case NRF_EVT_POWER_USB_REMOVED:
-            {
-              int32_t usbevt = (soc_evt == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
-                               (soc_evt == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
-                               (soc_evt == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
-
-              if ( usbevt >= 0) tusb_hal_nrf_power_event(usbevt);
-            }
-            break;
-            #endif
-
-            default: break;
-          }
-        }
-      }
-    }
+    default: break;
   }
 }
 
 /*------------------------------------------------------------------*/
 /* BLE Event handler
  *------------------------------------------------------------------*/
-void adafruit_ble_task(void* arg)
+void AdafruitBluefruit::ble_evt_handler(ble_evt_t const * ev_buf, void * p_context)
 {
-  (void) arg;
-
-  // malloc buffered is algined by 4
-  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
-
-  while (1)
-  {
-    if ( xSemaphoreTake(Bluefruit._ble_event_sem, portMAX_DELAY) )
-    {
-      uint32_t err = NRF_SUCCESS;
-
-      // Until no pending events
-      while( NRF_ERROR_NOT_FOUND != err )
-      {
-        uint16_t ev_len = BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX);
-
-        // Get BLE Event
-        err = sd_ble_evt_get(ev_buf, &ev_len);
-
-        // Handle valid event
-        if( NRF_SUCCESS == err)
-        {
-          Bluefruit._ble_handler( (ble_evt_t*) ev_buf );
-        }else if ( NRF_ERROR_NOT_FOUND != err )
-        {
-          LOG_LV1("BLE", "SD event error %s", dbg_err_str(err));
-        }
-      }
-    }
-  }
+  (void) p_context;
+  Bluefruit._ble_handler( const_cast<ble_evt_t*>(ev_buf) );
 }
 
 /**

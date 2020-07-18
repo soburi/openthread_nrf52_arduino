@@ -92,11 +92,6 @@ enum
   CONN_CFG_CENTRAL = 2,
 };
 
-extern "C"
-{
-  void SD_EVT_IRQHandler(void);
-}
-
 class AdafruitBluefruit
 {
   public:
@@ -243,9 +238,8 @@ COMMENT_OUT(
      *------------------------------------------------------------------*/
     void _ble_handler(ble_evt_t* evt);
 
-    friend void SD_EVT_IRQHandler(void);
-    friend void adafruit_ble_task(void* arg);
-    friend void adafruit_soc_task(void* arg);
+    static void ble_evt_handler(ble_evt_t const * ev_buf, void * p_context);
+    static void soc_evt_handler(uint32_t soc_evt, void* p_context);
     friend class BLECentral;
 };
 
