@@ -32,6 +32,7 @@
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_soc.h"
+#include "app_util_platform.h"
 #endif
 
 // This port of nrf52 use RTC for freeRTOS tick
