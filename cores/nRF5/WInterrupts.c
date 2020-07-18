@@ -120,7 +120,7 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   if (ch == -1) {
     for (int i = 0; i < NUMBER_OF_GPIO_TE; i++) {
       if (channelMap[i] != -1) continue;
-      if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, i)) continue;
+      if (nrf_gpiote_te_is_enabled(i)) continue;
       
       ch = i;
       newChannel = 1;
