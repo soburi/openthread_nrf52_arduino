@@ -193,28 +193,34 @@ void SPIClass::setClockDivider(uint32_t div)
 
 void SPIClass::transfer(const void *tx_buf, void *rx_buf, size_t count)
 {
-  nrfx_spim_xfer_desc_t xfer_desc =
-  {
-    .p_tx_buffer = (uint8_t*) tx_buf,
-    .tx_length   = tx_buf ? count : 0,
-    .p_rx_buffer = (uint8_t*) rx_buf,
-    .rx_length   = rx_buf ? count : 0,
-  };
+  const uint8_t* tx_buf8 = (const uint8_t*) tx_buf;
+  uint8_t* rx_buf8 = (uint8_t*) rx_buf;
 
-  nrfx_spim_xfer(&_spim, &xfer_desc, 0);
+  while (count)
+  {
+    // each transfer can only up to 64KB (16-bit) bytes
+    const size_t xfer_len = min(count, UINT16_MAX);
+
+    nrfx_spim_xfer_desc_t xfer_desc =
+    {
+      .p_tx_buffer = tx_buf8,
+      .tx_length   = tx_buf8 ? xfer_len : 0,
+
+      .p_rx_buffer = rx_buf8,
+      .rx_length   = rx_buf8 ? xfer_len : 0,
+    };
+
+    nrfx_spim_xfer(&_spim, &xfer_desc, 0);
+
+    count -= xfer_len;
+    if (tx_buf8) tx_buf8 += xfer_len;
+    if (rx_buf8) rx_buf8 += xfer_len;
+  }
 }
 
 void SPIClass::transfer(void *buf, size_t count)
 {
-  nrfx_spim_xfer_desc_t xfer_desc =
-  {
-    .p_tx_buffer = (uint8_t*) buf,
-    .tx_length   = count,
-    .p_rx_buffer = (uint8_t*) buf,
-    .rx_length   = count,
-  };
-
-  nrfx_spim_xfer(&_spim, &xfer_desc, 0);
+  transfer(buf, buf, count);
 }
 
 byte SPIClass::transfer(uint8_t data)
@@ -248,13 +254,30 @@ void SPIClass::detachInterrupt() {
   // Should be disableInterrupt()
 }
 
-#if SPI_INTERFACES_COUNT > 0
-// use SPIM3 for highspeed 32Mhz
-SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+// default to 0
+#ifndef SPI_32MHZ_INTERFACE
+#define SPI_32MHZ_INTERFACE 0
 #endif
 
-#if SPI_INTERFACES_COUNT > 1
-SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+#if SPI_32MHZ_INTERFACE == 0
+  #define _SPI_DEV    NRF_SPIM3 // 32 Mhz
+  #define _SPI1_DEV   NRF_SPIM2
+
+#elif SPI_32MHZ_INTERFACE == 1
+  #define _SPI_DEV    NRF_SPIM2
+  #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
+
+#else
+  #error "not supported yet"
+#endif
+
+#if SPI_INTERFACES_COUNT >= 1
+// use SPIM3 for highspeed 32Mhz
+SPIClass SPI(_SPI_DEV,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+#endif
+
+#if SPI_INTERFACES_COUNT >= 2
+SPIClass SPI1(_SPI1_DEV, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
 #endif
 
 #endif // NRF52840_XXAA

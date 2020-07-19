@@ -19,7 +19,8 @@
 #include "Arduino.h"
 #include "Stream.h"
 #include "RingBuffer.h"
-#include "cli/cli_config.h"
+
+#define OPENTHREAD_CONFIG_CLI_UART_RX_BUFFER_SIZE 1024
 
 class OpenThreadCliClass : public Stream {
   Stream* cliStream;

@@ -18,8 +18,6 @@
 
 #include "OpenThread.h"
 
-#include <openthread/openthread-freertos.h>
-
 #include <Print.h>
 
 #include <openthread/config.h>
@@ -43,8 +41,11 @@
 #endif
 #endif
 
-#include <FreeRTOS.h>
-#include <task.h>
+#include <openthread/heap.h>
+
+extern "C" {
+#include <openthread/openthread-freertos.h>
+}
 
 #include "Arduino.h"
 
@@ -61,8 +62,26 @@ otNetworkName OTm8Buffer<otNetworkName>::default_value = { .m8 = { 0,0,0,0,0,0,0
 template<>
 otPskc OTm8Buffer<otPskc>::default_value = { .m8 = { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0 } };
 
+static void* otCAlloc(size_t n, size_t size)
+{
+    return memset(pvPortMalloc(n * size), 0, n * size);
+}
+
+static void otFree(void *p_ptr)
+{
+    vPortFree(p_ptr);
+}
+
 int OpenThreadClass::begin()
 {
+#if OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE
+  otHeapSetCAllocFree(otCAlloc, otFree);
+#endif /* OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE */
+
+  otrInit(0, NULL);
+  //otCliUartInit(otrGetInstance());
+  otrUserInit();
+  otrStart();
   return 1;
 }
 
@@ -262,7 +281,7 @@ OT_SETGET_IMPL(uint32_t, delaytimermin, Dataset, DelayTimerMinimal);
 // x dns
 //int eidcache_num();
 #if OPENTHREAD_FTD
-OT_FUNC_2_IMPL(otError, eidcache, Thread, GetEidCacheEntry, int, otEidCacheEntry*);
+//OT_FUNC_2_IMPL(otError, eidcache, Thread, GetEidCacheEntry, int, otEidCacheEntry*);
 #endif
 //OTExtAddress eui64();
 // x exit
@@ -477,6 +496,7 @@ const OTExtAddress OpenThreadClass::eui64()
 }
 
 #if OPENTHREAD_FTD
+/*
 int OpenThreadClass::eidcache_num()
 {
   OT_API_CALL_RET(int,
@@ -498,6 +518,7 @@ int OpenThreadClass::_eidcache_num()
 
   return ret;
 }
+*/
 #endif
 
 int OpenThreadClass::ipaddr_num()
@@ -679,7 +700,7 @@ void OpenThreadClass::joiner_start_sync_callback(otError aResult, void *aContext
 {
   otError* ptrerr = reinterpret_cast<otError*>(aContext);
   *ptrerr = aResult;
-  signal_mainloop(COMMISSION_BIT);
+  notifyLoop(COMMISSION_BIT);
 }
 
 otError OpenThreadClass::joiner_start(const char* pskc, const char* provision)
@@ -688,7 +709,7 @@ otError OpenThreadClass::joiner_start(const char* pskc, const char* provision)
   otError err = joiner_start(pskc, provision, joiner_start_sync_callback, &cbErr);
   if(err) return err;
 
-  wait_mainloop(COMMISSION_BIT);
+  waitLoop(COMMISSION_BIT);
 
   return cbErr;
 }

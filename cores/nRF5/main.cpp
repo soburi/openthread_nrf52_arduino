@@ -16,10 +16,6 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#include <FreeRTOS.h>
-#include <task.h>
-#include <openthread/openthread-freertos.h>
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -28,8 +24,8 @@ void Bluefruit_printInfo() __attribute__((weak));
 void Bluefruit_printInfo() {}
 #endif
 
-// DEBUG Level 3
-#if CFG_DEBUG >= 3
+// From the UI, setting debug level to 3 will enable SysView
+#if CFG_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 #endif
 
@@ -48,13 +44,15 @@ static void loop_task(void* arg)
 {
   (void) arg;
 
+#if CFG_DEBUG
+  // If Serial is not begin(), call it to avoid hard fault
+  if(!Serial) Serial.begin(115200);
+#endif
+
   setup();
 
 #if CFG_DEBUG
-  // If Serial is not begin(), call it to avoid hard fault
-  if ( !SERIAL_PORT_MONITOR ) SERIAL_PORT_MONITOR.begin(115200);
   dbgPrintVersion();
-  // dbgMemInfo();
   Bluefruit_printInfo();
 #endif
 
@@ -68,34 +66,8 @@ static void loop_task(void* arg)
   }
 }
 
-void wait_mainloop(uint32_t aSignal)
-{
-  uint32_t notifyValue = 0;
-
-  do
-  {
-    xTaskNotifyWait(aSignal, aSignal, &notifyValue, portMAX_DELAY);
-  } while ((notifyValue & aSignal) == 0);
-}
-
-void signal_mainloop(uint32_t aSignal)
-{
-  xTaskNotify(_loopHandle, aSignal, eSetBits);
-}
-
 // \brief Main entry point of Arduino application
-int main(int argc, char *argv[])
-{
-  otrInit(argc, argv);
-  //otCliUartInit(otrGetInstance());
-  otrUserInit();
-  otrStart();
-
-  NVIC_SystemReset();
-  return 0;
-}
-
-void otrUserInit( void )
+int main( void )
 {
   init();
   initVariant();
@@ -104,7 +76,7 @@ void otrUserInit( void )
   Adafruit_TinyUSB_Core_init();
 #endif
 
-#if CFG_DEBUG >= 3
+#if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
 #endif
 
@@ -115,16 +87,31 @@ void otrUserInit( void )
   ada_callback_init(CALLBACK_STACK_SZ);
 
   // Start FreeRTOS scheduler.
-  //vTaskStartScheduler();
+  vTaskStartScheduler();
 
-  //NVIC_SystemReset();
+  NVIC_SystemReset();
 
-  return;
+  return 0;
 }
 
 void suspendLoop(void)
 {
   vTaskSuspend(_loopHandle);
+}
+
+void waitLoop(uint32_t aSignal)
+{
+  uint32_t notifyValue = 0;
+
+  do
+  {
+    xTaskNotifyWait(aSignal, aSignal, &notifyValue, portMAX_DELAY);
+  } while ((notifyValue & aSignal) == 0);
+}
+
+void notifyLoop(uint32_t aSignal)
+{
+  xTaskNotify(_loopHandle, aSignal, eSetBits);
 }
 
 extern "C"
@@ -135,9 +122,9 @@ int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
 
-  if ( SERIAL_PORT_MONITOR )
+  if ( Serial )
   {
-    return SERIAL_PORT_MONITOR.write( (const uint8_t *) buf, count);
+    return Serial.write( (const uint8_t *) buf, count);
   }
   return 0;
 }

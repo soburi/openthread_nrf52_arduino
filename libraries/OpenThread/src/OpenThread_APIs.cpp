@@ -17,6 +17,7 @@
 */
 
 #include "OpenThread.h"
+#include <openthread/openthread-freertos.h>
 
 //#include <net/net_if.h>
 //#include <net/net_l2.h>
@@ -179,8 +180,8 @@ OT_DECL__FUNC(0, Thread, uint16_t, GetRloc16)
 OT_DECL__FUNC(1, Thread, otError, GetParentInfo, otRouterInfo*)
 OT_DECL__FUNC(1, Thread, otError, GetParentAverageRssi, int8_t*)
 OT_DECL__FUNC(1, Thread, otError, GetParentLastRssi, int8_t*)
-OT_DECL__FUNC(3, Thread, otError, SendDiagnosticGet, const otIp6Address*, const uint8_t*, uint8_t)
-OT_DECL__FUNC(3, Thread, otError, SendDiagnosticReset, const otIp6Address*, const uint8_t*, uint8_t)
+//OT_DECL__FUNC(3, Thread, otError, SendDiagnosticGet, const otIp6Address*, const uint8_t*, uint8_t)
+//OT_DECL__FUNC(3, Thread, otError, SendDiagnosticReset, const otIp6Address*, const uint8_t*, uint8_t)
 OT_DECL__FUNC(0, Thread, const otIpCounters*, GetIp6Counters)
 OT_DECL_VFUNC(2, Thread, void, RegisterParentResponseCallback, otThreadParentResponseCallback, void*)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxAllowedChildren)
@@ -213,7 +214,7 @@ OT_DECL__FUNC(0, Thread, uint8_t, GetRouterIdSequence)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxRouterId)
 OT_DECL__FUNC(2, Thread, otError, GetRouterInfo, uint16_t, otRouterInfo*)
 #if OPENTHREAD_FTD
-OT_DECL__FUNC(2, Thread, otError, GetEidCacheEntry, uint8_t, otEidCacheEntry*)
+//OT_DECL__FUNC(2, Thread, otError, GetEidCacheEntry, uint8_t, otEidCacheEntry*)
 #endif
 OT_DECL__FUNC(0, Thread, const otPskc*, GetPskc)
 OT_DECL__FUNC(1, Thread, otError, SetPskc, const otPskc*)

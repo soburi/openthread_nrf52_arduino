@@ -39,8 +39,8 @@
 #include <string.h>
 #include <stdio.h>
 
-//#include "nrf_sdm.h"
-//#include "nrf52/nrf_mbr.h"
+#include "nrf_sdm.h"
+#include "nrf52/nrf_mbr.h"
 
 
 /******************************************************************************/
@@ -70,7 +70,6 @@ const char* getBootloaderVersion(void)
 {
   static char fw_str[30+1] = { 0 };
 
-/*
   // Skip if already created
   if ( fw_str[0] == 0 )
   {
@@ -83,7 +82,6 @@ const char* getBootloaderVersion(void)
 
     sprintf(fw_str, "s%lu %lu.%lu.%lu", sd_id, ver1, ver2, ver3);
   }
-*/
 
   return fw_str;
 }
@@ -95,7 +93,7 @@ const char* getMcuUniqueID(void)
   // Skip if already created
   if ( serial_str[0] == 0 )
   {
-    sprintf(serial_str, "%08lu%08lu", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
+    sprintf(serial_str, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
   }
 
   return serial_str;
