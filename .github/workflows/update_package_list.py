@@ -27,7 +27,7 @@ with open(sys.argv[1], 'r') as jsn:
             "version": "9-2019q4"
         }, {
             "packager": "adafruit",
-            "name": "arm-none-eabi-gcc",
+            "name": "nrfjprog",
             "version": "9.4.0"
         } ]
     }
