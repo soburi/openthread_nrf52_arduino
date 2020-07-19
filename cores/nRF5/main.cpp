@@ -16,10 +16,6 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#include <FreeRTOS.h>
-#include <task.h>
-#include <openthread/openthread-freertos.h>
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -85,20 +81,14 @@ void signal_mainloop(uint32_t aSignal)
   xTaskNotify(_loopHandle, aSignal, eSetBits);
 }
 
-// \brief Main entry point of Arduino application
-int main(int argc, char *argv[])
-{
-  otrInit(argc, argv);
-  //otCliUartInit(otrGetInstance());
-  otrUserInit();
-  otrStart();
-
-  NVIC_SystemReset();
-  return 0;
+extern "C" {
+	void preproc();
 }
 
-void otrUserInit( void )
+// \brief Main entry point of Arduino application
+int main( void )
 {
+	preproc();
   init();
   initVariant();
 
@@ -117,11 +107,11 @@ void otrUserInit( void )
   ada_callback_init(CALLBACK_STACK_SZ);
 
   // Start FreeRTOS scheduler.
-  //vTaskStartScheduler();
+  vTaskStartScheduler();
 
-  //NVIC_SystemReset();
+  NVIC_SystemReset();
 
-  return;
+  return 0;
 }
 
 void suspendLoop(void)
@@ -137,9 +127,9 @@ int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
 
-  if ( SERIAL_PORT_HARDWARE )
+  if ( Serial )
   {
-    return SERIAL_PORT_HARDWARE.write( (const uint8_t *) buf, count);
+    return Serial.write( (const uint8_t *) buf, count);
   }
   return 0;
 }
