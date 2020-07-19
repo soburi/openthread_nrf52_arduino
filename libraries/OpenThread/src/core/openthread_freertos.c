@@ -46,25 +46,18 @@
 
 #include <mbedtls/platform.h>
 
-//#include "netif.h"
+#include "netif.h"
 #include "otr_system.h"
-//#include "uart_lock.h"
+#include "uart_lock.h"
 //#include "net/utils/nat64_utils.h"
 #include "portable/portable.h"
+
+#include <string.h>
+#define THREAD_STACK_TASK_STACK_SIZE     (( 1024 * 8 ) / sizeof(StackType_t))   /**< FreeRTOS task stack size is determined in multiples of StackType_t. */
 
 static TaskHandle_t      sMainTask     = NULL;
 static SemaphoreHandle_t sExternalLock = NULL;
 static otInstance *      sInstance     = NULL;
-
-static void *mbedtlsCAlloc(size_t aCount, size_t aSize)
-{
-    return calloc(aCount, aSize);
-}
-
-static void mbedtlsFree(void *aPointer)
-{
-    free(aPointer);
-}
 
 static void mainloop(void *aContext)
 {
@@ -113,8 +106,6 @@ void otTaskletsSignalPending(otInstance *aInstance)
 
 void otrInit(int argc, char *argv[])
 {
-    mbedtls_platform_set_calloc_free(mbedtlsCAlloc, mbedtlsFree);
-
     //otrUartLockInit();
     otSysInit(argc, argv);
 
@@ -132,10 +123,16 @@ void otrInit(int argc, char *argv[])
 
 void otrStart(void)
 {
-    xTaskCreate(mainloop, "ot", 4096, sInstance, 2, &sMainTask);
+    // Start thread stack execution.
+    if (pdPASS != xTaskCreate(mainloop, "ot", THREAD_STACK_TASK_STACK_SIZE, otrGetInstance(), 3, &sMainTask))
+    {
+        APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
+    }
+
     // Activate deep sleep mode
-    OTR_PORT_ENABLE_SLEEP();
-    vTaskStartScheduler();
+    //OTR_PORT_ENABLE_SLEEP();
+    // Start FreeRTOS scheduler.
+    //vTaskStartScheduler();
 }
 
 void otrLock(void)

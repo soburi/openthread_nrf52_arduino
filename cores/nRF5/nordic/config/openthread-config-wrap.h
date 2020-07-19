@@ -37,55 +37,34 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "multiprotocol_802154_config.h"
 
-#include <stdlib.h>
-#include <string.h>
+/**
+ * @file
+ * @brief
+ *  This file includes and wraps required config header.
+ */
 
-#include "multiprotocol_802154_config.h"
+#ifndef OPENTHREAD_CONFIG_WRAP_H_
+#define OPENTHREAD_CONFIG_WRAP_H_
 
-#include "nrf_assert.h"
-#include "nrf_error.h"
-#include "nrf_soc.h"
+/**
+ * @def OPENTHREAD_CONFIG_FILE
+ *
+ * The OpenThread feature configuration file.
+ *
+ */
+#if !defined(OPENTHREAD_WRAP_CONFIG_FILE)
+#define OPENTHREAD_WRAP_CONFIG_FILE <openthread-config-generic.h>
+#endif
 
-#include "nrf_802154.h"
-#include "nrf_802154_types.h"
-#include "nrf_raal_softdevice.h"
+#include OPENTHREAD_WRAP_CONFIG_FILE
 
-uint32_t multiprotocol_802154_mode_set(multiprotocol_802154_mode_t mode)
-{
-    nrf_raal_softdevice_cfg_t cfg;
+/*
+ * The GNU Autoconf system defines a PACKAGE macro which is the name
+ * of the software package. This name collides with PACKAGE field in
+ * the nRF52 Factory Information Configuration Registers (FICR)
+ * structure.
+ */
+#undef PACKAGE
 
-    // Check if we are in correct state.
-    if (nrf_802154_state_get() != NRF_802154_STATE_SLEEP)
-    {
-        return NRF_ERROR_INVALID_STATE;
-    }
-
-    memset(&cfg, 0, sizeof(cfg));
-
-    cfg.timeslot_length      = NRF_RAAL_TIMESLOT_DEFAULT_LENGTH;
-    cfg.timeslot_max_length  = NRF_RAAL_TIMESLOT_DEFAULT_MAX_LENGTH;
-    cfg.timeslot_alloc_iters = NRF_RAAL_TIMESLOT_DEFAULT_ALLOC_ITERS;
-    cfg.timeslot_safe_margin = NRF_RAAL_TIMESLOT_DEFAULT_SAFE_MARGIN;
-    cfg.lf_clk_accuracy_ppm  = NRF_RAAL_DEFAULT_LF_CLK_ACCURACY_PPM;
-
-    switch (mode)
-    {
-        case MULTIPROTOCOL_802154_MODE_FAST_SWITCHING_TIMES:
-            cfg.timeslot_timeout = NRF_RAAL_TIMESLOT_DEFAULT_TIMEOUT;
-            break;
-        
-        case MULTIPROTOCOL_802154_MODE_LOW_CPU_UTILIZATION:
-            cfg.timeslot_timeout = NRF_RADIO_EARLIEST_TIMEOUT_MAX_US;
-            break;
-
-        default:
-            ASSERT(false);
-            break;
-    }
-
-    nrf_raal_softdevice_config(&cfg);
-
-    return NRF_SUCCESS;
-}
+#endif // OPENTHREAD_CONFIG_WRAP_H_

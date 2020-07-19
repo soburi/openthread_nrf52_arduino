@@ -81,14 +81,9 @@ void signal_mainloop(uint32_t aSignal)
   xTaskNotify(_loopHandle, aSignal, eSetBits);
 }
 
-extern "C" {
-	void preproc();
-}
-
 // \brief Main entry point of Arduino application
 int main( void )
 {
-	preproc();
   init();
   initVariant();
 

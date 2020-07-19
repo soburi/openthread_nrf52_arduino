@@ -26,39 +26,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OT_FREERTOS_PORTABLE_H_
-#define OT_FREERTOS_PORTABLE_H_
+#ifndef OT_FREERTOS_UART_LOCK_H_
+#define OT_FREERTOS_UART_LOCK_H_
 
-#if defined PLATFORM_nrf52
+#include <openthread/openthread-freertos.h>
+#include "openthread/platform/uart.h"
 
-#include "core_cm4.h"
-#include "nordic_common.h"
-
-#define OTR_PORT_ENABLE_SLEEP()            \
-    do                                     \
-    {                                      \
-        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk; \
-    } while (0)
-
-#define OTR_PORT_GET_IN_ISR(x)                              \
-    do                                                      \
-    {                                                       \
-        __asm volatile("mrs %0, ipsr" : "=r"(x)::"memory"); \
-    } while (0)
-
-#else
-
-#define OTR_PORT_ENABLE_SLEEP() \
-    do                          \
-    {                           \
-    } while (0)
-
-#define OTR_PORT_GET_IN_ISR(x) \
-    do                         \
-    {                          \
-        x = 0;                 \
-    } while (0)
-
+#ifdef __cplusplus
+extern "C" {
 #endif
 
+/**
+ * This function returns uart lock
+ *
+ * @returns OT_ERROR_NONE on success, error code on failure
+ *
+ */
+otError otrUartLockInit(void);
+
+/**
+ * This function aquires uart lock
+ *
+ * @returns OT_ERROR_NONE on success, error code on failure
+ *
+ */
+otError otCliUartLock(void);
+
+/**
+ * This function releases uart lock
+ *
+ * @returns OT_ERROR_NONE on success, error code on failure
+ *
+ */
+otError otCliUartUnlock(void);
+
+#define OT_CLI_UART_OUTPUT_LOCK() otCliUartLock()
+#define OT_CLI_UART_OUTPUT_UNLOCK() otCliUartUnlock()
+
+#ifdef __cplusplus
+}
 #endif
+
+#endif // OT_FREERTOS_UART_LOCK_H_

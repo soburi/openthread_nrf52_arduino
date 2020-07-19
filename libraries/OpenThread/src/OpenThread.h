@@ -58,8 +58,6 @@
 #include <openthread/server.h>
 #endif
 #include <openthread/platform/radio.h>
-#include <openthread-system.h>
-#include <openthread/openthread-freertos.h>
 
 #define OT_CALL_FUNC0(cls, fn) ot##cls##fn (otrGetInstance())
 #define OT_CALL_FUNC1(cls, fn) ot##cls##fn (otrGetInstance(), a1)
@@ -265,7 +263,7 @@ public:
     else return 0;
   }
 
-  operator const otError() { return err; }
+  operator otError() { return err; }
 private:
   otError err;
 };
@@ -323,9 +321,9 @@ public:
   otError discover(otActiveScanResult* table, size_t tablesize, uint32_t chbits=0xFFFFFFFF);
   // x dns
 #if OPENTHREAD_FTD
-  int eidcache_num();
-  int _eidcache_num();
-  OT_FUNC_2_DECL(otError, eidcache, Thread, GetEidCacheEntry, int, otEidCacheEntry*);
+//  int eidcache_num();
+//  int _eidcache_num();
+//  OT_FUNC_2_DECL(otError, eidcache, Thread, GetEidCacheEntry, int, otEidCacheEntry*);
 #endif
   const OTExtAddress eui64();
   // x exit
@@ -648,8 +646,8 @@ public:
     otError GetParentInfo(otRouterInfo *aParentInfo);
     otError GetParentAverageRssi(int8_t *aParentRssi);
     otError GetParentLastRssi(int8_t *aLastRssi);
-    otError SendDiagnosticGet(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
-    otError SendDiagnosticReset(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
+//    otError SendDiagnosticGet(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
+//    otError SendDiagnosticReset(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
     const otIpCounters* GetIp6Counters();
 
     void RegisterParentResponseCallback(otThreadParentResponseCallback aCallback, void* aContext);
@@ -684,7 +682,7 @@ public:
     uint8_t GetMaxRouterId();
     otError GetRouterInfo(uint16_t aRouterId, otRouterInfo *aRouterInfo);
 #if OPENTHREAD_FTD
-    otError GetEidCacheEntry(uint8_t aIndex, otEidCacheEntry *aEntry);
+//    otError GetEidCacheEntry(uint8_t aIndex, otEidCacheEntry *aEntry);
 #endif
     const otPskc* GetPskc();
     otError SetPskc(const otPskc *aPskc);
