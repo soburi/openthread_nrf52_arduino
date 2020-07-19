@@ -36,8 +36,8 @@ void setup( void ) ;
 void loop( void ) ;
 
 void suspendLoop(void);
-void wait_mainloop(uint32_t signal);
-void signal_mainloop(uint32_t signal);
+void waitLoop(uint32_t signal);
+void notifyLoop(uint32_t signal);
 
 #include "WVariant.h"
 

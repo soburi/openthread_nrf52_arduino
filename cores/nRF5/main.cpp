@@ -66,21 +66,6 @@ static void loop_task(void* arg)
   }
 }
 
-void wait_mainloop(uint32_t aSignal)
-{
-  uint32_t notifyValue = 0;
-
-  do
-  {
-    xTaskNotifyWait(aSignal, aSignal, &notifyValue, portMAX_DELAY);
-  } while ((notifyValue & aSignal) == 0);
-}
-
-void signal_mainloop(uint32_t aSignal)
-{
-  xTaskNotify(_loopHandle, aSignal, eSetBits);
-}
-
 // \brief Main entry point of Arduino application
 int main( void )
 {
@@ -112,6 +97,21 @@ int main( void )
 void suspendLoop(void)
 {
   vTaskSuspend(_loopHandle);
+}
+
+void waitLoop(uint32_t aSignal)
+{
+  uint32_t notifyValue = 0;
+
+  do
+  {
+    xTaskNotifyWait(aSignal, aSignal, &notifyValue, portMAX_DELAY);
+  } while ((notifyValue & aSignal) == 0);
+}
+
+void notifyLoop(uint32_t aSignal)
+{
+  xTaskNotify(_loopHandle, aSignal, eSetBits);
 }
 
 extern "C"

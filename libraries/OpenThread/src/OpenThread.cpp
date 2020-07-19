@@ -700,7 +700,7 @@ void OpenThreadClass::joiner_start_sync_callback(otError aResult, void *aContext
 {
   otError* ptrerr = reinterpret_cast<otError*>(aContext);
   *ptrerr = aResult;
-  signal_mainloop(COMMISSION_BIT);
+  notifyLoop(COMMISSION_BIT);
 }
 
 otError OpenThreadClass::joiner_start(const char* pskc, const char* provision)
@@ -709,7 +709,7 @@ otError OpenThreadClass::joiner_start(const char* pskc, const char* provision)
   otError err = joiner_start(pskc, provision, joiner_start_sync_callback, &cbErr);
   if(err) return err;
 
-  wait_mainloop(COMMISSION_BIT);
+  waitLoop(COMMISSION_BIT);
 
   return cbErr;
 }
