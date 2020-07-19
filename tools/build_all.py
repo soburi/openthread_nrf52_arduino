@@ -13,7 +13,7 @@ skip_count = 0
 build_format = '| {:20} | {:35} | {:9} '
 build_separator = '-' * 83
 
-default_boards = [ 'cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840' ]
+default_boards = [ 'feather52840' ]
 
 build_boards = []
 
@@ -42,7 +42,7 @@ def build_examples(variant):
     print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
     
-    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v6' if variant != 'feather52832' else 's132v6')
+    fqbn = "soburi:otnrf52:{}:softdevice={},debug=l0".format(variant, 's140v7')
 
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
