@@ -2,6 +2,7 @@ import json
 import sys
 import os
 import hashlib
+import re
 
 with open(sys.argv[1], 'r') as jsn:
     pkgs = json.load(jsn)
@@ -31,6 +32,7 @@ with open(sys.argv[1], 'r') as jsn:
         } ]
     }
 
-    pkgs["packages"][0]["platforms"].insert(0, node)
+    if re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", tag):
+        pkgs["packages"][0]["platforms"].insert(0, node)
 
     print(json.dumps(pkgs, indent=2))

@@ -2,7 +2,8 @@ name: Build
 
 on:
   push:
-    tags:
+    tags: 
+      - "*.*.*"
 
 
 jobs:
@@ -70,3 +71,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
         enable_jekyll: true
+        commit_message: ${{ steps.get_tag_name.outputs.VERSION }}
