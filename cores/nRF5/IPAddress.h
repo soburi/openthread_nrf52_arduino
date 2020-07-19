@@ -46,9 +46,8 @@
             IPAddress::ntohs(bytes[12]), \
             IPAddress::ntohs(bytes[14]) )
 
-OT_TOOL_PACKED_BEGIN
-struct z_in_addr {
-  union OT_TOOL_PACKED_FIELD {
+struct ot_in_addr {
+  union {
     otIp6Address ot;
 #if ENABLE_IPV6
     uint16_t u16[8];
@@ -63,18 +62,21 @@ struct z_in_addr {
 #else
       uint8_t prefix[0];
 #endif
-      uint8_t bytes[4];
-      uint32_t dword;
-
+      union {
+        uint8_t bytes[4];
+        uint32_t dword;
+      };
     };
   };
-} OT_TOOL_PACKED_END;
+};
+
+static_assert(sizeof(struct ot_in_addr) == sizeof(otIp6Address), "Invalid ot_in_addr structure layout");
 
 // A class to make it easier to handle and pass around IP addresses
 
 class IPAddress : public Printable {
 private:
-    struct z_in_addr _address;
+    struct ot_in_addr _address;
 
     // Access the raw byte array containing the address.  Because this returns a pointer
     // to the internal structure rather than a copy of the address this function should only
