@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+    tags:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive      
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
+
+    - name: Get tag name
+      id: get_tag_name
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: release.zip
+        exclusions: '*.git*'
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./release.zip
+        asset_name: openthread_nrf52_arduino_${{ steps.get_tag_name.outputs.VERSION }}.zip
+        asset_content_type: application/zip
+
+    - name: Fetch packages.json
+      id: fetch_packages_json
+      run: curl https://soburi.github.io/openthread_nrf52_arduino/package_soburi_otnrf52_index.json > package_soburi_otnrf52_index.json
+
+    - name: Add new package to packages.json
+      id: add_new_packages_json
+      run: mkdir public && python3 .github/workflows/update_package_list.py package_soburi_otnrf52_index.json ${{ steps.get_tag_name.outputs.VERSION }} > public/package_soburi_otnrf52_index.json
+
+    - name: Update GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        enable_jekyll: true
