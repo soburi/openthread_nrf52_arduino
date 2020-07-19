@@ -20,49 +20,6 @@ menu.softdevice=Bootloader
 menu.debug=Debug
 
 # ----------------------------------
-# Bluefruit Feather nRF52832
-# ----------------------------------
-feather52832.name=Adafruit Feather nRF52832
-feather52832.bootloader.tool=bootburn
-
-# Upload
-feather52832.upload.tool=nrfutil
-feather52832.upload.protocol=nrfutil
-feather52832.upload.use_1200bps_touch=false
-feather52832.upload.wait_for_upload_port=false
-feather52832.upload.native_usb=false
-feather52832.upload.maximum_size=290816
-feather52832.upload.maximum_data_size=52224
-
-# Build
-feather52832.build.mcu=cortex-m4
-feather52832.build.f_cpu=64000000
-feather52832.build.board=NRF52832_FEATHER
-feather52832.build.core=nRF5
-feather52832.build.variant=feather_nrf52832
-feather52832.build.usb_manufacturer="Adafruit LLC"
-feather52832.build.usb_product="Feather nRF52832"
-feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
-feather52832.build.ldscript=nrf52832_s132_v6.ld
-
-# SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.3.2 SoftDevice s132 6.1.1
-feather52832.menu.softdevice.s132v6.build.sd_name=s132
-feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
-feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
-
-# Debug Menu
-feather52832.menu.debug.l0=Level 0 (Release)
-feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
-feather52832.menu.debug.l1=Level 1 (Error Message)
-feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
-feather52832.menu.debug.l2=Level 2 (Full Debug)
-feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-feather52832.menu.debug.l3=Level 3 (Segger SystemView)
-feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
-feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
-
-# ----------------------------------
 # Bluefruit Feather nRF52840 Express
 # ----------------------------------
 feather52840.name=Adafruit Feather nRF52840 Express
@@ -95,15 +52,15 @@ feather52840.build.variant=feather_nrf52840_express
 feather52840.build.usb_manufacturer="Adafruit LLC"
 feather52840.build.usb_product="Feather nRF52840 Express"
 feather52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-feather52840.build.ldscript=nrf52840.ld
+feather52840.build.ldscript=nrf52840_s140_v7.ld
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-feather52840.menu.softdevice.s140v6.build.sd_name=s140
-feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+feather52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+feather52840.menu.softdevice.s140v7.build.sd_name=s140
+feather52840.menu.softdevice.s140v7.build.sd_version=7.0.1
+feather52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 feather52840.menu.debug.l0=Level 0 (Release)
@@ -150,15 +107,15 @@ feather52840sense.build.variant=feather_nrf52840_sense
 feather52840sense.build.usb_manufacturer="Adafruit LLC"
 feather52840sense.build.usb_product="Feather nRF52840 Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-feather52840sense.build.ldscript=nrf52840_s140_v6.ld
+feather52840sense.build.ldscript=nrf52840_s140_v7.ld
 feather52840sense.build.vid=0x239A
 feather52840sense.build.pid=0x8087
 
 # SofDevice Menu
-feather52840sense.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
-feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
-feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+feather52840sense.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+feather52840sense.menu.softdevice.s140v7.build.sd_name=s140
+feather52840sense.menu.softdevice.s140v7.build.sd_version=7.0.1
+feather52840sense.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 feather52840sense.menu.debug.l0=Level 0 (Release)
@@ -205,15 +162,15 @@ itsybitsy52840.build.variant=itsybitsy_nrf52840_express
 itsybitsy52840.build.usb_manufacturer="Adafruit LLC"
 itsybitsy52840.build.usb_product="ItsyBitsy nRF52840 Express"
 itsybitsy52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_ITSYBITSY {build.flags.usb}
-itsybitsy52840.build.ldscript=nrf52840.ld
+itsybitsy52840.build.ldscript=nrf52840_s140_v7.ld
 itsybitsy52840.build.vid=0x239A
 itsybitsy52840.build.pid=0x8051
 
 # SofDevice Menu
-itsybitsy52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
-itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
-itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+itsybitsy52840.menu.softdevice.s140v7=0.2.11 SoftDevice s140 7.0.1
+itsybitsy52840.menu.softdevice.s140v7.build.sd_name=s140
+itsybitsy52840.menu.softdevice.s140v7.build.sd_version=7.0.1
+itsybitsy52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 itsybitsy52840.menu.debug.l0=Level 0 (Release)
@@ -259,15 +216,15 @@ cplaynrf52840.build.variant=circuitplayground_nrf52840
 cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
 cplaynrf52840.build.usb_product="Circuit Playground Bluefruit"
 cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-cplaynrf52840.build.ldscript=nrf52840.ld
+cplaynrf52840.build.ldscript=nrf52840_s140_v7.ld
 cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
 # SofDevice Menu
-cplaynrf52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
-cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+cplaynrf52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+cplaynrf52840.menu.softdevice.s140v7.build.sd_name=s140
+cplaynrf52840.menu.softdevice.s140v7.build.sd_version=7.0.1
+cplaynrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 cplaynrf52840.menu.debug.l0=Level 0 (Release)
@@ -314,15 +271,15 @@ cluenrf52840.build.variant=clue_nrf52840
 cluenrf52840.build.usb_manufacturer="Adafruit LLC"
 cluenrf52840.build.usb_product="CLUE"
 cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
+cluenrf52840.build.ldscript=nrf52840_s140_v7.ld
 cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
 # SofDevice Menu
-cluenrf52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
-cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+cluenrf52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+cluenrf52840.menu.softdevice.s140v7.build.sd_name=s140
+cluenrf52840.menu.softdevice.s140v7.build.sd_version=7.0.1
+cluenrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 cluenrf52840.menu.debug.l0=Level 0 (Release)
@@ -368,15 +325,15 @@ metro52840.build.variant=metro_nrf52840_express
 metro52840.build.usb_manufacturer="Adafruit LLC"
 metro52840.build.usb_product="Metro nRF52840 Express"
 metro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-metro52840.build.ldscript=nrf52840.ld
+metro52840.build.ldscript=nrf52840_s140_v7.ld
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-metro52840.menu.softdevice.s140v6.build.sd_name=s140
-metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+metro52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+metro52840.menu.softdevice.s140v7.build.sd_name=s140
+metro52840.menu.softdevice.s140v7.build.sd_version=7.0.1
+metro52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 metro52840.menu.debug.l0=Level 0 (Release)
@@ -422,15 +379,15 @@ pca10056.build.variant=pca10056
 pca10056.build.usb_manufacturer="Nordic"
 pca10056.build.usb_product="nRF52840 DK"
 pca10056.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-pca10056.build.ldscript=nrf52840.ld
+pca10056.build.ldscript=nrf52840_s140_v7.ld
 pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-pca10056.menu.softdevice.s140v6.build.sd_name=s140
-pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
-pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+pca10056.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+pca10056.menu.softdevice.s140v7.build.sd_name=s140
+pca10056.menu.softdevice.s140v7.build.sd_version=7.0.1
+pca10056.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 pca10056.menu.debug.l0=Level 0 (Release)
@@ -476,15 +433,15 @@ particle_xenon.build.variant=particle_xenon
 particle_xenon.build.usb_manufacturer="Particle Industries"
 particle_xenon.build.usb_product="Particle Xenon"
 particle_xenon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-particle_xenon.build.ldscript=nrf52840_s140_v6.ld
+particle_xenon.build.ldscript=nrf52840_s140_v7.ld
 particle_xenon.build.vid=0x239A
 particle_xenon.build.pid=0x8029
 
 # SofDevice Menu
-particle_xenon.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
-particle_xenon.menu.softdevice.s140v6.build.sd_name=s140
-particle_xenon.menu.softdevice.s140v6.build.sd_version=6.1.1
-particle_xenon.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+particle_xenon.menu.softdevice.s140v7=0.2.11 SoftDevice s140 7.0.1
+particle_xenon.menu.softdevice.s140v7.build.sd_name=s140
+particle_xenon.menu.softdevice.s140v7.build.sd_version=7.0.1
+particle_xenon.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 particle_xenon.menu.debug.l0=Level 0 (Release)
@@ -530,15 +487,15 @@ mdbt50qrx.build.variant=raytac_mdbt50q_rx
 mdbt50qrx.build.usb_manufacturer="Raytac Corporation"
 mdbt50qrx.build.usb_product="Raytac MDBT50Q - RX"
 mdbt50qrx.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
-mdbt50qrx.build.ldscript=nrf52840_s140_v6.ld
+mdbt50qrx.build.ldscript=nrf52840_s140_v7.ld
 mdbt50qrx.build.vid=0x239A
 mdbt50qrx.build.pid=0x8029
 
 # SofDevice Menu
-mdbt50qrx.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
-mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
-mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
-mdbt50qrx.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+mdbt50qrx.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+mdbt50qrx.menu.softdevice.s140v7.build.sd_name=s140
+mdbt50qrx.menu.softdevice.s140v7.build.sd_version=7.0.1
+mdbt50qrx.menu.softdevice.s140v7.build.sd_fwid=0x00B6
 
 # Debug Menu
 mdbt50qrx.menu.debug.l0=Level 0 (Release)
