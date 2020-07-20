@@ -38,8 +38,10 @@ jobs:
     - name: Archive Release
       uses: thedoctor0/zip-release@master
       with:
-        filename: release.zip
+        filename: workspace/release.zip
         exclusions: '*.git*'
+        path: workspace
+        directory: ..
 
     - name: Upload Release Asset
       id: upload-release-asset 
