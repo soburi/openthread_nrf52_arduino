@@ -25,8 +25,6 @@
 #include "nrf_sdm.h"
 #include "nrf_sdh.h"
 #include "nrf_sdh_freertos.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
 #include "nrf_log.h"
 #include "nrf_drv_clock.h"
 #include "nrf_cc310_platform_abort.h"
@@ -45,60 +43,13 @@ nrf_nvic_state_t nrf_nvic_state;
 uint32_t bootloaderVersion = 0;
 
 
-#define LOG_TASK_STACK_SIZE              ( 1024 / sizeof(StackType_t))          /**< FreeRTOS task stack size is determined in multiples of StackType_t. */
-
-#if NRF_LOG_ENABLED
-static TaskHandle_t m_logger_thread;                                /**< Definition of Logger thread. */
-
-/**@brief Thread for handling the logger.
- *
- * @details This thread is responsible for processing log entries if logs are deferred.
- *          Thread flushes all log entries and suspends. It is resumed by idle task hook.
- *
- * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
- *                    osThreadCreate() call to the thread.
- */
-static void logger_thread(void * arg)
-{
-    UNUSED_PARAMETER(arg);
-
-    while (1)
-    {
-        NRF_LOG_FLUSH();
-
-        vTaskSuspend(NULL); // Suspend myself
-    }
-}
-#endif // NRF_LOG_ENABLED
-
 /**@brief A function which is hooked to idle task.
  * @note Idle hook must be enabled in FreeRTOS configuration (configUSE_IDLE_HOOK).
  */
 void vApplicationIdleHook( void )
 {
-#if NRF_LOG_ENABLED
-    if (m_logger_thread)
-    {
-        vTaskResume(m_logger_thread);
-    }
-#endif
 }
 
-
-static void log_init(void)
-{
-    ret_code_t err_code = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(err_code);
-
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-#if NRF_LOG_ENABLED
-    // Start execution.
-    if (pdPASS != xTaskCreate(logger_thread, "LOGGER", LOG_TASK_STACK_SIZE, NULL, 1, &m_logger_thread))
-    {
-        APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
-    }
-#endif
-}
 
 #if !OPENTHREAD_CONFIG_ENABLE_BUILTIN_MBEDTLS
 static void* mbedtlsCAlloc(size_t n, size_t size)
@@ -146,8 +97,6 @@ void init( void )
 #else /* SOFTDEVICE_PRESENT */
 
   ret_code_t err_code;
-
-  log_init();
 
   err_code = nrf_drv_clock_init();
   APP_ERROR_CHECK(err_code);
