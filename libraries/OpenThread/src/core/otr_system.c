@@ -81,7 +81,7 @@ void otrSystemProcess(otInstance *aInstance)
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include <openthread-system.h>
+#include <openthread/platform/openthread-system.h>
 #include <openthread/tasklet.h>
 
 void otrSystemPoll(otInstance *aInstance)
