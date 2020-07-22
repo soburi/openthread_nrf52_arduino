@@ -42,7 +42,7 @@ def build_examples(variant):
     print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
     
-    fqbn = "soburi:otnrf52:{}:softdevice={},debug=l0".format(variant, 's140v7')
+    fqbn = "soburi:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v7')
 
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()

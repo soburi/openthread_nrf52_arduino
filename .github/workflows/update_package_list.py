@@ -13,7 +13,7 @@ with open(sys.argv[1], 'r') as jsn:
 
     node = {
         "name": "OpenThread nRF52840 Boards",
-        "architecture": "otnrf52",
+        "architecture": "nrf52",
         "category": "Contributed",
         "version": tag,
         "url": f"https://github.com/soburi/openthread_nrf52_arduino/archive/{tag}.zip",
