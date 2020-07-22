@@ -41,12 +41,12 @@ jobs:
     - name: Install BSP and Libraries
       env:
         BSP_URL: https://soburi.github.io/openthread_nrf52_arduino/package_soburi_otnrf52_index.json
-        BSP_PATH: .arduino15/packages/soburi/hardware/otnrf52
+        BSP_PATH: .arduino15/packages/soburi/hardware/nrf52
       run: |
         arduino-cli config init
         arduino-cli core update-index
         arduino-cli core update-index --additional-urls $BSP_URL
-        arduino-cli core install soburi:otnrf52 --additional-urls $BSP_URL
+        arduino-cli core install soburi:nrf52 --additional-urls $BSP_URL
         # Repalce release BSP with our code
         BSP_VERSION=`eval ls $HOME/$BSP_PATH`
         rm -r $HOME/$BSP_PATH/*
