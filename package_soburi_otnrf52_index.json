@@ -4,7 +4,7 @@
       "platforms": [
         {
           "name": "OpenThread nRF52840 Boards",
-          "architecture": "otnrf52",
+          "architecture": "nrf52",
           "category": "Contributed",
           "version": "0.0.20200720",
           "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20200720/openthread_nrf52_arduino_0.0.20200720.zip",
