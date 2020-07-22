@@ -25,39 +25,46 @@
 #include <nrf52840.h>
 
 #include <openthread/config.h>
-#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
+#include <openthread/backbone_router.h>
+#include <openthread/backbone_router_ftd.h>
+#include <openthread/border_agent.h>
 #include <openthread/border_router.h>
-#endif
 #include <openthread/instance.h>
 #include <openthread/ip6.h>
 #include <openthread/link.h>
 #include <openthread/message.h>
 #include <openthread/thread.h>
 #include <openthread/dataset.h>
-#if OPENTHREAD_CONFIG_APPLICATION_COAP_ENABLE
 #include <openthread/coap.h>
-#endif
-#if OPENTHREAD_CONFIG_APPLICATION_COAP_SECURE_ENABLE
 #include <openthread/coap_secure.h>
-#endif
-#if OPENTHREAD_FTD
 #include <openthread/thread_ftd.h>
 #include <openthread/dataset_ftd.h>
-#endif
-#if OPENTHREAD_CONFIG_DIAG_ENABLE
 #include <openthread/diag.h>
-#endif
-#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
 #include <openthread/commissioner.h>
-#endif
-#if OPENTHREAD_CONFIG_JOINER_ENABLE
 #include <openthread/joiner.h>
-#endif
 #include <openthread/netdata.h>
-#if OPENTHREAD_CONFIG_SERVICE_ENABLE
 #include <openthread/server.h>
-#endif
 #include <openthread/platform/radio.h>
+
+#include <openthread/icmp6.h>
+#include <openthread/dns.h>
+#include <openthread/dns.h>
+#include <openthread/jam_detection.h>
+#include <openthread/link_raw.h>
+#include <openthread/netdiag.h>
+#include <openthread/network_time.h>
+#include <openthread/sntp.h>
+#include <openthread/udp.h>
+#include <openthread/tasklet.h>
+#include <openthread/channel_manager.h>
+#include <openthread/channel_monitor.h>
+#include <openthread/child_supervision.h>
+#include <openthread/cli.h>
+#include <openthread/ncp.h>
+#include <openthread/diag.h>
+#include <openthread/platform/diag.h>
+
+#include <openthread/openthread-freertos.h>
 
 #define OT_CALL_FUNC0(cls, fn) ot##cls##fn (otrGetInstance())
 #define OT_CALL_FUNC1(cls, fn) ot##cls##fn (otrGetInstance(), a1)
@@ -120,6 +127,20 @@
 
 #define OT_FUNC_4_DECL(ty, na, cat, n2, t1, t2, t3, t4) \
   ty na(t1, t2, t3, t4)
+
+#define OTCLS(cls) OT ## cls
+#define OT_DECL__FUNC(n, cls, rettype, fn, ...) \
+rettype OpenThreadClass::  OTCLS(cls)  ::  fn (OT_DECL_ARGS ## n(__VA_ARGS__)) \
+{ \
+  rettype ret = OT_CALL_FUNC ## n(cls, fn); \
+  return ret; \
+}
+
+#define OT_DECL_VFUNC(n, cls, rettype, fn, ...) \
+rettype OpenThreadClass::  OTCLS(cls)  ::  fn (OT_DECL_ARGS ## n(__VA_ARGS__)) \
+{ \
+  OT_CALL_FUNC ## n(cls, fn); \
+}
 
 template<typename T> class OTm8Buffer : public Printable {
 public:
@@ -419,281 +440,53 @@ public:
   OT_FUNC_1_DECL(otError, txpower, PlatRadio, GetTransmitPower, int8_t*);
   int8_t txpower() { int8_t ret; otError err = txpower(&ret); return err ? 0 : ret; }
   inline const char* version() { return otGetVersionString(); }
+  inline const char* VersionString() { return otGetVersionString(); }
+  inline const char* RadioVersionString() { return otGetRadioVersionString(otrGetInstance()); }
   inline const char* otErrorToString(otError err) { return otThreadErrorToString(err); }
+  inline otError SetStateChangedCallback(otStateChangedCallback cb, void* user) {
+    return otSetStateChangedCallback(otrGetInstance(), cb, user);
+  }
+  inline void RemoveStateChangeCallback(otStateChangedCallback cb, void* user) {
+    otRemoveStateChangeCallback(otrGetInstance(), cb, user);
+  }
+#include "OpenThread_APIs.inc"
 
-
-#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-  class OTBorderRouter {
-  friend class OpenThreadClass;
-  public:
-    otError GetNetData(bool, uint8_t*, uint8_t*);
-    otError AddOnMeshPrefix(const otBorderRouterConfig*);
-    otError RemoveOnMeshPrefix(const otIp6Prefix*);
-    otError GetNextOnMeshPrefix(otNetworkDataIterator*, otBorderRouterConfig*);
-    otError AddRoute(const otExternalRouteConfig*);
-    otError RemoveRoute(const otIp6Prefix*);
-    otError GetNextRoute(otNetworkDataIterator*, otExternalRouteConfig*);
-    otError Register();
-  };
-
+  OTBackboneRouter BackboneRouter;
+  OTBorderAgent BorderAgent;
   OTBorderRouter BorderRouter;
-#endif
-
-#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
-  class OTCommissioner {
-  friend class OpenThreadClass;
-  public:
-    otError Start(otCommissionerStateCallback, otCommissionerJoinerCallback, void*);
-    otError Stop();
-    otError AddJoiner(const otExtAddress*, const char*, uint32_t);
-    otError RemoveJoiner(const otExtAddress*);
-    otError SetProvisioningUrl(const char*);
-    otError AnnounceBegin(uint32_t, uint8_t, uint16_t, const otIp6Address*);
-    otError EnergyScan(uint32_t, uint8_t, uint16_t, uint16_t, const otIp6Address*, otCommissionerEnergyReportCallback, void*);
-    otError PanIdQuery(uint16_t, uint32_t, const otIp6Address*, otCommissionerPanIdConflictCallback, void*);
-    otError SendMgmtGet(const uint8_t*, uint8_t);
-    otError SendMgmtSet(const otCommissioningDataset*, const uint8_t*, uint8_t);
-    uint16_t GetSessionId();
-    otCommissionerState GetState();
-    otError GeneratePskc(const char*, const char*, const otExtendedPanId*, uint8_t*);
-  };
-
+  OTChannelManager ChannelManager;
+  OTChannelMonitor ChannelMonitor;
+  OTChildSupervision ChildSupervision;
+  OTCli Cli;
+  OTCoap Coap;
+  OTCoapSecure CoapSecure;
   OTCommissioner Commissioner;
-#endif
-
-  class OTDataset {
-  friend class OpenThreadClass;
-  public:
-    bool IsCommissioned();
-    otError GetActive(otOperationalDataset*);
-    otError SetActive(const otOperationalDataset*);
-    otError GetPending(otOperationalDataset*);
-    otError SetPending(const otOperationalDataset*);
-    otError SendMgmtActiveGet(const otOperationalDatasetComponents*, const uint8_t*, uint8_t, const otIp6Address*);
-    otError SendMgmtActiveSet(const otOperationalDataset*, const uint8_t*, uint8_t);
-    otError SendMgmtPendingGet(const otOperationalDatasetComponents*, const uint8_t*, uint8_t, const otIp6Address*);
-    otError SendMgmtPendingSet(const otOperationalDataset*, const uint8_t*, uint8_t);
-    uint32_t GetDelayTimerMinimal();
-    otError SetDelayTimerMinimal(uint32_t);
-  };
-
+  OTCrypto Crypto;
   OTDataset Dataset;
-
-  class OTError {
-  friend class OpenThreadClass;
-  public:
-    inline const char* ErrorToString(otError err) { return otThreadErrorToString(err); }
-  };
-
-  OTError Error;
-
-  class OTInstance {
-  friend class OpenThreadClass;
-  public:
-    otError SetStateChangedCallback(otStateChangedCallback, void*);
-    void RemoveStateChangeCallback(otStateChangedCallback, void*);
-    void Reset();
-    void FactoryReset();
-    inline const char* GetVersionString(void) { return otGetVersionString(); }
-  };
-
+  OTDiag Diag;
+  OTDnsClient DnsClient;
+  OTEntropy Entropy;
+  OTHeap Heap;
+  OTIcmp6 Icmp6;
   OTInstance Instance;
-
-  class OTIp6 {
-  friend class OpenThreadClass;
-  public:
-    otError SetEnabled(bool);
-    bool IsEnabled();
-    otError AddUnicastAddress(const otNetifAddress*);
-    otError RemoveUnicastAddress(const otIp6Address*);
-    const otNetifAddress* GetUnicastAddresses();
-
-    static inline bool IsAddressEqual(const otIp6Address* a1, const otIp6Address* a2)
-    {
-      return otIp6IsAddressEqual(a1, a2);
-    }
-    static inline otError AddressFromString(const char* str, otIp6Address* addr)
-    {
-      return otIp6AddressFromString(str, addr);
-    }
-    uint8_t PrefixMatch(const otIp6Address* addr1, const otIp6Address* addr2)
-    {
-      return otIp6PrefixMatch(addr1, addr2);
-    }
-  };
-
   OTIp6 Ip6;
-
-#if OPENTHREAD_CONFIG_JOINER_ENABLE
-  class OTJoiner {
-  friend class OpenThreadClass;
-  public:
-    otError Start(const char*, const char*, const char*, const char*, const char*, const char*, otJoinerCallback, void*);
-    void Stop();
-    otJoinerState GetState();
-    void GetId(otExtAddress*);
-  };
-
+  OTJamDetection JamDetection;
   OTJoiner Joiner;
-#endif
-
-  class OTLink {
-  friend class OpenThreadClass;
-  public:
-    otError ActiveScan(uint32_t, uint16_t, otHandleActiveScanResult, void*);
-    bool IsActiveScanInProgress();
-    otError EnergyScan(uint32_t, uint16_t, otHandleEnergyScanResult, void*);
-    bool IsEnergyScanInProgress();
-    otError SendDataRequest();
-    bool IsInTransmitState();
-    otError OutOfBandTransmitRequest(otRadioFrame*);
-    uint8_t GetChannel();
-    otError SetChannel(uint8_t);
-    const otExtAddress* GetExtendedAddress();
-    otError SetExtendedAddress(const otExtAddress*);
-    void GetFactoryAssignedIeeeEui64(otExtAddress*);
-    otPanId GetPanId();
-    otError SetPanId(otPanId);
-    uint32_t GetPollPeriod();
-    otError SetPollPeriod(uint32_t);
-    otShortAddress GetShortAddress();
-#if OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
-    otMacFilterAddressMode FilterGetAddressMode();
-    otError FilterSetAddressMode(otMacFilterAddressMode);
-    otError FilterAddAddress(const otExtAddress*);
-    otError FilterRemoveAddress(const otExtAddress*);
-    void FilterClearAddresses();
-    otError FilterGetNextAddress(otMacFilterIterator*, otMacFilterEntry*);
-    otError FilterAddRssIn(const otExtAddress*, int8_t);
-    otError FilterRemoveRssIn(const otExtAddress*);
-    void FilterClearRssIn();
-    otError FilterGetNextRssIn(otMacFilterIterator*, otMacFilterEntry*);
-#endif
-    const otMacCounters* GetCounters();
-  };
-
   OTLink Link;
-
-  class OTMessage {
-  friend class OpenThreadClass;
-  public:
-    void GetBufferInfo(otBufferInfo*);
-  };
-
+  OTLogging Logging;
   OTMessage Message;
-
-  class OTNetData {
-  friend class OpenThreadClass;
-  public:
-    otError Get(bool, uint8_t*, uint8_t*);
-    otError GetNextOnMeshPrefix(otNetworkDataIterator*, otBorderRouterConfig*);
-    uint8_t GetVersion();
-    uint8_t GetStableVersion();
-  };
-
+  OTNcp Ncp;
   OTNetData NetData;
-
-#if OPENTHREAD_CONFIG_SERVICE_ENABLE
-  class OTServer {
-  friend class OpenThreadClass;
-  public:
-    otError GetNetDataLocal(bool, uint8_t*, uint8_t*);
-    otError AddService(const otServiceConfig*);
-    otError RemoveService(uint32_t, uint8_t*, uint8_t);
-    otError GetNextService(otNetworkDataIterator*, otServiceConfig*);
-    otError Register();
-  };
-
+  OTNetworkTime NetworkTime;
+  OTPlat Plat;
+  OTRandomCrypto RandomCrypto;
+  OTRandomNonCrypto RandomNonCrypto;
   OTServer Server;
-#endif
-
-  class OTThread {
-  friend class OpenThreadClass;
-  public:
-    otError SetEnabled(bool aEnabled);
-    bool IsSingleton();
-
-    otError Discover(uint32_t aScanChannels, uint16_t aPanId, bool aJoiner, bool aEnableEui64Filtering, otHandleActiveScanResult aCallback, void* aCallbackContext);
-
-    bool IsDiscoverInProgress();
-    uint32_t GetChildTimeout();
-    void SetChildTimeout(uint32_t aTimeout);
-    const otExtendedPanId* GetExtendedPanId();
-    otError SetExtendedPanId(const otExtendedPanId *aExtendedPanId);
-    otError GetLeaderRloc(otIp6Address *aLeaderRloc);
-    otLinkModeConfig GetLinkMode();
-    otError SetLinkMode(otLinkModeConfig aConfig);
-    const otMasterKey* GetMasterKey();
-    otError SetMasterKey(const otMasterKey *aKey);
-    const otIp6Address* GetMeshLocalEid();
-    const otMeshLocalPrefix* GetMeshLocalPrefix();
-    otError SetMeshLocalPrefix(const otMeshLocalPrefix *aMeshLocalPrefix);
-    const char* GetNetworkName();
-    otError SetNetworkName(const char *aNetworkName);
-    uint32_t GetKeySequenceCounter();
-    void SetKeySequenceCounter(uint32_t aKeySequenceCounter);
-    uint32_t GetKeySwitchGuardTime();
-    void SetKeySwitchGuardTime(uint32_t aKeySwitchGuardTime);
-    otError BecomeDetached();
-    otError BecomeChild();
-    otError GetNextNeighborInfo(otNeighborInfoIterator *aIterator, otNeighborInfo * aInfo);
-    otDeviceRole GetDeviceRole();
-    otError GetLeaderData(otLeaderData *aLeaderData);
-    uint8_t GetLeaderRouterId();
-    uint8_t GetLeaderWeight();
-    uint32_t GetPartitionId();
-    uint16_t GetRloc16();
-    otError GetParentInfo(otRouterInfo *aParentInfo);
-    otError GetParentAverageRssi(int8_t *aParentRssi);
-    otError GetParentLastRssi(int8_t *aLastRssi);
-//    otError SendDiagnosticGet(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
-//    otError SendDiagnosticReset(const otIp6Address *aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
-    const otIpCounters* GetIp6Counters();
-
-    void RegisterParentResponseCallback(otThreadParentResponseCallback aCallback, void* aContext);
-
-    uint8_t GetMaxAllowedChildren();
-    otError SetMaxAllowedChildren(uint8_t aMaxChildren);
-    otError SetPreferredRouterId(uint8_t aRouterId);
-    uint8_t GetLocalLeaderWeight();
-    void SetLocalLeaderWeight(uint8_t aWeight);
-    uint32_t GetLocalLeaderPartitionId();
-    void SetLocalLeaderPartitionId(uint32_t aPartitionId);
-    uint16_t GetJoinerUdpPort();
-    otError SetJoinerUdpPort(uint16_t aJoinerUdpPort);
-    uint32_t GetContextIdReuseDelay();
-    void SetContextIdReuseDelay(uint32_t aDelay);
-    uint8_t GetNetworkIdTimeout();
-    void SetNetworkIdTimeout(uint8_t aTimeout);
-    uint8_t GetRouterUpgradeThreshold();
-    void SetRouterUpgradeThreshold(uint8_t aThreshold);
-    otError ReleaseRouterId(uint8_t aRouterId);
-    otError BecomeRouter();
-    otError BecomeLeader();
-    uint8_t GetRouterDowngradeThreshold();
-    void SetRouterDowngradeThreshold(uint8_t aThreshold);
-    uint8_t GetRouterSelectionJitter();
-    void SetRouterSelectionJitter(uint8_t aRouterJitter);
-#if OPENTHREAD_FTD
-    otError GetChildInfoById(uint16_t aChildId, otChildInfo *aChildInfo);
-    otError GetChildInfoByIndex(uint8_t aChildIndex, otChildInfo *aChildInfo);
-#endif
-    uint8_t GetRouterIdSequence();
-    uint8_t GetMaxRouterId();
-    otError GetRouterInfo(uint16_t aRouterId, otRouterInfo *aRouterInfo);
-#if OPENTHREAD_FTD
-//    otError GetEidCacheEntry(uint8_t aIndex, otEidCacheEntry *aEntry);
-#endif
-    const otPskc* GetPskc();
-    otError SetPskc(const otPskc *aPskc);
-    int8_t GetParentPriority();
-    otError SetParentPriority(int8_t aParentPriority);
-  };
-
+  OTSntpClient SntpClient;
+  OTTasklets Tasklets;
   OTThread Thread;
-
+  OTUdp Udp;
 private:
-
 
   struct discover_data {
     //struct k_sem sem;
