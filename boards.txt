@@ -60,7 +60,7 @@ feather52840.build.pid=0x8029
 feather52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 feather52840.menu.softdevice.s140v7.build.sd_name=s140
 feather52840.menu.softdevice.s140v7.build.sd_version=7.0.1
-feather52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+feather52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 feather52840.menu.debug.l0=Level 0 (Release)
@@ -115,7 +115,7 @@ feather52840sense.build.pid=0x8087
 feather52840sense.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 feather52840sense.menu.softdevice.s140v7.build.sd_name=s140
 feather52840sense.menu.softdevice.s140v7.build.sd_version=7.0.1
-feather52840sense.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+feather52840sense.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 feather52840sense.menu.debug.l0=Level 0 (Release)
@@ -170,7 +170,7 @@ itsybitsy52840.build.pid=0x8051
 itsybitsy52840.menu.softdevice.s140v7=0.2.11 SoftDevice s140 7.0.1
 itsybitsy52840.menu.softdevice.s140v7.build.sd_name=s140
 itsybitsy52840.menu.softdevice.s140v7.build.sd_version=7.0.1
-itsybitsy52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+itsybitsy52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 itsybitsy52840.menu.debug.l0=Level 0 (Release)
@@ -224,7 +224,7 @@ cplaynrf52840.build.pid=0x8045
 cplaynrf52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 cplaynrf52840.menu.softdevice.s140v7.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v7.build.sd_version=7.0.1
-cplaynrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+cplaynrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 cplaynrf52840.menu.debug.l0=Level 0 (Release)
@@ -279,7 +279,7 @@ cluenrf52840.build.pid=0x8071
 cluenrf52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 cluenrf52840.menu.softdevice.s140v7.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v7.build.sd_version=7.0.1
-cluenrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+cluenrf52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 cluenrf52840.menu.debug.l0=Level 0 (Release)
@@ -333,7 +333,7 @@ metro52840.build.pid=0x803F
 metro52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 metro52840.menu.softdevice.s140v7.build.sd_name=s140
 metro52840.menu.softdevice.s140v7.build.sd_version=7.0.1
-metro52840.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+metro52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 metro52840.menu.debug.l0=Level 0 (Release)
@@ -387,7 +387,7 @@ pca10056.build.pid=0x8029
 pca10056.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 pca10056.menu.softdevice.s140v7.build.sd_name=s140
 pca10056.menu.softdevice.s140v7.build.sd_version=7.0.1
-pca10056.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+pca10056.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 pca10056.menu.debug.l0=Level 0 (Release)
@@ -441,7 +441,7 @@ particle_xenon.build.pid=0x8029
 particle_xenon.menu.softdevice.s140v7=0.2.11 SoftDevice s140 7.0.1
 particle_xenon.menu.softdevice.s140v7.build.sd_name=s140
 particle_xenon.menu.softdevice.s140v7.build.sd_version=7.0.1
-particle_xenon.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+particle_xenon.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 particle_xenon.menu.debug.l0=Level 0 (Release)
@@ -495,7 +495,7 @@ mdbt50qrx.build.pid=0x8029
 mdbt50qrx.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
 mdbt50qrx.menu.softdevice.s140v7.build.sd_name=s140
 mdbt50qrx.menu.softdevice.s140v7.build.sd_version=7.0.1
-mdbt50qrx.menu.softdevice.s140v7.build.sd_fwid=0x00B6
+mdbt50qrx.menu.softdevice.s140v7.build.sd_fwid=0x00CA
 
 # Debug Menu
 mdbt50qrx.menu.debug.l0=Level 0 (Release)
