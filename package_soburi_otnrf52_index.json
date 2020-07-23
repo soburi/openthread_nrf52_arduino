@@ -7,7 +7,7 @@
           "architecture": "nrf52",
           "category": "Contributed",
           "version": "0.0.20200722",
-          "url": "https://github.com/soburi/openthread_nrf52_arduino/archive/0.0.20200722.zip",
+          "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20200722/openthread_nrf52_arduino_0.0.20200722.zip",
           "archiveFileName": "openthread_nrf52_arduino-0.0.20200722.zip",
           "checksum": "SHA-256:0f6c6926bb1ca5459608d01627169cfd6f479df674af3e0393ce69163fdd2d72",
           "size": "27518368",
