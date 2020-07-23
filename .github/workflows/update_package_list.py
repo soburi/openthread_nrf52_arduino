@@ -16,7 +16,7 @@ with open(sys.argv[1], 'r') as jsn:
         "architecture": "nrf52",
         "category": "Contributed",
         "version": tag,
-        "url": f"https://github.com/soburi/openthread_nrf52_arduino/archive/{tag}.zip",
+        "url": f"https://github.com/soburi/openthread_nrf52_arduino/releases/download/{tag}/openthread_nrf52_arduino_{tag}.zip",
         "archiveFileName": f"openthread_nrf52_arduino-{tag}.zip",
         "checksum": f"SHA-256:{sha}",
         "size": f"{size}",
