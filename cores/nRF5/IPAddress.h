@@ -124,6 +124,8 @@ public:
 #if defined(ENABLE_IPV6)
     IPAddress& operator=(const IPAddress& addr);
     IPAddress& operator=(const uint16_t *address);
+    operator const otIp6Address*() const { return &_address.ot; }
+    operator otIp6Address*() { return &_address.ot; }
 #endif
 
     virtual size_t printTo(Print& p) const;
