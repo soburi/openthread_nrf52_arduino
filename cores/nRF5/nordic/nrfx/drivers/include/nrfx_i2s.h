@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_I2S_H__
@@ -54,7 +45,6 @@ extern "C" {
  * @ingroup nrf_i2s
  * @brief   Inter-IC Sound (I2S) peripheral driver.
  */
-
 
 /**
  * @brief This value can be provided instead of a pin number for the signals
@@ -79,13 +69,17 @@ typedef struct
                            *   if this signal is not needed. */
     uint8_t irq_priority; ///< Interrupt priority.
 
-    nrf_i2s_mode_t     mode;         ///< Mode of operation.
-    nrf_i2s_format_t   format;       ///< Frame format.
-    nrf_i2s_align_t    alignment;    ///< Alignment of sample within a frame.
-    nrf_i2s_swidth_t   sample_width; ///< Sample width.
-    nrf_i2s_channels_t channels;     ///< Enabled channels.
-    nrf_i2s_mck_t      mck_setup;    ///< Master clock setup.
-    nrf_i2s_ratio_t    ratio;        ///< MCK/LRCK ratio.
+    nrf_i2s_mode_t     mode;          ///< Mode of operation.
+    nrf_i2s_format_t   format;        ///< Frame format.
+    nrf_i2s_align_t    alignment;     ///< Alignment of sample within a frame.
+    nrf_i2s_swidth_t   sample_width;  ///< Sample width.
+    nrf_i2s_channels_t channels;      ///< Enabled channels.
+    nrf_i2s_mck_t      mck_setup;     ///< Master clock setup.
+    nrf_i2s_ratio_t    ratio;         ///< MCK/LRCK ratio.
+#if NRF_I2S_HAS_CLKCONFIG
+    nrf_i2s_clksrc_t   clksrc;        ///< Clock source selection.
+    bool               enable_bypass; ///< Bypass clock generator. MCK will be equal to source input.
+#endif
 } nrfx_i2s_config_t;
 
 /** @brief I2S driver buffers structure. */
@@ -95,31 +89,60 @@ typedef struct
     uint32_t const * p_tx_buffer; ///< Pointer to the buffer with data to be sent.
 } nrfx_i2s_buffers_t;
 
-/** @brief I2S driver default configuration. */
-#define NRFX_I2S_DEFAULT_CONFIG                                   \
-{                                                                 \
-    .sck_pin      = NRFX_I2S_CONFIG_SCK_PIN,                      \
-    .lrck_pin     = NRFX_I2S_CONFIG_LRCK_PIN,                     \
-    .mck_pin      = NRFX_I2S_CONFIG_MCK_PIN,                      \
-    .sdout_pin    = NRFX_I2S_CONFIG_SDOUT_PIN,                    \
-    .sdin_pin     = NRFX_I2S_CONFIG_SDIN_PIN,                     \
-    .irq_priority = NRFX_I2S_CONFIG_IRQ_PRIORITY,                 \
-    .mode         = (nrf_i2s_mode_t)NRFX_I2S_CONFIG_MASTER,       \
-    .format       = (nrf_i2s_format_t)NRFX_I2S_CONFIG_FORMAT,     \
-    .alignment    = (nrf_i2s_align_t)NRFX_I2S_CONFIG_ALIGN,       \
-    .sample_width = (nrf_i2s_swidth_t)NRFX_I2S_CONFIG_SWIDTH,     \
-    .channels     = (nrf_i2s_channels_t)NRFX_I2S_CONFIG_CHANNELS, \
-    .mck_setup    = (nrf_i2s_mck_t)NRFX_I2S_CONFIG_MCK_SETUP,     \
-    .ratio        = (nrf_i2s_ratio_t)NRFX_I2S_CONFIG_RATIO,       \
+#if NRF_I2S_HAS_CLKCONFIG || defined(__NRFX_DOXYGEN__)
+    /** @brief I2S additional clock source configuration. */
+    #define NRF_I2S_DEFAULT_EXTENDED_CLKSRC_CONFIG \
+        .clksrc        = NRF_I2S_CLKSRC_PCLK32M,   \
+        .enable_bypass = false,
+#else
+    #define NRF_I2S_DEFAULT_EXTENDED_CLKSRC_CONFIG
+#endif
+/**
+ * @brief I2S driver default configuration.
+ *
+ * This configuration sets up I2S with the following options:
+ * - master mode
+ * - i2s data format
+ * - left alignment
+ * - sample width 16 bit
+ * - left channel enabled
+ * - MCK frequency 4 MHz
+ * - LRCK frequency 125 kHz
+ *
+ * @param[in] _pin_sck   SCK pin number.
+ * @param[in] _pin_lrck  LRCK pin number.
+ * @param[in] _pin_mck   MCK pin number.
+ * @param[in] _pin_sdout SDOUT pin number.
+ * @param[in] _pin_sdin  SDIN pin number.
+ */
+#define NRFX_I2S_DEFAULT_CONFIG(_pin_sck, _pin_lrck, _pin_mck, _pin_sdout, _pin_sdin)   \
+{                                                                                       \
+    .sck_pin      = _pin_sck,                                                           \
+    .lrck_pin     = _pin_lrck,                                                          \
+    .mck_pin      = _pin_mck,                                                           \
+    .sdout_pin    = _pin_sdout,                                                         \
+    .sdin_pin     = _pin_sdin,                                                          \
+    .irq_priority = NRFX_I2S_DEFAULT_CONFIG_IRQ_PRIORITY,                               \
+    .mode         = NRF_I2S_MODE_MASTER,                                                \
+    .format       = NRF_I2S_FORMAT_I2S,                                                 \
+    .alignment    = NRF_I2S_ALIGN_LEFT,                                                 \
+    .sample_width = NRF_I2S_SWIDTH_16BIT,                                               \
+    .channels     = NRF_I2S_CHANNELS_LEFT,                                              \
+    .mck_setup    = NRF_I2S_MCK_32MDIV8,                                                \
+    .ratio        = NRF_I2S_RATIO_32X,                                                  \
+    NRF_I2S_DEFAULT_EXTENDED_CLKSRC_CONFIG                                              \
 }
 
-
-#define NRFX_I2S_STATUS_NEXT_BUFFERS_NEEDED  (1UL << 0)
+#define NRFX_I2S_STATUS_NEXT_BUFFERS_NEEDED (1UL << 0)
     /**< The application must provide buffers that are to be used in the next
      *   part of the transfer. A call to @ref nrfx_i2s_next_buffers_set must
      *   be done before the currently used buffers are completely processed
      *   (that is, the time remaining for supplying the next buffers depends on
      *   the used size of the buffers). */
+
+#define NRFX_I2S_STATUS_TRANSFER_STOPPED    (1UL << 1)
+    /**< The I2S peripheral has been stopped and all buffers that were passed
+     *   to the driver have been released. */
 
 /**
  * @brief I2S driver data handler type.
@@ -149,18 +172,25 @@ typedef struct
  *                        Both pointers in this structure are NULL when the
  *                        handler is called for the first time after a transfer
  *                        is started, because no data has been transferred yet
- *                        at this point. In all successive calls the pointers
+ *                        at this point. In all successive calls, the pointers
  *                        specify what has been sent (TX) and what has been
- *                        received (RX) in the part of transfer that has just
- *                        been completed (provided that a given direction is
- *                        enabled, see @ref nrfx_i2s_start).
+ *                        received (RX) in the part of the transfer that has
+ *                        just been completed (provided that a given direction
+ *                        is enabled, see @ref nrfx_i2s_start).
+ *                        @note Since the peripheral is stopped asynchronously,
+ *                              buffers that are released after the call to
+ *                              @ref nrfx_i2s_stop are not used entirely.
+ *                              In this case, only a part (if any) of the TX
+ *                              buffer has been actually transmitted and only
+ *                              a part (if any) of the RX buffer is filled with
+ *                              received data.
  * @param[in] status  Bit field describing the current status of the transfer.
  *                    It can be 0 or a combination of the following flags:
  *                    - @ref NRFX_I2S_STATUS_NEXT_BUFFERS_NEEDED
+ *                    - @ref NRFX_I2S_STATUS_TRANSFER_STOPPED
  */
 typedef void (* nrfx_i2s_data_handler_t)(nrfx_i2s_buffers_t const * p_released,
                                          uint32_t                   status);
-
 
 /**
  * @brief Function for initializing the I2S driver.
@@ -193,7 +223,7 @@ void nrfx_i2s_uninit(void);
  * word can either contain four 8-bit samples, two 16-bit samples, or one
  * right-aligned 24-bit sample sign-extended to a 32-bit value.
  * For a detailed memory mapping for different supported configurations,
- * see the @linkProductSpecification52.
+ * see the Product Specification.
  *
  * @note Peripherals using EasyDMA (including I2S) require the transfer buffers
  *       to be placed in the Data RAM region. If this condition is not met,
@@ -228,11 +258,14 @@ nrfx_err_t nrfx_i2s_start(nrfx_i2s_buffers_t const * p_initial_buffers,
  * but it has to be done before the I2S peripheral finishes processing the
  * buffers supplied previously. Otherwise, data corruption will occur.
  *
- * @sa nrfx_i2s_data_handler_t
+ * @param[in] p_buffers Pointer to a structure specifying the buffers
+ *                      to be used in the upcoming part of the transfer.
  *
  * @retval NRFX_SUCCESS             If the operation was successful.
  * @retval NRFX_ERROR_INVALID_STATE If the buffers were already supplied or
  *                                  the peripheral is currently being stopped.
+ *
+ * @sa nrfx_i2s_data_handler_t
  */
 nrfx_err_t nrfx_i2s_next_buffers_set(nrfx_i2s_buffers_t const * p_buffers);
 

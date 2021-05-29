@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2016 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -43,6 +34,7 @@
 #if NRFX_CHECK(NRFX_CLOCK_ENABLED)
 
 #include <nrfx_clock.h>
+#include <nrf_erratas.h>
 
 #define NRFX_LOG_MODULE CLOCK
 #include <nrfx_log.h>
@@ -50,13 +42,6 @@
 #if NRFX_CHECK(NRFX_POWER_ENABLED)
 extern bool nrfx_power_irq_enabled;
 #endif
-
-#define EVT_TO_STR(event)                                                     \
-    (event == NRF_CLOCK_EVENT_HFCLKSTARTED ? "NRF_CLOCK_EVENT_HFCLKSTARTED" : \
-    (event == NRF_CLOCK_EVENT_LFCLKSTARTED ? "NRF_CLOCK_EVENT_LFCLKSTARTED" : \
-    (event == NRF_CLOCK_EVENT_DONE         ? "NRF_CLOCK_EVENT_DONE"         : \
-    (event == NRF_CLOCK_EVENT_CTTO         ? "NRF_CLOCK_EVENT_CTTO"         : \
-                                             "UNKNOWN EVENT"))))
 
 #if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
     #if (NRF_CLOCK_HAS_CALIBRATION == 0)
@@ -188,8 +173,13 @@ void nrfx_clock_enable(void)
 {
     NRFX_ASSERT(m_clock_cb.module_initialized);
     nrfx_power_clock_irq_init();
-    nrf_clock_lf_src_set((nrf_clock_lfclk_t)NRFX_CLOCK_CONFIG_LF_SRC);
-
+    nrf_clock_lf_src_set(NRF_CLOCK, (nrf_clock_lfclk_t)NRFX_CLOCK_CONFIG_LF_SRC);
+#if NRF_CLOCK_HAS_HFCLKSRC
+    nrf_clock_hf_src_set(NRF_CLOCK, NRF_CLOCK_HFCLK_HIGH_ACCURACY);
+#endif
+#if NRF_CLOCK_HAS_HFCLK192M
+    nrf_clock_hfclk192m_src_set(NRF_CLOCK, (nrf_clock_hfclk_t)NRFX_CLOCK_CONFIG_HFCLK192M_SRC);
+#endif
 #if NRFX_CHECK(NRFX_POWER_ENABLED)
     nrfx_clock_irq_enabled = true;
 #endif
@@ -207,12 +197,14 @@ void nrfx_clock_disable(void)
     {
         NRFX_IRQ_DISABLE(nrfx_get_irq_number(NRF_CLOCK));
     }
-    nrf_clock_int_disable(CLOCK_INTENSET_HFCLKSTARTED_Msk |
-                          CLOCK_INTENSET_LFCLKSTARTED_Msk |
+    nrf_clock_int_disable(NRF_CLOCK, CLOCK_INTENSET_HFCLKSTARTED_Msk |
+                                     CLOCK_INTENSET_LFCLKSTARTED_Msk |
 #if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
-                          CLOCK_INTENSET_DONE_Msk |
-                          CLOCK_INTENSET_CTTO_Msk |
+                                     CLOCK_INTENSET_DONE_Msk |
+#if NRF_HAS_CALIBRATION_TIMER
+                                     CLOCK_INTENSET_CTTO_Msk |
 #endif
+#endif // NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
                           0);
 #if NRFX_CHECK(NRFX_POWER_ENABLED)
     nrfx_clock_irq_enabled = false;
@@ -223,49 +215,97 @@ void nrfx_clock_disable(void)
 void nrfx_clock_uninit(void)
 {
     NRFX_ASSERT(m_clock_cb.module_initialized);
-    nrfx_clock_lfclk_stop();
-    nrfx_clock_hfclk_stop();
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_LFCLK);
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_HFCLK);
+#if NRF_CLOCK_HAS_HFCLK192M
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_HFCLK192M);
+#endif
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_HFCLKAUDIO);
+#endif
     m_clock_cb.module_initialized = false;
     NRFX_LOG_INFO("Uninitialized.");
 }
 
-void nrfx_clock_lfclk_start(void)
+void nrfx_clock_start(nrf_clock_domain_t domain)
 {
     NRFX_ASSERT(m_clock_cb.module_initialized);
-    nrf_clock_event_clear(NRF_CLOCK_EVENT_LFCLKSTARTED);
-    nrf_clock_int_enable(NRF_CLOCK_INT_LF_STARTED_MASK);
-
+    switch (domain)
+    {
+        case NRF_CLOCK_DOMAIN_LFCLK:
+            nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_LFCLKSTARTED);
+            nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_LF_STARTED_MASK);
 #if NRFX_CHECK(USE_WORKAROUND_FOR_ANOMALY_132)
-    nrfx_clock_anomaly_132();
+            nrfx_clock_anomaly_132();
 #endif
-
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTART);
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+            break;
+        case NRF_CLOCK_DOMAIN_HFCLK:
+            nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKSTARTED);
+            nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_HF_STARTED_MASK);
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLKSTART);
+            break;
+#if NRF_CLOCK_HAS_HFCLK192M
+        case NRF_CLOCK_DOMAIN_HFCLK192M:
+            nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLK192MSTARTED);
+            nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_HF192M_STARTED_MASK);
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLK192MSTART);
+            break;
+#endif
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+        case NRF_CLOCK_DOMAIN_HFCLKAUDIO:
+            nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKAUDIOSTARTED);
+            nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_HFAUDIO_STARTED_MASK);
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLKAUDIOSTART);
+            break;
+#endif
+        default:
+            NRFX_ASSERT(0);
+            break;
+    }
 }
 
-void nrfx_clock_lfclk_stop(void)
+void nrfx_clock_stop(nrf_clock_domain_t domain)
 {
     NRFX_ASSERT(m_clock_cb.module_initialized);
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTOP);
-    while (nrf_clock_lf_is_running())
-    {}
-}
-
-void nrfx_clock_hfclk_start(void)
-{
-    NRFX_ASSERT(m_clock_cb.module_initialized);
-    nrf_clock_event_clear(NRF_CLOCK_EVENT_HFCLKSTARTED);
-    nrf_clock_int_enable(NRF_CLOCK_INT_HF_STARTED_MASK);
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_HFCLKSTART);
-}
-
-void nrfx_clock_hfclk_stop(void)
-{
-    NRFX_ASSERT(m_clock_cb.module_initialized);
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_HFCLKSTOP);
-    while (nrf_clock_hf_is_running(NRF_CLOCK_HFCLK_HIGH_ACCURACY))
-    {}
+    switch (domain)
+    {
+        case NRF_CLOCK_DOMAIN_LFCLK:
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTOP);
+            break;
+        case NRF_CLOCK_DOMAIN_HFCLK:
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLKSTOP);
+            break;
+#if NRF_CLOCK_HAS_HFCLK192M
+        case NRF_CLOCK_DOMAIN_HFCLK192M:
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLK192MSTOP);
+            break;
+#endif
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+        case NRF_CLOCK_DOMAIN_HFCLKAUDIO:
+            nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_HFCLKAUDIOSTOP);
+            break;
+#endif
+        default:
+            NRFX_ASSERT(0);
+            return;
+    }
+    if (domain == NRF_CLOCK_DOMAIN_HFCLK)
+    {
+        nrf_clock_hfclk_t clk_src = NRF_CLOCK_HFCLK_HIGH_ACCURACY;
+        while (nrfx_clock_is_running(domain, &clk_src) && (clk_src == NRF_CLOCK_HFCLK_HIGH_ACCURACY))
+        {}
+    }
+    else
+    {
+        while (nrfx_clock_is_running(domain, NULL))
+        {}
+    }
 #if NRFX_CHECK(USE_WORKAROUND_FOR_ANOMALY_201)
-    m_clock_cb.hfclk_started = false;
+    if (domain == NRF_CLOCK_DOMAIN_HFCLK)
+    {
+            m_clock_cb.hfclk_started = false;
+    }
 #endif
 }
 
@@ -274,25 +314,31 @@ nrfx_err_t nrfx_clock_calibration_start(void)
     nrfx_err_t err_code = NRFX_SUCCESS;
 
 #if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
-    if (nrfx_clock_hfclk_is_running() == false)
+    nrf_clock_hfclk_t clk_src;
+    if (!nrfx_clock_is_running(NRF_CLOCK_DOMAIN_HFCLK, &clk_src))
     {
         return NRFX_ERROR_INVALID_STATE;
     }
 
-    if (nrfx_clock_lfclk_is_running() == false)
+    if (clk_src != NRF_CLOCK_HFCLK_HIGH_ACCURACY)
+    {
+        return NRFX_ERROR_INVALID_STATE;
+    }
+
+    if (!nrfx_clock_is_running(NRF_CLOCK_DOMAIN_LFCLK, NULL))
     {
         return NRFX_ERROR_INVALID_STATE;
     }
 
     if (m_clock_cb.cal_state == CAL_STATE_IDLE)
     {
-        nrf_clock_event_clear(NRF_CLOCK_EVENT_DONE);
-        nrf_clock_int_enable(NRF_CLOCK_INT_DONE_MASK);
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_DONE);
+        nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_DONE_MASK);
         m_clock_cb.cal_state = CAL_STATE_CAL;
 #if NRFX_CHECK(USE_WORKAROUND_FOR_ANOMALY_192)
         *(volatile uint32_t *)0x40000C34 = 0x00000002;
 #endif
-        nrf_clock_task_trigger(NRF_CLOCK_TASK_CAL);
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_CAL);
     }
     else
     {
@@ -319,29 +365,91 @@ nrfx_err_t nrfx_clock_is_calibrating(void)
 
 void nrfx_clock_calibration_timer_start(uint8_t interval)
 {
-#if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
-    nrf_clock_cal_timer_timeout_set(interval);
-    nrf_clock_event_clear(NRF_CLOCK_EVENT_CTTO);
-    nrf_clock_int_enable(NRF_CLOCK_INT_CTTO_MASK);
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_CTSTART);
+#if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED) && NRF_CLOCK_HAS_CALIBRATION_TIMER
+    nrf_clock_cal_timer_timeout_set(NRF_CLOCK, interval);
+    nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_CTTO);
+    nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_CTTO_MASK);
+    nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_CTSTART);
 #endif
 }
 
 void nrfx_clock_calibration_timer_stop(void)
 {
-#if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
-    nrf_clock_int_disable(NRF_CLOCK_INT_CTTO_MASK);
-    nrf_clock_task_trigger(NRF_CLOCK_TASK_CTSTOP);
+#if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED) && NRF_CLOCK_HAS_CALIBRATION_TIMER
+    nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_CTTO_MASK);
+    nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_CTSTOP);
 #endif
 }
 
+#if NRF_CLOCK_HAS_HFCLK_DIV || NRF_CLOCK_HAS_HFCLK192M
+nrfx_err_t nrfx_clock_divider_set(nrf_clock_domain_t domain,
+                                  nrf_clock_hfclk_div_t div)
+{
+    switch(domain)
+    {
+#if NRF_CLOCK_HAS_HFCLK_DIV
+        case NRF_CLOCK_DOMAIN_HFCLK:
+            switch (div)
+            {
+                case NRF_CLOCK_HFCLK_DIV_2:
+                    NRFX_CRITICAL_SECTION_ENTER();
+                    if (nrf53_errata_4())
+                    {
+                        __DSB();
+                    }
+                    nrf_clock_hfclk_div_set(NRF_CLOCK, div);
+                    if (nrf53_errata_4())
+                    {
+                        *(volatile uint32_t *)0x5084450C = 0x0;
+                        *(volatile uint32_t *)0x50026548 = 0x0;
+                        *(volatile uint32_t *)0x50081EE4 = 0x0D;
+                    }
+                    NRFX_CRITICAL_SECTION_EXIT();
+                    break;
+                case NRF_CLOCK_HFCLK_DIV_1:
+                    NRFX_CRITICAL_SECTION_ENTER();
+                    if (nrf53_errata_4())
+                    {
+                        __DSB();
+                        *(volatile uint32_t *)0x5084450C = 0x4040;
+                        *(volatile uint32_t *)0x50026548 = 0x40;
+                        *(volatile uint32_t *)0x50081EE4 = 0x4D;
+                    }
+                    nrf_clock_hfclk_div_set(NRF_CLOCK, div);
+                    NRFX_CRITICAL_SECTION_EXIT();
+                    break;
+                default:
+                    return NRFX_ERROR_INVALID_PARAM;
+            }
+            SystemCoreClockUpdate();
+            return NRFX_SUCCESS;
+#endif
+#if NRF_CLOCK_HAS_HFCLK192M
+        case NRF_CLOCK_DOMAIN_HFCLK192M:
+            if (div > NRF_CLOCK_HFCLK_DIV_4)
+            {
+                return NRFX_ERROR_INVALID_PARAM;
+            }
+            else
+            {
+                nrf_clock_hfclk192m_div_set(NRF_CLOCK, div);
+            }
+            return NRFX_SUCCESS;
+#endif
+        default:
+            NRFX_ASSERT(0);
+            return NRFX_ERROR_NOT_SUPPORTED;
+    }
+}
+#endif
+
 void nrfx_clock_irq_handler(void)
 {
-    if (nrf_clock_event_check(NRF_CLOCK_EVENT_HFCLKSTARTED))
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKSTARTED))
     {
-        nrf_clock_event_clear(NRF_CLOCK_EVENT_HFCLKSTARTED);
-        NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_CLOCK_EVENT_HFCLKSTARTED));
-        nrf_clock_int_disable(NRF_CLOCK_INT_HF_STARTED_MASK);
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKSTARTED);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_HFCLKSTARTED");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_HF_STARTED_MASK);
 
 #if NRFX_CHECK(USE_WORKAROUND_FOR_ANOMALY_201)
         if (!m_clock_cb.hfclk_started)
@@ -353,37 +461,61 @@ void nrfx_clock_irq_handler(void)
         m_clock_cb.event_handler(NRFX_CLOCK_EVT_HFCLK_STARTED);
 #endif
     }
-    if (nrf_clock_event_check(NRF_CLOCK_EVENT_LFCLKSTARTED))
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_LFCLKSTARTED))
     {
-        nrf_clock_event_clear(NRF_CLOCK_EVENT_LFCLKSTARTED);
-        NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_CLOCK_EVENT_LFCLKSTARTED));
-        nrf_clock_int_disable(NRF_CLOCK_INT_LF_STARTED_MASK);
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_LFCLKSTARTED);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_LFCLKSTARTED");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_LF_STARTED_MASK);
 
         m_clock_cb.event_handler(NRFX_CLOCK_EVT_LFCLK_STARTED);
     }
 
 #if NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
-    if (nrf_clock_event_check(NRF_CLOCK_EVENT_CTTO))
+#if NRF_CLOCK_HAS_CALIBRATION_TIMER
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_CTTO))
     {
-        nrf_clock_event_clear(NRF_CLOCK_EVENT_CTTO);
-        NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_CLOCK_EVENT_CTTO));
-        nrf_clock_int_disable(NRF_CLOCK_INT_CTTO_MASK);
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_CTTO);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_CTTO");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_CTTO_MASK);
 
         m_clock_cb.event_handler(NRFX_CLOCK_EVT_CTTO);
     }
+#endif // NRF_CLOCK_HAS_CALIBRATION_TIMER
 
-    if (nrf_clock_event_check(NRF_CLOCK_EVENT_DONE))
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_DONE))
     {
 #if NRFX_CHECK(USE_WORKAROUND_FOR_ANOMALY_192)
         *(volatile uint32_t *)0x40000C34 = 0x00000000;
 #endif
-        nrf_clock_event_clear(NRF_CLOCK_EVENT_DONE);
-        NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_CLOCK_EVENT_DONE));
-        nrf_clock_int_disable(NRF_CLOCK_INT_DONE_MASK);
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_DONE);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_DONE");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_DONE_MASK);
         m_clock_cb.cal_state = CAL_STATE_IDLE;
         m_clock_cb.event_handler(NRFX_CLOCK_EVT_CAL_DONE);
     }
-#endif //  NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
+#endif // NRFX_CHECK(NRFX_CLOCK_CONFIG_LF_CAL_ENABLED)
+
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKAUDIOSTARTED))
+    {
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLKAUDIOSTARTED);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_HFCLKAUDIOSTARTED");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_HFAUDIO_STARTED_MASK);
+
+        m_clock_cb.event_handler(NRFX_CLOCK_EVT_HFCLKAUDIO_STARTED);
+    }
+#endif
+
+#if NRF_CLOCK_HAS_HFCLK192M
+    if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLK192MSTARTED))
+    {
+        nrf_clock_event_clear(NRF_CLOCK, NRF_CLOCK_EVENT_HFCLK192MSTARTED);
+        NRFX_LOG_DEBUG("Event: NRF_CLOCK_EVENT_HFCLK192MSTARTED");
+        nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_HF192M_STARTED_MASK);
+
+        m_clock_cb.event_handler(NRFX_CLOCK_EVT_HFCLK192M_STARTED);
+    }
+#endif
 }
 
 #endif // NRFX_CHECK(NRFX_CLOCK_ENABLED)

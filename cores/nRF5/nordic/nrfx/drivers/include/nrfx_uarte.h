@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_UARTE_H__
@@ -103,24 +94,54 @@ typedef struct
     uint32_t             pselcts;            ///< CTS pin number.
     uint32_t             pselrts;            ///< RTS pin number.
     void *               p_context;          ///< Context passed to interrupt handler.
-    nrf_uarte_hwfc_t     hwfc;               ///< Flow control configuration.
-    nrf_uarte_parity_t   parity;             ///< Parity configuration.
     nrf_uarte_baudrate_t baudrate;           ///< Baud rate.
     uint8_t              interrupt_priority; ///< Interrupt priority.
+    nrf_uarte_config_t   hal_cfg;            ///< Parity, flow control and stop bits settings.
 } nrfx_uarte_config_t;
 
-/** @brief UARTE default configuration. */
-#define NRFX_UARTE_DEFAULT_CONFIG                                                   \
+#if defined(UARTE_CONFIG_STOP_Msk) || defined(__NRFX_DOXYGEN__)
+    /** @brief UARTE additional stop bits configuration. */
+    #define NRFX_UARTE_DEFAULT_EXTENDED_STOP_CONFIG   \
+        .stop = (nrf_uarte_stop_t)NRF_UARTE_STOP_ONE,
+#else
+    #define NRFX_UARTE_DEFAULT_EXTENDED_STOP_CONFIG
+#endif
+
+#if defined(UARTE_CONFIG_PARITYTYPE_Msk) || defined(__NRFX_DOXYGEN__)
+    /** @brief UARTE additional parity type configuration. */
+    #define NRFX_UARTE_DEFAULT_EXTENDED_PARITYTYPE_CONFIG   \
+        .paritytype = NRF_UARTE_PARITYTYPE_EVEN,
+#else
+    #define NRFX_UARTE_DEFAULT_EXTENDED_PARITYTYPE_CONFIG
+#endif
+
+/**
+ * @brief UARTE driver default configuration.
+ *
+ * This configuration sets up UARTE with the following options:
+ * - hardware flow control disabled
+ * - no parity bit
+ * - one stop bit
+ * - baudrate: 115200
+ *
+ * @param[in] _pin_tx TX pin.
+ * @param[in] _pin_rx RX pin.
+ */
+#define NRFX_UARTE_DEFAULT_CONFIG(_pin_tx, _pin_rx)                                 \
 {                                                                                   \
-    .pseltxd            = NRF_UARTE_PSEL_DISCONNECTED,                              \
-    .pselrxd            = NRF_UARTE_PSEL_DISCONNECTED,                              \
+    .pseltxd            = _pin_tx,                                                  \
+    .pselrxd            = _pin_rx,                                                  \
     .pselcts            = NRF_UARTE_PSEL_DISCONNECTED,                              \
     .pselrts            = NRF_UARTE_PSEL_DISCONNECTED,                              \
     .p_context          = NULL,                                                     \
-    .hwfc               = (nrf_uarte_hwfc_t)NRFX_UARTE_DEFAULT_CONFIG_HWFC,         \
-    .parity             = (nrf_uarte_parity_t)NRFX_UARTE_DEFAULT_CONFIG_PARITY,     \
-    .baudrate           = (nrf_uarte_baudrate_t)NRFX_UARTE_DEFAULT_CONFIG_BAUDRATE, \
+    .baudrate           = NRF_UARTE_BAUDRATE_115200,                                \
     .interrupt_priority = NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY,                   \
+    .hal_cfg            = {                                                         \
+        .hwfc           = NRF_UARTE_HWFC_DISABLED,                                  \
+        .parity         = NRF_UARTE_PARITY_EXCLUDED,                                \
+        NRFX_UARTE_DEFAULT_EXTENDED_STOP_CONFIG                                     \
+        NRFX_UARTE_DEFAULT_EXTENDED_PARITYTYPE_CONFIG                               \
+    }                                                                               \
 }
 
 /** @brief Structure for the UARTE transfer completion event. */
@@ -194,8 +215,8 @@ void nrfx_uarte_uninit(nrfx_uarte_t const * p_instance);
  *
  * @return Task address.
  */
-__STATIC_INLINE uint32_t nrfx_uarte_task_address_get(nrfx_uarte_t const * p_instance,
-                                                     nrf_uarte_task_t     task);
+NRFX_STATIC_INLINE uint32_t nrfx_uarte_task_address_get(nrfx_uarte_t const * p_instance,
+                                                        nrf_uarte_task_t     task);
 
 /**
  * @brief Function for getting the address of the specified UARTE event.
@@ -205,8 +226,8 @@ __STATIC_INLINE uint32_t nrfx_uarte_task_address_get(nrfx_uarte_t const * p_inst
  *
  * @return Event address.
  */
-__STATIC_INLINE uint32_t nrfx_uarte_event_address_get(nrfx_uarte_t const * p_instance,
-                                                      nrf_uarte_event_t    event);
+NRFX_STATIC_INLINE uint32_t nrfx_uarte_event_address_get(nrfx_uarte_t const * p_instance,
+                                                         nrf_uarte_event_t    event);
 
 /**
  * @brief Function for sending data over UARTE.
@@ -329,19 +350,19 @@ void nrfx_uarte_rx_abort(nrfx_uarte_t const * p_instance);
 uint32_t nrfx_uarte_errorsrc_get(nrfx_uarte_t const * p_instance);
 
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-__STATIC_INLINE uint32_t nrfx_uarte_task_address_get(nrfx_uarte_t const * p_instance,
-                                                     nrf_uarte_task_t     task)
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE uint32_t nrfx_uarte_task_address_get(nrfx_uarte_t const * p_instance,
+                                                        nrf_uarte_task_t     task)
 {
     return nrf_uarte_task_address_get(p_instance->p_reg, task);
 }
 
-__STATIC_INLINE uint32_t nrfx_uarte_event_address_get(nrfx_uarte_t const * p_instance,
-                                                      nrf_uarte_event_t    event)
+NRFX_STATIC_INLINE uint32_t nrfx_uarte_event_address_get(nrfx_uarte_t const * p_instance,
+                                                         nrf_uarte_event_t    event)
 {
     return nrf_uarte_event_address_get(p_instance->p_reg, event);
 }
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

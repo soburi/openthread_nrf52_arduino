@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2017 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_POWER_H__
@@ -44,6 +35,7 @@
 #include <nrfx.h>
 #include <hal/nrf_power.h>
 #include <nrfx_power_clock.h>
+#include "nrfx_power_compat.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +47,29 @@ extern "C" {
  * @ingroup nrf_power
  * @brief   POWER peripheral driver.
  */
+
+#if NRF_POWER_HAS_POFCON || NRFX_CHECK(NRF_REGULATORS_HAS_POFCON) || defined(__NRFX_DOXYGEN__)
+/** @brief Symbol indicating whether the power failure comparator is supported. */
+#define NRFX_POWER_SUPPORTS_POFCON 1
+#else
+#define NRFX_POWER_SUPPORTS_POFCON 0
+#endif
+
+#if NRF_POWER_HAS_POFCON_VDDH || NRFX_CHECK(NRF_REGULATORS_HAS_POFCON_VDDH) || \
+    defined(__NRFX_DOXYGEN__)
+/** @brief Symbol indicating whether the power failure comparator for VDDH is supported. */
+#define NRFX_POWER_SUPPORTS_POFCON_VDDH 1
+#else
+#define NRFX_POWER_SUPPORTS_POFCON_VDDH 0
+#endif
+
+#if NRF_POWER_HAS_DCDCEN_VDDH || NRFX_CHECK(NRF_REGULATORS_HAS_DCDCEN_VDDH) || \
+    defined(__NRFX_DOXYGEN__)
+/** @brief Symbol indicating whether the VDDH regulator is supported. */
+#define NRFX_POWER_SUPPORTS_DCDCEN_VDDH 1
+#else
+#define NRFX_POWER_SUPPORTS_DCDCEN_VDDH 0
+#endif
 
 /**
  * @brief Power mode possible configurations
@@ -105,7 +120,7 @@ typedef enum
     NRFX_POWER_USB_STATE_CONNECTED,    /**< The USB power is detected, but USB power regulator is not ready. */
     NRFX_POWER_USB_STATE_READY         /**< From the power viewpoint, USB is ready for working. */
 }nrfx_power_usb_state_t;
-#endif /* NRF_POWER_HAS_USBREG */
+#endif // NRF_POWER_HAS_USBREG || defined(__NRFX_DOXYGEN__)
 
 /**
  * @name Callback types
@@ -154,7 +169,7 @@ typedef struct
      */
     bool dcdcen:1;
 
-#if NRF_POWER_HAS_VDDH || defined(__NRFX_DOXYGEN__)
+#if NRFX_POWER_SUPPORTS_DCDCEN_VDDH
     /**
      * @brief Enable HV DCDC regulator.
      *
@@ -175,10 +190,10 @@ typedef struct
 typedef struct
 {
     nrfx_power_pofwarn_event_handler_t handler; //!< Event handler.
-#if NRF_POWER_HAS_POFCON || defined(__NRFX_DOXYGEN__)
+#if NRFX_POWER_SUPPORTS_POFCON
     nrf_power_pof_thr_t                thr;     //!< Threshold for power failure detection
 #endif
-#if NRF_POWER_HAS_VDDH || defined(__NRFX_DOXYGEN__)
+#if NRFX_POWER_SUPPORTS_POFCON_VDDH
     nrf_power_pof_thrvddh_t            thrvddh; //!< Threshold for power failure detection on the VDDH pin.
 #endif
 }nrfx_power_pofwarn_config_t;
@@ -207,7 +222,7 @@ typedef struct
 {
     nrfx_power_usb_event_handler_t handler; //!< Event processing.
 }nrfx_power_usbevt_config_t;
-#endif /* NRF_POWER_HAS_USBREG */
+#endif // NRF_POWER_HAS_USBREG || defined(__NRFX_DOXYGEN__)
 
 /**
  * @brief Function for getting the handler of the power failure comparator.
@@ -221,7 +236,7 @@ nrfx_power_pofwarn_event_handler_t nrfx_power_pof_handler_get(void);
  * @return Handler of the USB power.
  */
 nrfx_power_usb_event_handler_t nrfx_power_usb_handler_get(void);
-#endif
+#endif // NRF_POWER_HAS_USBREG || defined(__NRFX_DOXYGEN__)
 
 /**
  * @brief Function for initializing the power module driver.
@@ -244,7 +259,7 @@ nrfx_err_t nrfx_power_init(nrfx_power_config_t const * p_config);
  */
 void nrfx_power_uninit(void);
 
-#if NRF_POWER_HAS_POFCON || defined(__NRFX_DOXYGEN__)
+#if NRFX_POWER_SUPPORTS_POFCON
 /**
  * @brief Function for initializing the power failure comparator.
  *
@@ -280,7 +295,7 @@ void nrfx_power_pof_disable(void);
  * Clears the settings of the power failure comparator.
  */
 void nrfx_power_pof_uninit(void);
-#endif // NRF_POWER_HAS_POFCON || defined(__NRFX_DOXYGEN__)
+#endif // NRFX_POWER_SUPPORTS_POFCON
 
 #if NRF_POWER_HAS_SLEEPEVT || defined(__NRFX_DOXYGEN__)
 /**
@@ -343,16 +358,15 @@ void nrfx_power_usbevt_uninit(void);
  *
  * @return Current USB power status.
  */
-__STATIC_INLINE nrfx_power_usb_state_t nrfx_power_usbstatus_get(void);
+NRFX_STATIC_INLINE nrfx_power_usb_state_t nrfx_power_usbstatus_get(void);
 
-#endif /* NRF_POWER_HAS_USBREG */
+#endif // NRF_POWER_HAS_USBREG || defined(__NRFX_DOXYGEN__)
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-
+#ifndef NRFX_DECLARE_ONLY
 #if NRF_POWER_HAS_USBREG
-__STATIC_INLINE nrfx_power_usb_state_t nrfx_power_usbstatus_get(void)
+NRFX_STATIC_INLINE nrfx_power_usb_state_t nrfx_power_usbstatus_get(void)
 {
-    uint32_t status = nrf_power_usbregstatus_get();
+    uint32_t status = nrf_power_usbregstatus_get(NRF_POWER);
     if(0 == (status & NRF_POWER_USBREGSTATUS_VBUSDETECT_MASK))
     {
         return NRFX_POWER_USB_STATE_DISCONNECTED;
@@ -363,9 +377,8 @@ __STATIC_INLINE nrfx_power_usb_state_t nrfx_power_usbstatus_get(void)
     }
     return NRFX_POWER_USB_STATE_READY;
 }
-#endif /* NRF_POWER_HAS_USBREG */
-
-#endif /* SUPPRESS_INLINE_IMPLEMENTATION */
+#endif // NRF_POWER_HAS_USBREG
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

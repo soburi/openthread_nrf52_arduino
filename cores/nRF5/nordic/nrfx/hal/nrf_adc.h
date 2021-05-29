@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2014 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRF_ADC_H_
@@ -142,101 +133,124 @@ typedef uint16_t nrf_adc_value_t;
 /**
  * @brief Function for activating the specified ADC task.
  *
- * @param[in] task Task to be activated.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] task  Task to be activated.
  */
-__STATIC_INLINE void nrf_adc_task_trigger(nrf_adc_task_t task);
+NRF_STATIC_INLINE void nrf_adc_task_trigger(NRF_ADC_Type * p_reg, nrf_adc_task_t task);
 
 /**
  * @brief Function for getting the address of an ADC task register.
  *
- * @param[in] task ADC task.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] task  ADC task.
  *
  * @return Address of the specified ADC task.
  */
-__STATIC_INLINE uint32_t nrf_adc_task_address_get(nrf_adc_task_t task);
+NRF_STATIC_INLINE uint32_t nrf_adc_task_address_get(NRF_ADC_Type const * p_reg,
+                                                    nrf_adc_task_t       task);
 
 /**
  * @brief Function for retrieving the state of an ADC event.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] event Event to be checked.
  *
  * @retval true  The event has been generated.
  * @retval false The event has not been generated.
  */
-__STATIC_INLINE bool nrf_adc_event_check(nrf_adc_event_t event);
+NRF_STATIC_INLINE bool nrf_adc_event_check(NRF_ADC_Type const * p_reg, nrf_adc_event_t event);
 
 /**
  * @brief Function for clearing an ADC event.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] event Event to clear.
  */
-__STATIC_INLINE void nrf_adc_event_clear(nrf_adc_event_t event);
+NRF_STATIC_INLINE void nrf_adc_event_clear(NRF_ADC_Type * p_reg, nrf_adc_event_t event);
 
 /**
  * @brief Function for getting the address of the specified ADC event register.
  *
- * @param[in] adc_event ADC event.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] event ADC event.
  *
  * @return Address of the specified ADC event.
  */
-__STATIC_INLINE uint32_t nrf_adc_event_address_get(nrf_adc_event_t adc_event);
+NRF_STATIC_INLINE uint32_t nrf_adc_event_address_get(NRF_ADC_Type const * p_reg,
+                                                     nrf_adc_event_t      event);
 
 /**
  * @brief Function for enabling the specified interrupts.
  *
- * @param[in] mask Mask of interrupts to be enabled.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] mask  Mask of interrupts to be enabled.
  */
-__STATIC_INLINE void nrf_adc_int_enable(uint32_t mask);
+NRF_STATIC_INLINE void nrf_adc_int_enable(NRF_ADC_Type * p_reg, uint32_t mask);
 
 /**
  * @brief Function for disabling the specified interrupts.
  *
- * @param[in] mask Mask of interrupts to be disabled.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] mask  Mask of interrupts to be disabled.
  */
-__STATIC_INLINE void nrf_adc_int_disable(uint32_t mask);
+NRF_STATIC_INLINE void nrf_adc_int_disable(NRF_ADC_Type * p_reg, uint32_t mask);
 
 /**
- * @brief Function for retrieving the state of the specified ADC interrupts.
+ * @brief Function for checking if the specified interrupts are enabled.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] mask  Mask of interrupts to be checked.
  *
- * @retval true  All specified interrupts are enabled.
- * @retval false At least one of the given interrupts is not enabled.
+ * @return Mask of enabled interrupts.
  */
-__STATIC_INLINE bool nrf_adc_int_enable_check(uint32_t mask);
+NRF_STATIC_INLINE uint32_t nrf_adc_int_enable_check(NRF_ADC_Type const * p_reg, uint32_t mask);
 
 /**
  * @brief Function for checking whether the ADC is busy.
  *
  * This function checks whether the ADC converter is busy with a conversion.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ *
  * @retval true  The ADC is busy.
  * @retval false The ADC is not busy.
  */
-__STATIC_INLINE bool nrf_adc_busy_check(void);
+NRF_STATIC_INLINE bool nrf_adc_busy_check(NRF_ADC_Type const * p_reg);
 
-/** @brief Function for enabling the ADC. */
-__STATIC_INLINE void nrf_adc_enable(void);
+/**
+ * @brief Function for enabling the ADC.
+ *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ */
+NRF_STATIC_INLINE void nrf_adc_enable(NRF_ADC_Type * p_reg);
 
-/** @brief Function for disabling the ADC. */
-__STATIC_INLINE void nrf_adc_disable(void);
+/**
+ * @brief Function for disabling the ADC.
+ *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ */
+NRF_STATIC_INLINE void nrf_adc_disable(NRF_ADC_Type * p_reg);
 
 /**
  * @brief Function for checking if the ADC is enabled.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ *
  * @retval true  The ADC is enabled.
  * @retval false The ADC is not enabled.
  */
-__STATIC_INLINE bool nrf_adc_enable_check(void);
+NRF_STATIC_INLINE bool nrf_adc_enable_check(NRF_ADC_Type const * p_reg);
 
 /**
  * @brief Function for retrieving the ADC conversion result.
  *
  * This function retrieves and returns the last analog-to-digital conversion result.
  *
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ *
  * @return Last conversion result.
  */
-__STATIC_INLINE nrf_adc_value_t nrf_adc_result_get(void);
+NRF_STATIC_INLINE nrf_adc_value_t nrf_adc_result_get(NRF_ADC_Type const * p_reg);
 
 /**
  * @brief Function for initializing the ADC.
@@ -244,81 +258,84 @@ __STATIC_INLINE nrf_adc_value_t nrf_adc_result_get(void);
  * This function writes data to ADC's CONFIG register. After the configuration,
  * the ADC is in DISABLE state and must be enabled before using it.
  *
+ * @param[in] p_reg    Pointer to the structure of registers of the peripheral.
  * @param[in] p_config Configuration parameters.
  */
-__STATIC_INLINE void nrf_adc_init(nrf_adc_config_t const * p_config);
+NRF_STATIC_INLINE void nrf_adc_init(NRF_ADC_Type * p_reg, nrf_adc_config_t const * p_config);
 
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
+#ifndef NRF_DECLARE_ONLY
 
-__STATIC_INLINE void nrf_adc_task_trigger(nrf_adc_task_t task)
+NRF_STATIC_INLINE void nrf_adc_task_trigger(NRF_ADC_Type * p_reg, nrf_adc_task_t task)
 {
-    *((volatile uint32_t *)((uint8_t *)NRF_ADC + (uint32_t)task)) = 0x1UL;
+    *((volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)task)) = 0x1UL;
 }
 
-__STATIC_INLINE uint32_t nrf_adc_task_address_get(nrf_adc_task_t adc_task)
+NRF_STATIC_INLINE uint32_t nrf_adc_task_address_get(NRF_ADC_Type const * p_reg,
+                                                    nrf_adc_task_t       task)
 {
-    return (uint32_t)((uint8_t *)NRF_ADC + (uint32_t)adc_task);
+    return (uint32_t)((uint8_t *)p_reg + (uint32_t)task);
 }
 
-__STATIC_INLINE bool nrf_adc_event_check(nrf_adc_event_t event)
+NRF_STATIC_INLINE bool nrf_adc_event_check(NRF_ADC_Type const * p_reg, nrf_adc_event_t event)
 {
-    return (bool)*(volatile uint32_t *)((uint8_t *)NRF_ADC + (uint32_t)event);
+    return (bool)*(volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event);
 }
 
-__STATIC_INLINE void nrf_adc_event_clear(nrf_adc_event_t event)
+NRF_STATIC_INLINE void nrf_adc_event_clear(NRF_ADC_Type * p_reg, nrf_adc_event_t event)
 {
-    *((volatile uint32_t *)((uint8_t *)NRF_ADC + (uint32_t)event)) = 0x0UL;
+    *((volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event)) = 0x0UL;
 }
 
-__STATIC_INLINE uint32_t nrf_adc_event_address_get(nrf_adc_event_t adc_event)
+NRF_STATIC_INLINE uint32_t nrf_adc_event_address_get(NRF_ADC_Type const * p_reg,
+                                                     nrf_adc_event_t      event)
 {
-    return (uint32_t)((uint8_t *)NRF_ADC + (uint32_t)adc_event);
+    return (uint32_t)((uint8_t *)p_reg + (uint32_t)event);
 }
 
-__STATIC_INLINE void nrf_adc_int_enable(uint32_t mask)
+NRF_STATIC_INLINE void nrf_adc_int_enable(NRF_ADC_Type * p_reg, uint32_t mask)
 {
-    NRF_ADC->INTENSET = mask;
+    p_reg->INTENSET = mask;
 }
 
-__STATIC_INLINE void nrf_adc_int_disable(uint32_t mask)
+NRF_STATIC_INLINE void nrf_adc_int_disable(NRF_ADC_Type * p_reg, uint32_t mask)
 {
-    NRF_ADC->INTENCLR = mask;
+    p_reg->INTENCLR = mask;
 }
 
-__STATIC_INLINE bool nrf_adc_int_enable_check(uint32_t mask)
+NRF_STATIC_INLINE uint32_t nrf_adc_int_enable_check(NRF_ADC_Type const * p_reg, uint32_t mask)
 {
-    return (bool)(NRF_ADC->INTENSET & mask);
+    return p_reg->INTENSET & mask;
 }
 
-__STATIC_INLINE bool nrf_adc_busy_check(void)
+NRF_STATIC_INLINE bool nrf_adc_busy_check(NRF_ADC_Type const * p_reg)
 {
-    return ((NRF_ADC->BUSY & ADC_BUSY_BUSY_Msk) == (ADC_BUSY_BUSY_Busy << ADC_BUSY_BUSY_Pos));
+    return ((p_reg->BUSY & ADC_BUSY_BUSY_Msk) == (ADC_BUSY_BUSY_Busy << ADC_BUSY_BUSY_Pos));
 }
 
-__STATIC_INLINE void nrf_adc_enable(void)
+NRF_STATIC_INLINE void nrf_adc_enable(NRF_ADC_Type * p_reg)
 {
-    NRF_ADC->ENABLE = (ADC_ENABLE_ENABLE_Enabled << ADC_ENABLE_ENABLE_Pos);
+    p_reg->ENABLE = (ADC_ENABLE_ENABLE_Enabled << ADC_ENABLE_ENABLE_Pos);
 }
 
-__STATIC_INLINE void nrf_adc_disable(void)
+NRF_STATIC_INLINE void nrf_adc_disable(NRF_ADC_Type * p_reg)
 {
-    NRF_ADC->ENABLE = (ADC_ENABLE_ENABLE_Disabled << ADC_ENABLE_ENABLE_Pos);
+    p_reg->ENABLE = (ADC_ENABLE_ENABLE_Disabled << ADC_ENABLE_ENABLE_Pos);
 }
 
-__STATIC_INLINE bool nrf_adc_enable_check(void)
+NRF_STATIC_INLINE bool nrf_adc_enable_check(NRF_ADC_Type const * p_reg)
 {
-    return (NRF_ADC->ENABLE == (ADC_ENABLE_ENABLE_Enabled << ADC_ENABLE_ENABLE_Pos));
+    return (p_reg->ENABLE == (ADC_ENABLE_ENABLE_Enabled << ADC_ENABLE_ENABLE_Pos));
 }
 
-__STATIC_INLINE nrf_adc_value_t nrf_adc_result_get(void)
+NRF_STATIC_INLINE nrf_adc_value_t nrf_adc_result_get(NRF_ADC_Type const * p_reg)
 {
-    return (nrf_adc_value_t)NRF_ADC->RESULT;
+    return (nrf_adc_value_t)p_reg->RESULT;
 }
 
-__STATIC_INLINE void nrf_adc_init(nrf_adc_config_t const * p_config)
+NRF_STATIC_INLINE void nrf_adc_init(NRF_ADC_Type * p_reg, nrf_adc_config_t const * p_config)
 {
-    NRF_ADC->CONFIG =
+    p_reg->CONFIG =
             ((p_config->resolution << ADC_CONFIG_RES_Pos)       & ADC_CONFIG_RES_Msk)
            |((p_config->scaling    << ADC_CONFIG_INPSEL_Pos)    & ADC_CONFIG_INPSEL_Msk)
            |((p_config->reference  << ADC_CONFIG_REFSEL_Pos)    & ADC_CONFIG_REFSEL_Msk)
@@ -326,7 +343,8 @@ __STATIC_INLINE void nrf_adc_init(nrf_adc_config_t const * p_config)
            |((p_config->extref     << ADC_CONFIG_EXTREFSEL_Pos) & ADC_CONFIG_EXTREFSEL_Msk);
 }
 
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // NRF_DECLARE_ONLY
+
 /** @} */
 
 #ifdef __cplusplus

@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_PDM_H__
@@ -76,33 +67,63 @@ typedef struct
 /** @brief PDM interface driver configuration structure. */
 typedef struct
 {
-    nrf_pdm_mode_t mode;               ///< Interface operation mode.
-    nrf_pdm_edge_t edge;               ///< Sampling mode.
-    uint8_t        pin_clk;            ///< CLK pin.
-    uint8_t        pin_din;            ///< DIN pin.
-    nrf_pdm_freq_t clock_freq;         ///< Clock frequency.
-    nrf_pdm_gain_t gain_l;             ///< Left channel gain.
-    nrf_pdm_gain_t gain_r;             ///< Right channel gain.
-    uint8_t        interrupt_priority; ///< Interrupt priority.
+    nrf_pdm_mode_t    mode;               ///< Interface operation mode.
+    nrf_pdm_edge_t    edge;               ///< Sampling mode.
+    uint8_t           pin_clk;            ///< CLK pin.
+    uint8_t           pin_din;            ///< DIN pin.
+    nrf_pdm_freq_t    clock_freq;         ///< Clock frequency.
+    nrf_pdm_gain_t    gain_l;             ///< Left channel gain.
+    nrf_pdm_gain_t    gain_r;             ///< Right channel gain.
+    uint8_t           interrupt_priority; ///< Interrupt priority.
+#if NRF_PDM_HAS_RATIO_CONFIG
+    nrf_pdm_ratio_t   ratio;              ///< Ratio between PDM_CLK and output sample rate.
+#endif
+#if NRF_PDM_HAS_MCLKCONFIG
+    nrf_pdm_mclksrc_t mclksrc;            ///< Master clock source selection.
+#endif
 } nrfx_pdm_config_t;
 
+
+#if NRF_PDM_HAS_RATIO_CONFIG || defined(__NRFX_DOXYGEN__)
+    /** @brief PDM additional ratio configuration. */
+    #define NRFX_PDM_DEFAULT_EXTENDED_RATIO_CONFIG \
+        .ratio = NRF_PDM_RATIO_64X,
+#else
+    #define NRFX_PDM_DEFAULT_EXTENDED_RATIO_CONFIG
+#endif
+
+#if NRF_PDM_HAS_MCLKCONFIG || defined(__NRFX_DOXYGEN__)
+    /** @brief PDM additional master clock source configuration. */
+    #define NRFX_PDM_DEFAULT_EXTENDED_MCLKSRC_CONFIG \
+        .mclksrc = NRF_PDM_MCLKSRC_PCLK32M,
+#else
+    #define NRFX_PDM_DEFAULT_EXTENDED_MCLKSRC_CONFIG
+#endif
+
 /**
- * @brief Macro for setting @ref nrfx_pdm_config_t to default settings
- *        in the single-ended mode.
+ * @brief PDM driver default configuration.
  *
- * @param _pin_clk  CLK output pin.
- * @param _pin_din  DIN input pin.
+ * This configuration sets up PDM with the following options:
+ * - mono mode
+ * - data sampled on the clock falling edge
+ * - frequency: 1.032 MHz
+ * - standard gain
+ *
+ * @param[in] _pin_clk CLK output pin.
+ * @param[in] _pin_din DIN input pin.
  */
-#define NRFX_PDM_DEFAULT_CONFIG(_pin_clk, _pin_din)                   \
-{                                                                     \
-    .mode               = (nrf_pdm_mode_t)NRFX_PDM_CONFIG_MODE,       \
-    .edge               = (nrf_pdm_edge_t)NRFX_PDM_CONFIG_EDGE,       \
-    .pin_clk            = _pin_clk,                                   \
-    .pin_din            = _pin_din,                                   \
-    .clock_freq         = (nrf_pdm_freq_t)NRFX_PDM_CONFIG_CLOCK_FREQ, \
-    .gain_l             = NRF_PDM_GAIN_DEFAULT,                       \
-    .gain_r             = NRF_PDM_GAIN_DEFAULT,                       \
-    .interrupt_priority = NRFX_PDM_CONFIG_IRQ_PRIORITY                \
+#define NRFX_PDM_DEFAULT_CONFIG(_pin_clk, _pin_din)             \
+{                                                               \
+    .mode               = NRF_PDM_MODE_MONO,                    \
+    .edge               = NRF_PDM_EDGE_LEFTFALLING,             \
+    .pin_clk            = _pin_clk,                             \
+    .pin_din            = _pin_din,                             \
+    .clock_freq         = NRF_PDM_FREQ_1032K,                   \
+    .gain_l             = NRF_PDM_GAIN_DEFAULT,                 \
+    .gain_r             = NRF_PDM_GAIN_DEFAULT,                 \
+    .interrupt_priority = NRFX_PDM_DEFAULT_CONFIG_IRQ_PRIORITY, \
+    NRFX_PDM_DEFAULT_EXTENDED_RATIO_CONFIG                      \
+    NRFX_PDM_DEFAULT_EXTENDED_MCLKSRC_CONFIG                    \
 }
 
 /**
@@ -113,7 +134,7 @@ typedef struct
  *
  * @param[in] p_evt Pointer to the PDM event structure.
  */
-typedef void (*nrfx_pdm_event_handler_t)(nrfx_pdm_evt_t const * const p_evt);
+typedef void (*nrfx_pdm_event_handler_t)(nrfx_pdm_evt_t const * p_evt);
 
 
 /**
@@ -143,10 +164,7 @@ void nrfx_pdm_uninit(void);
  *
  * @return Task address.
  */
-__STATIC_INLINE uint32_t nrfx_pdm_task_address_get(nrf_pdm_task_t task)
-{
-    return nrf_pdm_task_address_get(task);
-}
+NRFX_STATIC_INLINE uint32_t nrfx_pdm_task_address_get(nrf_pdm_task_t task);
 
 /**
  * @brief Function for getting the state of the PDM interface.
@@ -154,10 +172,7 @@ __STATIC_INLINE uint32_t nrfx_pdm_task_address_get(nrf_pdm_task_t task)
  * @retval true  The PDM interface is enabled.
  * @retval false The PDM interface is disabled.
  */
-__STATIC_INLINE bool nrfx_pdm_enable_check(void)
-{
-    return nrf_pdm_enable_check();
-}
+NRFX_STATIC_INLINE bool nrfx_pdm_enable_check(void);
 
 /**
  * @brief Function for starting the PDM sampling.
@@ -193,6 +208,18 @@ nrfx_err_t nrfx_pdm_stop(void);
  * @retval NRFX_ERROR_INVALID_PARAM Invalid parameters were provided.
  */
 nrfx_err_t nrfx_pdm_buffer_set(int16_t * buffer, uint16_t buffer_length);
+
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE uint32_t nrfx_pdm_task_address_get(nrf_pdm_task_t task)
+{
+    return nrf_pdm_task_address_get(NRF_PDM0, task);
+}
+
+NRFX_STATIC_INLINE bool nrfx_pdm_enable_check(void)
+{
+    return nrf_pdm_enable_check(NRF_PDM0);
+}
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

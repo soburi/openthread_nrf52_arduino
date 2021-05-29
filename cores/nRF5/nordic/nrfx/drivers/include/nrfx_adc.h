@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_ADC_H__
@@ -86,18 +77,28 @@ typedef struct
     } data;                           ///< Union to store event data.
 } nrfx_adc_evt_t;
 
-/** @brief Macro for initializing the ADC channel with the default configuration. */
+/**
+ * @brief ADC channel default configuration.
+ *
+ * This configuration sets up ADC channel with the following options:
+ * - 10 bits resolution
+ * - full scale input
+ * - reference voltage: 1.2 V
+ * - external reference input disabled
+ *
+ * @param[in] analog_input Analog input.
+ */
 #define NRFX_ADC_DEFAULT_CHANNEL(analog_input)                 \
- {                                                             \
-     NULL,                                                     \
-     {                                                         \
+{                                                              \
+    NULL,                                                      \
+    {                                                          \
         .resolution = NRF_ADC_CONFIG_RES_10BIT,                \
         .scaling    = NRF_ADC_CONFIG_SCALING_INPUT_FULL_SCALE, \
         .reference  = NRF_ADC_CONFIG_REF_VBG,                  \
-        .input      = (analog_input),                          \
+        .input      = (nrf_adc_config_input_t)analog_input,    \
         .extref     = NRF_ADC_CONFIG_EXTREFSEL_NONE            \
-     }                                                         \
- }
+    }                                                          \
+}
 
 /** @brief Forward declaration of the nrfx_adc_channel_t type. */
 typedef struct nrfx_adc_channel_s nrfx_adc_channel_t;
@@ -121,9 +122,9 @@ typedef struct
 } nrfx_adc_config_t;
 
 /** @brief ADC default configuration. */
-#define NRFX_ADC_DEFAULT_CONFIG                        \
-{                                                      \
-    .interrupt_priority = NRFX_ADC_CONFIG_IRQ_PRIORITY \
+#define NRFX_ADC_DEFAULT_CONFIG                                \
+{                                                              \
+    .interrupt_priority = NRFX_ADC_DEFAULT_CONFIG_IRQ_PRIORITY \
 }
 
 /**
@@ -215,8 +216,8 @@ void nrfx_adc_sample(void);
  * @retval NRFX_SUCCESS    Conversion was successful.
  * @retval NRFX_ERROR_BUSY The ADC driver is busy.
  */
-nrfx_err_t nrfx_adc_sample_convert(nrfx_adc_channel_t const * const p_channel,
-                                   nrf_adc_value_t                * p_value);
+nrfx_err_t nrfx_adc_sample_convert(nrfx_adc_channel_t const * p_channel,
+                                   nrf_adc_value_t *          p_value);
 
 /**
  * @brief Function for converting data to the buffer.
@@ -265,16 +266,14 @@ bool nrfx_adc_is_busy(void);
  *
  * @return Start task address.
  */
-__STATIC_INLINE uint32_t nrfx_adc_start_task_get(void);
+NRFX_STATIC_INLINE uint32_t nrfx_adc_start_task_get(void);
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-
-__STATIC_INLINE uint32_t nrfx_adc_start_task_get(void)
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE uint32_t nrfx_adc_start_task_get(void)
 {
-    return nrf_adc_task_address_get(NRF_ADC_TASK_START);
+    return nrf_adc_task_address_get(NRF_ADC, NRF_ADC_TASK_START);
 }
-
-#endif
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

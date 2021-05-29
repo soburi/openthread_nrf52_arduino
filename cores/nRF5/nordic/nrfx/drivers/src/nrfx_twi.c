@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -58,7 +49,8 @@
     (event == NRFX_TWI_EVT_ADDRESS_NACK ? "EVT_ADDRESS_NACK" : \
     (event == NRFX_TWI_EVT_DATA_NACK    ? "EVT_DATA_NACK"    : \
     (event == NRFX_TWI_EVT_OVERRUN      ? "EVT_OVERRUN"      : \
-                                          "UNKNOWN ERROR"))))
+    (event == NRFX_TWI_EVT_BUS_ERROR    ? "EVT_BUS_ERROR"    : \
+                                          "UNKNOWN ERROR")))))
 
 #define EVT_TO_STR_TWI(event)                                       \
     (event == NRF_TWI_EVENT_STOPPED   ? "NRF_TWI_EVENT_STOPPED"   : \
@@ -141,7 +133,25 @@ static nrfx_err_t twi_process_error(uint32_t errorsrc)
     return ret;
 }
 
+static bool xfer_completeness_check(NRF_TWI_Type * p_twi, twi_control_block_t const * p_cb)
+{
+    // If the actual number of transferred bytes is not equal to what was requested,
+    // but there was no error signaled by the peripheral, this means that something
+    // unexpected, like a premature STOP condition, was received on the bus.
+    // In such case the peripheral has to be disabled and re-enabled, so that its
+    // internal state machine is reinitialized.
 
+    if (p_cb->bytes_transferred != p_cb->curr_length)
+    {
+        nrf_twi_disable(p_twi);
+        nrf_twi_enable(p_twi);
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
 
 nrfx_err_t nrfx_twi_init(nrfx_twi_t const *        p_instance,
                          nrfx_twi_config_t const * p_config,
@@ -273,7 +283,6 @@ static bool twi_send_byte(NRF_TWI_Type          * p_twi,
     if (p_cb->bytes_transferred < p_cb->curr_length)
     {
         nrf_twi_txd_set(p_twi, p_cb->p_curr_buf[p_cb->bytes_transferred]);
-        ++(p_cb->bytes_transferred);
     }
     else
     {
@@ -327,7 +336,19 @@ static bool twi_receive_byte(NRF_TWI_Type         * p_twi,
 static bool twi_transfer(NRF_TWI_Type           * p_twi,
                          twi_control_block_t    * p_cb)
 {
-    bool do_stop_check = ((p_cb->error) || ((p_cb->bytes_transferred) == p_cb->curr_length));
+    bool stopped = false;
+    if (nrf_twi_event_check(p_twi, NRF_TWI_EVENT_STOPPED))
+    {
+        nrf_twi_event_clear(p_twi, NRF_TWI_EVENT_STOPPED);
+        NRFX_LOG_DEBUG("TWI: Event: %s.", EVT_TO_STR_TWI(NRF_TWI_EVENT_STOPPED));
+
+        // Delay handling of STOPPED event till the end of events processing procedure.
+        // If penultimate byte is received and function gets interrupted for long enough
+        // after enabling BB_STOP shortcut, RXDREADY for last byte as well as STOPPED
+        // may be active at the same time. Therefore RXREADY has to be processed before STOPPED to
+        // acquire last byte before finishing transmission by returning 'false'.
+        stopped = true;
+    }
 
     if (p_cb->error)
     {
@@ -347,6 +368,7 @@ static bool twi_transfer(NRF_TWI_Type           * p_twi,
         if (nrf_twi_event_check(p_twi, NRF_TWI_EVENT_TXDSENT))
         {
             nrf_twi_event_clear(p_twi, NRF_TWI_EVENT_TXDSENT);
+            ++(p_cb->bytes_transferred);
             NRFX_LOG_DEBUG("TWI: Event: %s.", EVT_TO_STR_TWI(NRF_TWI_EVENT_TXDSENT));
             if (nrf_twi_event_check(p_twi, NRF_TWI_EVENT_ERROR))
             {
@@ -384,11 +406,13 @@ static bool twi_transfer(NRF_TWI_Type           * p_twi,
         }
     }
 
-    if (do_stop_check && nrf_twi_event_check(p_twi, NRF_TWI_EVENT_STOPPED))
+    if (stopped)
     {
-        nrf_twi_event_clear(p_twi, NRF_TWI_EVENT_STOPPED);
         p_cb->prev_suspend = TWI_NO_SUSPEND;
-        NRFX_LOG_DEBUG("TWI: Event: %s.", EVT_TO_STR_TWI(NRF_TWI_EVENT_STOPPED));
+        if (!p_cb->error)
+        {
+            p_cb->error = !xfer_completeness_check(p_twi, p_cb);
+        }
         return false;
     }
 
@@ -446,6 +470,10 @@ static nrfx_err_t twi_tx_start_transfer(NRF_TWI_Type        * p_twi,
             if (errorsrc)
             {
                 ret_code = twi_process_error(errorsrc);
+            }
+            else
+            {
+                ret_code = NRFX_ERROR_INTERNAL;
             }
         }
 
@@ -516,6 +544,10 @@ static nrfx_err_t twi_rx_start_transfer(NRF_TWI_Type        * p_twi,
             {
                 ret_code = twi_process_error(errorsrc);
             }
+            else
+            {
+                ret_code = NRFX_ERROR_INTERNAL;
+            }
         }
         if (hw_timeout <= 0)
         {
@@ -527,10 +559,10 @@ static nrfx_err_t twi_rx_start_transfer(NRF_TWI_Type        * p_twi,
     return ret_code;
 }
 
-__STATIC_INLINE nrfx_err_t twi_xfer(NRF_TWI_Type               * p_twi,
-                                    twi_control_block_t        * p_cb,
-                                    nrfx_twi_xfer_desc_t const * p_xfer_desc,
-                                    uint32_t                     flags)
+static nrfx_err_t twi_xfer(NRF_TWI_Type               * p_twi,
+                           twi_control_block_t        * p_cb,
+                           nrfx_twi_xfer_desc_t const * p_xfer_desc,
+                           uint32_t                     flags)
 {
 
     nrfx_err_t err_code = NRFX_SUCCESS;
@@ -593,7 +625,7 @@ bool nrfx_twi_is_busy(nrfx_twi_t const * p_instance)
     return p_cb->busy;
 }
 
-nrfx_err_t nrfx_twi_xfer(nrfx_twi_t           const * p_instance,
+nrfx_err_t nrfx_twi_xfer(nrfx_twi_t const *           p_instance,
                          nrfx_twi_xfer_desc_t const * p_xfer_desc,
                          uint32_t                     flags)
 {
@@ -623,33 +655,14 @@ nrfx_err_t nrfx_twi_xfer(nrfx_twi_t           const * p_instance,
     return err_code;
 }
 
-nrfx_err_t nrfx_twi_tx(nrfx_twi_t const * p_instance,
-                       uint8_t            address,
-                       uint8_t    const * p_data,
-                       size_t             length,
-                       bool               no_stop)
-{
-    nrfx_twi_xfer_desc_t xfer = NRFX_TWI_XFER_DESC_TX(address, (uint8_t*)p_data, length);
-    return nrfx_twi_xfer(p_instance, &xfer, no_stop ? NRFX_TWI_FLAG_TX_NO_STOP : 0);
-}
-
-nrfx_err_t nrfx_twi_rx(nrfx_twi_t const * p_instance,
-                       uint8_t            address,
-                       uint8_t *          p_data,
-                       size_t             length)
-{
-    nrfx_twi_xfer_desc_t xfer = NRFX_TWI_XFER_DESC_RX(address, p_data, length);
-    return nrfx_twi_xfer(p_instance, &xfer, 0);
-}
-
-size_t nrfx_twi_data_count_get(nrfx_twi_t const * const p_instance)
+size_t nrfx_twi_data_count_get(nrfx_twi_t const * p_instance)
 {
     return m_cb[p_instance->drv_inst_idx].bytes_transferred;
 }
 
 uint32_t nrfx_twi_stopped_event_get(nrfx_twi_t const * p_instance)
 {
-    return (uint32_t)nrf_twi_event_address_get(p_instance->p_twi, NRF_TWI_EVENT_STOPPED);
+    return nrf_twi_event_address_get(p_instance->p_twi, NRF_TWI_EVENT_STOPPED);
 }
 
 static void twi_irq_handler(NRF_TWI_Type * p_twi, twi_control_block_t * p_cb)
@@ -703,6 +716,11 @@ static void twi_irq_handler(NRF_TWI_Type * p_twi, twi_control_block_t * p_cb)
                 event.type = NRFX_TWI_EVT_OVERRUN;
                 NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRFX_TWI_EVT_OVERRUN));
             }
+            else
+            {
+                event.type = NRFX_TWI_EVT_BUS_ERROR;
+                NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRFX_TWI_EVT_BUS_ERROR));
+            }
         }
         else
         {
@@ -712,7 +730,7 @@ static void twi_irq_handler(NRF_TWI_Type * p_twi, twi_control_block_t * p_cb)
 
         p_cb->busy = false;
 
-        if (!(TWI_FLAG_NO_HANDLER_IN_USE(p_cb->flags)))
+        if (!(TWI_FLAG_NO_HANDLER_IN_USE(p_cb->flags)) || p_cb->error)
         {
             p_cb->handler(&event, p_cb->p_context);
         }

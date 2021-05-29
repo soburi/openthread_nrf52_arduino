@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -67,7 +58,7 @@
 #define EGU_IRQn(i)         EGU_IRQn_(i)
 #define EGU_IRQn_(i)        SWI##i##_EGU##i##_IRQn
 #define EGU_IRQHandler(i)   EGU_IRQHandler_(i)
-#define EGU_IRQHandler_(i)  nrfx_swi_##i##_irq_handler
+#define EGU_IRQHandler_(i)  nrfx_egu_##i##_irq_handler
 #define DMA_ISSUE_EGU_IDX           NRFX_PWM_NRF52_ANOMALY_109_EGU_INSTANCE
 #define DMA_ISSUE_EGU               NRFX_CONCAT_2(NRF_EGU, DMA_ISSUE_EGU_IDX)
 #define DMA_ISSUE_EGU_IRQn          EGU_IRQn(DMA_ISSUE_EGU_IDX)
@@ -81,12 +72,13 @@ typedef struct
     uint32_t                  starting_task_address;
 #endif
     nrfx_pwm_handler_t        handler;
+    void *                    p_context;
     nrfx_drv_state_t volatile state;
     uint8_t                   flags;
 } pwm_control_block_t;
 static pwm_control_block_t m_cb[NRFX_PWM_ENABLED_COUNT];
 
-static void configure_pins(nrfx_pwm_t const * const p_instance,
+static void configure_pins(nrfx_pwm_t const *        p_instance,
                            nrfx_pwm_config_t const * p_config)
 {
     uint32_t out_pins[NRF_PWM_CHANNEL_COUNT];
@@ -100,16 +92,19 @@ static void configure_pins(nrfx_pwm_t const * const p_instance,
             bool inverted = output_pin &  NRFX_PWM_PIN_INVERTED;
             out_pins[i]   = output_pin & ~NRFX_PWM_PIN_INVERTED;
 
-            if (inverted)
+            if (!p_config->skip_gpio_cfg)
             {
-                nrf_gpio_pin_set(out_pins[i]);
-            }
-            else
-            {
-                nrf_gpio_pin_clear(out_pins[i]);
-            }
+                if (inverted)
+                {
+                    nrf_gpio_pin_set(out_pins[i]);
+                }
+                else
+                {
+                    nrf_gpio_pin_clear(out_pins[i]);
+                }
 
-            nrf_gpio_cfg_output(out_pins[i]);
+                nrf_gpio_cfg_output(out_pins[i]);
+            }
         }
         else
         {
@@ -121,9 +116,10 @@ static void configure_pins(nrfx_pwm_t const * const p_instance,
 }
 
 
-nrfx_err_t nrfx_pwm_init(nrfx_pwm_t const * const p_instance,
+nrfx_err_t nrfx_pwm_init(nrfx_pwm_t const *        p_instance,
                          nrfx_pwm_config_t const * p_config,
-                         nrfx_pwm_handler_t        handler)
+                         nrfx_pwm_handler_t        handler,
+                         void *                    p_context)
 {
     NRFX_ASSERT(p_config);
 
@@ -141,6 +137,7 @@ nrfx_err_t nrfx_pwm_init(nrfx_pwm_t const * const p_instance,
     }
 
     p_cb->handler = handler;
+    p_cb->p_context = p_context;
 
     configure_pins(p_instance, p_config);
 
@@ -182,7 +179,7 @@ nrfx_err_t nrfx_pwm_init(nrfx_pwm_t const * const p_instance,
 }
 
 
-void nrfx_pwm_uninit(nrfx_pwm_t const * const p_instance)
+void nrfx_pwm_uninit(nrfx_pwm_t const * p_instance)
 {
     pwm_control_block_t * p_cb  = &m_cb[p_instance->drv_inst_idx];
     NRFX_ASSERT(p_cb->state != NRFX_DRV_STATE_UNINITIALIZED);
@@ -198,7 +195,7 @@ void nrfx_pwm_uninit(nrfx_pwm_t const * const p_instance)
 }
 
 
-static uint32_t start_playback(nrfx_pwm_t const * const p_instance,
+static uint32_t start_playback(nrfx_pwm_t const * p_instance,
                                pwm_control_block_t * p_cb,
                                uint8_t               flags,
                                nrf_pwm_task_t        starting_task)
@@ -259,10 +256,9 @@ static uint32_t start_playback(nrfx_pwm_t const * const p_instance,
         // the PWM by triggering the proper task from EGU interrupt handler,
         // it is not safe to do it directly via PPI.
         p_cb->starting_task_address = starting_task_address;
-        nrf_egu_int_enable(DMA_ISSUE_EGU,
-            nrf_egu_int_get(DMA_ISSUE_EGU, p_instance->drv_inst_idx));
-        return (uint32_t)nrf_egu_task_trigger_address_get(DMA_ISSUE_EGU,
-            p_instance->drv_inst_idx);
+        nrf_egu_int_enable(DMA_ISSUE_EGU, nrf_egu_channel_int_get(p_instance->drv_inst_idx));
+        return nrf_egu_task_address_get(DMA_ISSUE_EGU,
+                                        nrf_egu_trigger_task_get(p_instance->drv_inst_idx));
 #else
         return starting_task_address;
 #endif
@@ -273,7 +269,7 @@ static uint32_t start_playback(nrfx_pwm_t const * const p_instance,
 }
 
 
-uint32_t nrfx_pwm_simple_playback(nrfx_pwm_t const * const p_instance,
+uint32_t nrfx_pwm_simple_playback(nrfx_pwm_t const *         p_instance,
                                   nrf_pwm_sequence_t const * p_sequence,
                                   uint16_t                   playback_count,
                                   uint32_t                   flags)
@@ -318,7 +314,7 @@ uint32_t nrfx_pwm_simple_playback(nrfx_pwm_t const * const p_instance,
 }
 
 
-uint32_t nrfx_pwm_complex_playback(nrfx_pwm_t const * const p_instance,
+uint32_t nrfx_pwm_complex_playback(nrfx_pwm_t const *         p_instance,
                                    nrf_pwm_sequence_t const * p_sequence_0,
                                    nrf_pwm_sequence_t const * p_sequence_1,
                                    uint16_t                   playback_count,
@@ -365,12 +361,22 @@ uint32_t nrfx_pwm_complex_playback(nrfx_pwm_t const * const p_instance,
 }
 
 
-bool nrfx_pwm_stop(nrfx_pwm_t const * const p_instance,
-                   bool wait_until_stopped)
+bool nrfx_pwm_stop(nrfx_pwm_t const * p_instance,
+                   bool               wait_until_stopped)
 {
     NRFX_ASSERT(m_cb[p_instance->drv_inst_idx].state != NRFX_DRV_STATE_UNINITIALIZED);
 
     bool ret_val = false;
+
+    // Deactivate shortcuts before triggering the STOP task, otherwise the PWM
+    // could be immediately started again if the LOOPSDONE event occurred in
+    // the same peripheral clock cycle as the STOP task was triggered.
+    nrf_pwm_shorts_set(p_instance->p_registers, 0);
+
+    // Trigger the STOP task even if the PWM appears to be already stopped.
+    // It won't harm, but it could help if for some strange reason the stopped
+    // status was not reported correctly.
+    nrf_pwm_task_trigger(p_instance->p_registers, NRF_PWM_TASK_STOP);
 
     if (nrfx_pwm_is_stopped(p_instance))
     {
@@ -378,8 +384,6 @@ bool nrfx_pwm_stop(nrfx_pwm_t const * const p_instance,
     }
     else
     {
-        nrf_pwm_task_trigger(p_instance->p_registers, NRF_PWM_TASK_STOP);
-
         do {
             if (nrfx_pwm_is_stopped(p_instance))
             {
@@ -394,7 +398,7 @@ bool nrfx_pwm_stop(nrfx_pwm_t const * const p_instance,
 }
 
 
-bool nrfx_pwm_is_stopped(nrfx_pwm_t const * const p_instance)
+bool nrfx_pwm_is_stopped(nrfx_pwm_t const * p_instance)
 {
     pwm_control_block_t * p_cb  = &m_cb[p_instance->drv_inst_idx];
     NRFX_ASSERT(p_cb->state != NRFX_DRV_STATE_UNINITIALIZED);
@@ -429,7 +433,7 @@ static void irq_handler(NRF_PWM_Type * p_pwm, pwm_control_block_t * p_cb)
         nrf_pwm_event_clear(p_pwm, NRF_PWM_EVENT_SEQEND0);
         if ((p_cb->flags & NRFX_PWM_FLAG_SIGNAL_END_SEQ0) && p_cb->handler)
         {
-            p_cb->handler(NRFX_PWM_EVT_END_SEQ0);
+            p_cb->handler(NRFX_PWM_EVT_END_SEQ0, p_cb->p_context);
         }
     }
     if (nrf_pwm_event_check(p_pwm, NRF_PWM_EVENT_SEQEND1))
@@ -437,7 +441,7 @@ static void irq_handler(NRF_PWM_Type * p_pwm, pwm_control_block_t * p_cb)
         nrf_pwm_event_clear(p_pwm, NRF_PWM_EVENT_SEQEND1);
         if ((p_cb->flags & NRFX_PWM_FLAG_SIGNAL_END_SEQ1) && p_cb->handler)
         {
-            p_cb->handler(NRFX_PWM_EVT_END_SEQ1);
+            p_cb->handler(NRFX_PWM_EVT_END_SEQ1, p_cb->p_context);
         }
     }
     // For LOOPSDONE the handler is called by default, but the user can disable
@@ -447,7 +451,7 @@ static void irq_handler(NRF_PWM_Type * p_pwm, pwm_control_block_t * p_cb)
         nrf_pwm_event_clear(p_pwm, NRF_PWM_EVENT_LOOPSDONE);
         if (!(p_cb->flags & NRFX_PWM_FLAG_NO_EVT_FINISHED) && p_cb->handler)
         {
-            p_cb->handler(NRFX_PWM_EVT_FINISHED);
+            p_cb->handler(NRFX_PWM_EVT_FINISHED, p_cb->p_context);
         }
     }
 
@@ -459,7 +463,7 @@ static void irq_handler(NRF_PWM_Type * p_pwm, pwm_control_block_t * p_cb)
         p_cb->state = NRFX_DRV_STATE_INITIALIZED;
         if (p_cb->handler)
         {
-            p_cb->handler(NRFX_PWM_EVT_STOPPED);
+            p_cb->handler(NRFX_PWM_EVT_STOPPED, p_cb->p_context);
         }
     }
 }
@@ -469,14 +473,12 @@ static void irq_handler(NRF_PWM_Type * p_pwm, pwm_control_block_t * p_cb)
 // See 'start_playback' why this is needed.
 void DMA_ISSUE_EGU_IRQHandler(void)
 {
-    int i;
-    for (i = 0; i < NRFX_PWM_ENABLED_COUNT; ++i)
+    for (uint8_t i = 0; i < NRFX_PWM_ENABLED_COUNT; i++)
     {
-        volatile uint32_t * p_event_reg =
-            nrf_egu_event_triggered_address_get(DMA_ISSUE_EGU, i);
-        if (*p_event_reg)
+        nrf_egu_event_t event = nrf_egu_triggered_event_get(i);
+        if (nrf_egu_event_check(DMA_ISSUE_EGU, event))
         {
-            *p_event_reg = 0;
+            nrf_egu_event_clear(DMA_ISSUE_EGU, event);
             *(volatile uint32_t *)(m_cb[i].starting_task_address) = 1;
         }
     }

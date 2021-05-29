@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -82,9 +73,9 @@ static nrfx_pdm_cb_t m_cb;
 
 void nrfx_pdm_irq_handler(void)
 {
-    if (nrf_pdm_event_check(NRF_PDM_EVENT_STARTED))
+    if (nrf_pdm_event_check(NRF_PDM0, NRF_PDM_EVENT_STARTED))
     {
-        nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
+        nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_STARTED);
         NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_PDM_EVENT_STARTED));
 
         uint8_t finished_buffer = m_cb.active_buffer;
@@ -134,11 +125,11 @@ void nrfx_pdm_irq_handler(void)
             m_cb.op_state = NRFX_PDM_STATE_RUNNING;
         }
     }
-    else if (nrf_pdm_event_check(NRF_PDM_EVENT_STOPPED))
+    else if (nrf_pdm_event_check(NRF_PDM0, NRF_PDM_EVENT_STOPPED))
     {
-        nrf_pdm_event_clear(NRF_PDM_EVENT_STOPPED);
+        nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_STOPPED);
         NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(NRF_PDM_EVENT_STOPPED));
-        nrf_pdm_disable();
+        nrf_pdm_disable(NRF_PDM0);
         m_cb.op_state = NRFX_PDM_STATE_IDLE;
 
         // Release the buffers.
@@ -209,21 +200,28 @@ nrfx_err_t nrfx_pdm_init(nrfx_pdm_config_t const * p_config,
     m_cb.event_handler = event_handler;
     m_cb.op_state = NRFX_PDM_STATE_IDLE;
 
-    nrf_pdm_clock_set(p_config->clock_freq);
-    nrf_pdm_mode_set(p_config->mode, p_config->edge);
-    nrf_pdm_gain_set(p_config->gain_l, p_config->gain_r);
+#if NRF_PDM_HAS_RATIO_CONFIG
+    nrf_pdm_ratio_set(NRF_PDM0, p_config->ratio);
+#endif
+
+#if NRF_PDM_HAS_MCLKCONFIG
+    nrf_pdm_mclksrc_configure(NRF_PDM0, p_config->mclksrc);
+#endif
+    nrf_pdm_clock_set(NRF_PDM0, p_config->clock_freq);
+    nrf_pdm_mode_set(NRF_PDM0, p_config->mode, p_config->edge);
+    nrf_pdm_gain_set(NRF_PDM0, p_config->gain_l, p_config->gain_r);
 
     nrf_gpio_cfg_output(p_config->pin_clk);
     nrf_gpio_pin_clear(p_config->pin_clk);
     nrf_gpio_cfg_input(p_config->pin_din, NRF_GPIO_PIN_NOPULL);
-    nrf_pdm_psel_connect(p_config->pin_clk, p_config->pin_din);
+    nrf_pdm_psel_connect(NRF_PDM0, p_config->pin_clk, p_config->pin_din);
 
-    nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
-    nrf_pdm_event_clear(NRF_PDM_EVENT_END);
-    nrf_pdm_event_clear(NRF_PDM_EVENT_STOPPED);
-    nrf_pdm_int_enable(NRF_PDM_INT_STARTED | NRF_PDM_INT_STOPPED);
-    NRFX_IRQ_PRIORITY_SET(PDM_IRQn, p_config->interrupt_priority);
-    NRFX_IRQ_ENABLE(PDM_IRQn);
+    nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_STARTED);
+    nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_END);
+    nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_STOPPED);
+    nrf_pdm_int_enable(NRF_PDM0, NRF_PDM_INT_STARTED | NRF_PDM_INT_STOPPED);
+    NRFX_IRQ_PRIORITY_SET(nrfx_get_irq_number(NRF_PDM0), p_config->interrupt_priority);
+    NRFX_IRQ_ENABLE(nrfx_get_irq_number(NRF_PDM0));
     m_cb.drv_state = NRFX_DRV_STATE_INITIALIZED;
 
     err_code = NRFX_SUCCESS;
@@ -235,8 +233,8 @@ nrfx_err_t nrfx_pdm_init(nrfx_pdm_config_t const * p_config,
 
 void nrfx_pdm_uninit(void)
 {
-    nrf_pdm_disable();
-    nrf_pdm_psel_disconnect();
+    nrf_pdm_disable(NRF_PDM0);
+    nrf_pdm_psel_disconnect(NRF_PDM0);
     m_cb.drv_state = NRFX_DRV_STATE_UNINITIALIZED;
     NRFX_LOG_INFO("Uninitialized.");
 }
@@ -244,15 +242,15 @@ void nrfx_pdm_uninit(void)
 static void pdm_start()
 {
     m_cb.drv_state = NRFX_DRV_STATE_POWERED_ON;
-    nrf_pdm_enable();
-    nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
-    nrf_pdm_task_trigger(NRF_PDM_TASK_START);
+    nrf_pdm_enable(NRF_PDM0);
+    nrf_pdm_event_clear(NRF_PDM0, NRF_PDM_EVENT_STARTED);
+    nrf_pdm_task_trigger(NRF_PDM0, NRF_PDM_TASK_START);
 }
 
 static void pdm_buf_request()
 {
     m_cb.irq_buff_request = 1;
-    NRFX_IRQ_PENDING_SET(PDM_IRQn);
+    NRFX_IRQ_PENDING_SET(nrfx_get_irq_number(NRF_PDM0));
 }
 
 nrfx_err_t nrfx_pdm_start(void)
@@ -305,7 +303,7 @@ nrfx_err_t nrfx_pdm_buffer_set(int16_t * buffer, uint16_t buffer_length)
     nrfx_err_t err_code = NRFX_SUCCESS;
 
     // Enter the PDM critical section.
-    NRFX_IRQ_DISABLE(PDM_IRQn);
+    NRFX_IRQ_DISABLE(nrfx_get_irq_number(NRF_PDM0));
 
     uint8_t next_buffer = (~m_cb.active_buffer) & 0x01;
     if (m_cb.op_state == NRFX_PDM_STATE_STARTING)
@@ -322,7 +320,7 @@ nrfx_err_t nrfx_pdm_buffer_set(int16_t * buffer, uint16_t buffer_length)
     {
         m_cb.buff_address[next_buffer] = buffer;
         m_cb.buff_length[next_buffer] = buffer_length;
-        nrf_pdm_buffer_set((uint32_t *)buffer, buffer_length);
+        nrf_pdm_buffer_set(NRF_PDM0, (uint32_t *)buffer, buffer_length);
 
         if (m_cb.drv_state != NRFX_DRV_STATE_POWERED_ON)
         {
@@ -330,7 +328,7 @@ nrfx_err_t nrfx_pdm_buffer_set(int16_t * buffer, uint16_t buffer_length)
         }
     }
 
-    NRFX_IRQ_ENABLE(PDM_IRQn);
+    NRFX_IRQ_ENABLE(nrfx_get_irq_number(NRF_PDM0));
     return err_code;
 }
 
@@ -344,7 +342,7 @@ nrfx_err_t nrfx_pdm_stop(void)
         if (m_cb.op_state == NRFX_PDM_STATE_IDLE ||
             m_cb.op_state == NRFX_PDM_STATE_STARTING)
         {
-            nrf_pdm_disable();
+            nrf_pdm_disable(NRF_PDM0);
             m_cb.op_state = NRFX_PDM_STATE_IDLE;
             err_code = NRFX_SUCCESS;
             NRFX_LOG_INFO("Function: %s, error code: %s.",
@@ -361,7 +359,7 @@ nrfx_err_t nrfx_pdm_stop(void)
     m_cb.drv_state = NRFX_DRV_STATE_INITIALIZED;
     m_cb.op_state = NRFX_PDM_STATE_STOPPING;
 
-    nrf_pdm_task_trigger(NRF_PDM_TASK_STOP);
+    nrf_pdm_task_trigger(NRF_PDM0, NRF_PDM_TASK_STOP);
     err_code = NRFX_SUCCESS;
     NRFX_LOG_INFO("Function: %s, error code: %s.", __func__, NRFX_LOG_ERROR_STRING_GET(err_code));
     return err_code;

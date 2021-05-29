@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2019 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_NVMC_H__
@@ -251,40 +242,40 @@ uint32_t nrfx_nvmc_flash_page_count_get(void);
  * @retval true  Last write completed successfully.
  * @retval false Last write is still in progress.
  */
-__STATIC_INLINE bool nrfx_nvmc_write_done_check(void);
+NRFX_STATIC_INLINE bool nrfx_nvmc_write_done_check(void);
 
-#if defined(NRF_NVMC_ICACHE_PRESENT)
+#if defined(NVMC_FEATURE_CACHE_PRESENT)
 /**
  * @brief Function for enabling the Instruction Cache (ICache).
  *
  * Enabling ICache reduces the amount of accesses to flash memory,
  * which can boost performance and lower power consumption.
  */
-__STATIC_INLINE void nrfx_nvmc_icache_enable(void);
+NRFX_STATIC_INLINE void nrfx_nvmc_icache_enable(void);
 
 /** @brief Function for disabling ICache. */
-__STATIC_INLINE void nrfx_nvmc_icache_disable(void);
+NRFX_STATIC_INLINE void nrfx_nvmc_icache_disable(void);
 
-#endif // defined(NRF_NVMC_ICACHE_PRESENT)
+#endif // defined(NVMC_FEATURE_CACHE_PRESENT)
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-__STATIC_INLINE bool nrfx_nvmc_write_done_check(void)
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE bool nrfx_nvmc_write_done_check(void)
 {
     return nrf_nvmc_ready_check(NRF_NVMC);
 }
 
-#if defined(NRF_NVMC_ICACHE_PRESENT)
-__STATIC_INLINE void nrfx_nvmc_icache_enable(void)
+#if defined(NVMC_FEATURE_CACHE_PRESENT)
+NRFX_STATIC_INLINE void nrfx_nvmc_icache_enable(void)
 {
     nrf_nvmc_icache_config_set(NRF_NVMC, NRF_NVMC_ICACHE_ENABLE_WITH_PROFILING);
 }
 
-__STATIC_INLINE void nrfx_nvmc_icache_disable(void)
+NRFX_STATIC_INLINE void nrfx_nvmc_icache_disable(void)
 {
     nrf_nvmc_icache_config_set(NRF_NVMC, NRF_NVMC_ICACHE_DISABLE);
 }
-#endif // defined(NRF_NVMC_ICACHE_PRESENT)
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // defined(NVMC_FEATURE_CACHE_PRESENT)
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 
