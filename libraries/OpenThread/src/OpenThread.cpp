@@ -131,17 +131,6 @@ int OpenThreadClass::dump(Print& p)
   return n;
 }
 
-#define OT_API_CALL_RET(ty, ...) \
-    { ty ret; \
-    do                       \
-    {                        \
-        otrLock();           \
-        ret = __VA_ARGS__;   \
-        otrUnlock();         \
-        otrTaskNotifyGive(); \
-    } while (0);             \
-    return ret; }
-
 
 #define OT_GETTER_IMPL(ty, na, cat, n2)  \
 ty OpenThreadClass::  na  () \
