@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2012 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRF_TEMP_H__
@@ -46,44 +37,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
-* @defgroup nrf_temp_hal_deprecated TEMP HAL (deprecated)
-* @{
-* @ingroup nrf_temp
-* @brief   Temperature module init and read functions.
-*/
-
-/** @brief Workaround specific define - sign mask.*/
-#define MASK_SIGN           (0x00000200UL)
-
-/** @brief Workaround specific define - sign extension mask.*/
-#define MASK_SIGN_EXTENSION (0xFFFFFC00UL)
-
-/**
- * @brief Function for preparing the TEMP module for temperature measurement.
- *
- * This function initializes the TEMP module and writes to the hidden configuration register.
- */
-static __INLINE void nrf_temp_init(void)
-{
-    /**@note Workaround for PAN_028 rev2.0A anomaly 31 - TEMP: Temperature offset value has to be manually loaded to the TEMP module */
-    *(uint32_t *) 0x4000C504 = 0;
-}
-
-/**
- * @brief Function for reading temperature measurement.
- *
- * The function reads the 10-bit 2's complement value and transforms it to a 32-bit 2's complement value.
- */
-static __INLINE int32_t nrf_temp_read(void)
-{
-    /**@note Workaround for PAN_028 rev2.0A anomaly 28 - TEMP: Negative measured values are not represented correctly */
-    return ((NRF_TEMP->TEMP & MASK_SIGN) != 0) ?
-                (int32_t)(NRF_TEMP->TEMP | MASK_SIGN_EXTENSION) : (NRF_TEMP->TEMP);
-}
-
-/** @} */
 
 /**
 * @defgroup nrf_temp_hal TEMP HAL
@@ -117,7 +70,7 @@ typedef enum
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] mask  Mask of interrupts to be enabled.
  */
-__STATIC_INLINE void nrf_temp_int_enable(NRF_TEMP_Type * p_reg, uint32_t mask);
+NRF_STATIC_INLINE void nrf_temp_int_enable(NRF_TEMP_Type * p_reg, uint32_t mask);
 
 /**
  * @brief Function for disabling specified interrupts.
@@ -125,19 +78,17 @@ __STATIC_INLINE void nrf_temp_int_enable(NRF_TEMP_Type * p_reg, uint32_t mask);
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] mask  Mask of interrupts to be disabled.
  */
-__STATIC_INLINE void nrf_temp_int_disable(NRF_TEMP_Type * p_reg, uint32_t mask);
+NRF_STATIC_INLINE void nrf_temp_int_disable(NRF_TEMP_Type * p_reg, uint32_t mask);
 
 /**
- * @brief Function for retrieving the state of a given interrupt.
+ * @brief Function for checking if the specified interrupts are enabled.
  *
- * @param[in] p_reg    Pointer to the structure of registers of the peripheral.
- * @param[in] temp_int Interrupt to be checked.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] mask  Mask of interrupts to be checked.
  *
- * @retval true  The interrupt is enabled.
- * @retval false The interrupt is not enabled.
+ * @return Mask of enabled interrupts.
  */
-__STATIC_INLINE bool nrf_temp_int_enable_check(NRF_TEMP_Type const * p_reg,
-                                               nrf_temp_int_mask_t   temp_int);
+NRF_STATIC_INLINE uint32_t nrf_temp_int_enable_check(NRF_TEMP_Type const * p_reg, uint32_t mask);
 
 /**
  * @brief Function for getting the address of the specified TEMP task register.
@@ -147,8 +98,8 @@ __STATIC_INLINE bool nrf_temp_int_enable_check(NRF_TEMP_Type const * p_reg,
  *
  * @return Address of the requested task register.
  */
-__STATIC_INLINE uint32_t nrf_temp_task_address_get(NRF_TEMP_Type const * p_reg,
-                                                   nrf_temp_task_t       task);
+NRF_STATIC_INLINE uint32_t nrf_temp_task_address_get(NRF_TEMP_Type const * p_reg,
+                                                     nrf_temp_task_t       task);
 
 /**
  * @brief Function for activating the specified TEMP task.
@@ -156,7 +107,7 @@ __STATIC_INLINE uint32_t nrf_temp_task_address_get(NRF_TEMP_Type const * p_reg,
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] task  Task to be activated.
  */
-__STATIC_INLINE void nrf_temp_task_trigger(NRF_TEMP_Type * p_reg, nrf_temp_task_t task);
+NRF_STATIC_INLINE void nrf_temp_task_trigger(NRF_TEMP_Type * p_reg, nrf_temp_task_t task);
 
 /**
  * @brief Function for getting the address of the specified TEMP event register.
@@ -166,8 +117,8 @@ __STATIC_INLINE void nrf_temp_task_trigger(NRF_TEMP_Type * p_reg, nrf_temp_task_
  *
  * @return Address of the requested event register.
  */
-__STATIC_INLINE uint32_t nrf_temp_event_address_get(NRF_TEMP_Type const * p_reg,
-                                                    nrf_temp_event_t      event);
+NRF_STATIC_INLINE uint32_t nrf_temp_event_address_get(NRF_TEMP_Type const * p_reg,
+                                                      nrf_temp_event_t      event);
 
 /**
  * @brief Function for clearing the specified TEMP event.
@@ -175,7 +126,7 @@ __STATIC_INLINE uint32_t nrf_temp_event_address_get(NRF_TEMP_Type const * p_reg,
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] event Event to clear.
  */
-__STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type *  p_reg, nrf_temp_event_t event);
+NRF_STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type *  p_reg, nrf_temp_event_t event);
 
 /**
  * @brief Function for getting the state of a specific event.
@@ -186,7 +137,7 @@ __STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type *  p_reg, nrf_temp_event
  * @retval true  The event has been generated.
  * @retval false The event has not been generated.
  */
-__STATIC_INLINE bool nrf_temp_event_check(NRF_TEMP_Type const * p_reg, nrf_temp_event_t event);
+NRF_STATIC_INLINE bool nrf_temp_event_check(NRF_TEMP_Type const * p_reg, nrf_temp_event_t event);
 
 /**
  * @brief Function for getting the result of temperature measurement.
@@ -197,44 +148,43 @@ __STATIC_INLINE bool nrf_temp_event_check(NRF_TEMP_Type const * p_reg, nrf_temp_
  *
  * @return Temperature value register contents.
  */
-__STATIC_INLINE int32_t nrf_temp_result_get(NRF_TEMP_Type const * p_reg);
+NRF_STATIC_INLINE int32_t nrf_temp_result_get(NRF_TEMP_Type const * p_reg);
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
+#ifndef NRF_DECLARE_ONLY
 
-__STATIC_INLINE void nrf_temp_int_enable(NRF_TEMP_Type * p_reg, uint32_t mask)
+NRF_STATIC_INLINE void nrf_temp_int_enable(NRF_TEMP_Type * p_reg, uint32_t mask)
 {
     p_reg->INTENSET = mask;
 }
 
-__STATIC_INLINE void nrf_temp_int_disable(NRF_TEMP_Type * p_reg, uint32_t mask)
+NRF_STATIC_INLINE void nrf_temp_int_disable(NRF_TEMP_Type * p_reg, uint32_t mask)
 {
     p_reg->INTENCLR = mask;
 }
 
-__STATIC_INLINE bool nrf_temp_int_enable_check(NRF_TEMP_Type const * p_reg,
-                                               nrf_temp_int_mask_t   temp_int)
+NRF_STATIC_INLINE uint32_t nrf_temp_int_enable_check(NRF_TEMP_Type const * p_reg, uint32_t mask)
 {
-    return (bool)(p_reg->INTENSET & temp_int);
+    return p_reg->INTENSET & mask;
 }
 
-__STATIC_INLINE uint32_t nrf_temp_task_address_get(NRF_TEMP_Type const * p_reg,
-                                                   nrf_temp_task_t       task)
+NRF_STATIC_INLINE uint32_t nrf_temp_task_address_get(NRF_TEMP_Type const * p_reg,
+                                                     nrf_temp_task_t       task)
 {
     return (uint32_t)((uint8_t *)p_reg + (uint32_t)task);
 }
 
-__STATIC_INLINE void nrf_temp_task_trigger(NRF_TEMP_Type * p_reg, nrf_temp_task_t task)
+NRF_STATIC_INLINE void nrf_temp_task_trigger(NRF_TEMP_Type * p_reg, nrf_temp_task_t task)
 {
     *(volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)task) = 1;
 }
 
-__STATIC_INLINE uint32_t nrf_temp_event_address_get(NRF_TEMP_Type const * p_reg,
-                                                    nrf_temp_event_t      event)
+NRF_STATIC_INLINE uint32_t nrf_temp_event_address_get(NRF_TEMP_Type const * p_reg,
+                                                      nrf_temp_event_t      event)
 {
     return (uint32_t)((uint8_t *)p_reg + (uint32_t)event);
 }
 
-__STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type * p_reg, nrf_temp_event_t event)
+NRF_STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type * p_reg, nrf_temp_event_t event)
 {
     *((volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event)) = 0;
 #if __CORTEX_M == 0x04
@@ -243,12 +193,12 @@ __STATIC_INLINE void nrf_temp_event_clear(NRF_TEMP_Type * p_reg, nrf_temp_event_
 #endif
 }
 
-__STATIC_INLINE bool nrf_temp_event_check(NRF_TEMP_Type const * p_reg, nrf_temp_event_t event)
+NRF_STATIC_INLINE bool nrf_temp_event_check(NRF_TEMP_Type const * p_reg, nrf_temp_event_t event)
 {
     return (bool)*((volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event));
 }
 
-__STATIC_INLINE int32_t nrf_temp_result_get(NRF_TEMP_Type const * p_reg)
+NRF_STATIC_INLINE int32_t nrf_temp_result_get(NRF_TEMP_Type const * p_reg)
 {
     int32_t raw_measurement = p_reg->TEMP;
 
@@ -263,7 +213,7 @@ __STATIC_INLINE int32_t nrf_temp_result_get(NRF_TEMP_Type const * p_reg)
     return raw_measurement;
 }
 
-#endif
+#endif // NRF_DECLARE_ONLY
 
 /** @} */
 

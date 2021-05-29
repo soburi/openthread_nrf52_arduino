@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2019 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_GPPI_H
@@ -355,111 +346,116 @@ __STATIC_INLINE nrfx_gppi_task_t nrfx_gppi_group_enable_task_get(nrfx_gppi_chann
 
 __STATIC_INLINE bool nrfx_gppi_channel_check(uint8_t channel)
 {
-    return (nrf_ppi_channel_enable_get((nrf_ppi_channel_t)channel) == NRF_PPI_CHANNEL_ENABLED);
+    return (nrf_ppi_channel_enable_get(NRF_PPI, (nrf_ppi_channel_t)channel) ==
+            NRF_PPI_CHANNEL_ENABLED);
 }
 
 __STATIC_INLINE void nrfx_gppi_channels_disable_all(void)
 {
-    nrf_ppi_channel_disable_all();
+    nrf_ppi_channels_disable_all(NRF_PPI);
 }
 
 __STATIC_INLINE void nrfx_gppi_channels_enable(uint32_t mask)
 {
-    nrf_ppi_channels_enable(mask);
+    nrf_ppi_channels_enable(NRF_PPI, mask);
 }
 
 __STATIC_INLINE void nrfx_gppi_channels_disable(uint32_t mask)
 {
-    nrf_ppi_channels_disable(mask);
+    nrf_ppi_channels_disable(NRF_PPI, mask);
 }
 
 __STATIC_INLINE void nrfx_gppi_event_endpoint_setup(uint8_t channel, uint32_t eep)
 {
-    nrf_ppi_event_endpoint_setup((nrf_ppi_channel_t)channel, eep);
+    nrf_ppi_event_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, eep);
 }
 
 __STATIC_INLINE void nrfx_gppi_task_endpoint_setup(uint8_t channel, uint32_t tep)
 {
-    nrf_ppi_task_endpoint_setup((nrf_ppi_channel_t)channel, tep);
+    nrf_ppi_task_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, tep);
 }
 
 __STATIC_INLINE void nrfx_gppi_channel_endpoints_setup(uint8_t  channel,
                                                        uint32_t eep,
                                                        uint32_t tep)
 {
-    nrf_ppi_channel_endpoint_setup((nrf_ppi_channel_t)channel, eep, tep);
+    nrf_ppi_channel_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, eep, tep);
 }
 
 __STATIC_INLINE void nrfx_gppi_event_endpoint_clear(uint8_t channel, uint32_t eep)
 {
     (void)eep;
-     nrf_ppi_event_endpoint_setup((nrf_ppi_channel_t)channel, 0);
+     nrf_ppi_event_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, 0);
 }
 
 __STATIC_INLINE void nrfx_gppi_task_endpoint_clear(uint8_t channel, uint32_t tep)
 {
     (void)tep;
-    nrf_ppi_task_endpoint_setup((nrf_ppi_channel_t)channel, 0);
+    nrf_ppi_task_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, 0);
 }
 
 #if defined(PPI_FEATURE_FORKS_PRESENT)
 __STATIC_INLINE void nrfx_gppi_fork_endpoint_setup(uint8_t channel, uint32_t fork_tep)
 {
-    nrf_ppi_fork_endpoint_setup((nrf_ppi_channel_t)channel, fork_tep);
+    nrf_ppi_fork_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, fork_tep);
 }
 
 __STATIC_INLINE void nrfx_gppi_fork_endpoint_clear(uint8_t channel, uint32_t fork_tep)
 {
     (void)fork_tep;
-    nrf_ppi_fork_endpoint_setup((nrf_ppi_channel_t)channel, 0);
+    nrf_ppi_fork_endpoint_setup(NRF_PPI, (nrf_ppi_channel_t)channel, 0);
 }
 #endif
 
 __STATIC_INLINE void nrfx_gppi_channels_include_in_group(uint32_t                  channel_mask,
                                                          nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_ppi_channels_include_in_group(channel_mask, channel_group);
+    nrf_ppi_channels_include_in_group(NRF_PPI,
+                                      channel_mask,
+                                      (nrf_ppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_channels_remove_from_group(uint32_t                  channel_mask,
                                                           nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_ppi_channels_remove_from_group(channel_mask, channel_group);
+    nrf_ppi_channels_remove_from_group(NRF_PPI,
+                                       channel_mask,
+                                       (nrf_ppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_clear(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_ppi_channel_group_clear(channel_group);
+    nrf_ppi_group_clear(NRF_PPI, (nrf_ppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_enable(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_ppi_group_enable(channel_group);
+    nrf_ppi_group_enable(NRF_PPI, (nrf_ppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_disable(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_ppi_group_disable(channel_group);
+    nrf_ppi_group_disable(NRF_PPI, (nrf_ppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_task_trigger(nrfx_gppi_task_t task)
 {
-    nrf_ppi_task_trigger(task);
+    nrf_ppi_task_trigger(NRF_PPI, (nrf_ppi_task_t)task);
 }
 
 __STATIC_INLINE uint32_t nrfx_gppi_task_address_get(nrfx_gppi_task_t task)
 {
-    return (uint32_t)nrf_ppi_task_address_get(task);
+    return (uint32_t)nrf_ppi_task_address_get(NRF_PPI, (nrf_ppi_task_t)task);
 }
 
 __STATIC_INLINE nrfx_gppi_task_t nrfx_gppi_group_disable_task_get(nrfx_gppi_channel_group_t group)
 {
-    return (nrfx_gppi_task_t)nrf_ppi_group_disable_task_get((uint8_t)group);
+    return (nrfx_gppi_task_t)nrf_ppi_group_disable_task_get(NRF_PPI, (uint8_t)group);
 }
 
 __STATIC_INLINE nrfx_gppi_task_t nrfx_gppi_group_enable_task_get(nrfx_gppi_channel_group_t group)
 {
-    return (nrfx_gppi_task_t)nrf_ppi_group_enable_task_get((uint8_t)group);
+    return (nrfx_gppi_task_t)nrf_ppi_group_enable_task_get(NRF_PPI, (uint8_t)group);
 }
 
 #elif defined(DPPI_PRESENT)
@@ -486,7 +482,7 @@ __STATIC_INLINE void nrfx_gppi_channels_disable(uint32_t mask)
 
 __STATIC_INLINE void nrfx_gppi_task_trigger(nrfx_gppi_task_t task)
 {
-    nrf_dppi_task_trigger(NRF_DPPIC, task);
+    nrf_dppi_task_trigger(NRF_DPPIC, (nrf_dppi_task_t)task);
 }
 
 __STATIC_INLINE void nrfx_gppi_event_endpoint_setup(uint8_t channel, uint32_t eep)
@@ -536,33 +532,37 @@ __STATIC_INLINE void nrfx_gppi_fork_endpoint_clear(uint8_t channel, uint32_t for
 __STATIC_INLINE void nrfx_gppi_channels_include_in_group(uint32_t                  channel_mask,
                                                          nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_dppi_channels_include_in_group(NRF_DPPIC, channel_mask, channel_group);
+    nrf_dppi_channels_include_in_group(NRF_DPPIC,
+                                       channel_mask,
+                                       (nrf_dppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_channels_remove_from_group(uint32_t                  channel_mask,
                                                           nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_dppi_channels_remove_from_group(NRF_DPPIC, channel_mask, channel_group);
+    nrf_dppi_channels_remove_from_group(NRF_DPPIC,
+                                        channel_mask,
+                                        (nrf_dppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_clear(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_dppi_group_clear(NRF_DPPIC, channel_group);
+    nrf_dppi_group_clear(NRF_DPPIC, (nrf_dppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_enable(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_dppi_group_enable(NRF_DPPIC, channel_group);
+    nrf_dppi_group_enable(NRF_DPPIC, (nrf_dppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE void nrfx_gppi_group_disable(nrfx_gppi_channel_group_t channel_group)
 {
-    nrf_dppi_group_disable(NRF_DPPIC, channel_group);
+    nrf_dppi_group_disable(NRF_DPPIC, (nrf_dppi_channel_group_t)channel_group);
 }
 
 __STATIC_INLINE uint32_t nrfx_gppi_task_address_get(nrfx_gppi_task_t gppi_task)
 {
-    return (uint32_t) ((uint8_t *) NRF_DPPIC + (uint32_t) gppi_task);
+    return nrf_dppi_task_address_get(NRF_DPPIC, (nrf_dppi_task_t)gppi_task);
 }
 
 __STATIC_INLINE nrfx_gppi_task_t nrfx_gppi_group_disable_task_get(nrfx_gppi_channel_group_t group)

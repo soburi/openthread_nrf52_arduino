@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2016 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_QSPI_H__
@@ -65,31 +56,52 @@ typedef struct
     uint8_t              irq_priority; /**< Interrupt priority. */
 } nrfx_qspi_config_t;
 
-/** @brief QSPI instance default configuration. */
-#define NRFX_QSPI_DEFAULT_CONFIG                                        \
-{                                                                       \
-    .xip_offset  = NRFX_QSPI_CONFIG_XIP_OFFSET,                         \
-    .pins = {                                                           \
-       .sck_pin     = NRFX_QSPI_PIN_SCK,                                \
-       .csn_pin     = NRFX_QSPI_PIN_CSN,                                \
-       .io0_pin     = NRFX_QSPI_PIN_IO0,                                \
-       .io1_pin     = NRFX_QSPI_PIN_IO1,                                \
-       .io2_pin     = NRFX_QSPI_PIN_IO2,                                \
-       .io3_pin     = NRFX_QSPI_PIN_IO3,                                \
-    },                                                                  \
-    .prot_if = {                                                        \
-        .readoc     = (nrf_qspi_readoc_t)NRFX_QSPI_CONFIG_READOC,       \
-        .writeoc    = (nrf_qspi_writeoc_t)NRFX_QSPI_CONFIG_WRITEOC,     \
-        .addrmode   = (nrf_qspi_addrmode_t)NRFX_QSPI_CONFIG_ADDRMODE,   \
-        .dpmconfig  = false,                                            \
-    },                                                                  \
-    .phy_if = {                                                         \
-        .sck_delay  = (uint8_t)NRFX_QSPI_CONFIG_SCK_DELAY,              \
-        .dpmen      = false,                                            \
-        .spi_mode   = (nrf_qspi_spi_mode_t)NRFX_QSPI_CONFIG_MODE,       \
-        .sck_freq   = (nrf_qspi_frequency_t)NRFX_QSPI_CONFIG_FREQUENCY, \
-    },                                                                  \
-    .irq_priority   = (uint8_t)NRFX_QSPI_CONFIG_IRQ_PRIORITY,           \
+/**
+ * @brief QSPI instance default configuration.
+ *
+ * This configuration sets up QSPI with the following options:
+ * - no offset for address in the external memory for Execute in Place operation
+ * - single data line
+ * - FAST_READ opcode for reading
+ * - PP opcode for writing
+ * - 24 bit addressing mode
+ * - Deep Power-down disabled
+ * - clock frequency: 2 MHz for nRF52 Series, 6 MHz for nRF53 Series
+ * - SCK delay 5 clock ticks
+ * - mode 0 (data captured on the clock rising edge and transmitted on a falling edge. Clock base level is '0')
+ *
+ * @param[in] _pin_sck Pin for clock signal.
+ * @param[in] _pin_csn Pin for chip select signal.
+ * @param[in] _pin_io0 Pin 0 for I/O data.
+ * @param[in] _pin_io1 Pin 1 for I/O data.
+ * @param[in] _pin_io2 Pin 2 for I/O data.
+ * @param[in] _pin_io3 Pin 3 for I/O data.
+ */
+#define NRFX_QSPI_DEFAULT_CONFIG(_pin_sck, _pin_csn, _pin_io0,         \
+                                 _pin_io1, _pin_io2, _pin_io3)         \
+{                                                                      \
+    .xip_offset    = 0,                                                \
+    .pins = {                                                          \
+       .sck_pin    = _pin_sck,                                         \
+       .csn_pin    = _pin_csn,                                         \
+       .io0_pin    = _pin_io0,                                         \
+       .io1_pin    = _pin_io1,                                         \
+       .io2_pin    = _pin_io2,                                         \
+       .io3_pin    = _pin_io3                                          \
+    },                                                                 \
+    .prot_if = {                                                       \
+        .readoc    = NRF_QSPI_READOC_FASTREAD,                         \
+        .writeoc   = NRF_QSPI_WRITEOC_PP,                              \
+        .addrmode  = NRF_QSPI_ADDRMODE_24BIT,                          \
+        .dpmconfig = false,                                            \
+    },                                                                 \
+    .phy_if = {                                                        \
+        .sck_delay = 0x05,                                             \
+        .dpmen     = false,                                            \
+        .spi_mode  = NRF_QSPI_MODE_0,                                  \
+        .sck_freq  = NRF_QSPI_FREQ_DIV16,                              \
+    },                                                                 \
+    .irq_priority  = (uint8_t)NRFX_QSPI_DEFAULT_CONFIG_IRQ_PRIORITY,   \
 }
 
 /** @brief QSPI custom instruction helper with the default configuration. */
@@ -316,6 +328,32 @@ nrfx_err_t nrfx_qspi_lfm_xfer(void const * p_tx_buffer,
                               void *       p_rx_buffer,
                               size_t       transfer_length,
                               bool         finalize);
+
+#if NRF_QSPI_HAS_XIP_ENC
+/**
+ * @brief Function for setting the XIP encryption.
+ *
+ * @param[in] p_config XIP encryption configuration structure.
+ *                     To disable encryption, pass NULL pointer as argument.
+ *
+ * @retval NRFX_SUCCESS    Operation was successful.
+ * @retval NRFX_ERROR_BUSY Driver currently handles other operation.
+ */
+nrfx_err_t nrfx_qspi_xip_encrypt(nrf_qspi_encryption_t const * p_config);
+#endif
+
+#if NRF_QSPI_HAS_DMA_ENC
+/**
+ * @brief Function for setting the EasyDMA encryption.
+ *
+ * @param[in] p_config DMA encryption configuration structure.
+ *                     To disable encryption, pass NULL pointer as argument.
+ *
+ * @retval NRFX_SUCCESS    Operation was successful.
+ * @retval NRFX_ERROR_BUSY Driver currently handles other operation.
+ */
+nrfx_err_t nrfx_qspi_dma_encrypt(nrf_qspi_encryption_t const * p_config);
+#endif
 
 /** @} */
 

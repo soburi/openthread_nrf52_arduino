@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2016 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -761,17 +752,17 @@ static inline void usbd_dma_pending_clear(void)
  */
 static inline void usbd_dma_start(nrfx_usbd_ep_t ep)
 {
-    nrf_usbd_task_trigger(task_start_ep(ep));
+    nrf_usbd_task_trigger(NRF_USBD, task_start_ep(ep));
 }
 
 void nrfx_usbd_isoinconfig_set(nrf_usbd_isoinconfig_t config)
 {
-    nrf_usbd_isoinconfig_set(config);
+    nrf_usbd_isoinconfig_set(NRF_USBD, config);
 }
 
 nrf_usbd_isoinconfig_t nrfx_usbd_isoinconfig_get(void)
 {
-    return nrf_usbd_isoinconfig_get();
+    return nrf_usbd_isoinconfig_get(NRF_USBD);
 }
 
 /**
@@ -818,19 +809,19 @@ static inline void usbd_ep_abort(nrfx_usbd_ep_t ep)
             /* Workaround: Disarm the endpoint if there is any data buffered. */
             if(ep != NRFX_USBD_EPIN0)
             {
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7B6 + (2u * (NRF_USBD_EP_NR_GET(ep) - 1));
-                uint8_t temp = *((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7B6 + (2u * (NRF_USBD_EP_NR_GET(ep) - 1));
+                uint8_t temp = *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
                 temp |= (1U << 1);
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) |= temp;
-                (void)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) |= temp;
+                (void)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             }
             else
             {
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7B4;
-                uint8_t temp = *((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7B4;
+                uint8_t temp = *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
                 temp |= (1U << 2);
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) |= temp;
-                (void)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) |= temp;
+                (void)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             }
         }
         if ((m_ep_dma_waiting | (~m_ep_ready)) & (1U << ep2bit(ep)))
@@ -1134,12 +1125,12 @@ static void ev_sof_handler(void)
 {
     nrfx_usbd_evt_t evt =  {
             NRFX_USBD_EVT_SOF,
-            .data = { .sof = { .framecnt = nrf_usbd_framecntr_get() }}
+            .data = { .sof = { .framecnt = nrf_usbd_framecntr_get(NRF_USBD) }}
     };
 
     /* Process isochronous endpoints */
     uint32_t iso_ready_mask = (1U << ep2bit(NRFX_USBD_EPIN8));
-    if (nrf_usbd_episoout_size_get(NRFX_USBD_EPOUT8) != NRF_USBD_EPISOOUT_NO_DATA)
+    if (nrf_usbd_episoout_size_get(NRF_USBD, NRFX_USBD_EPOUT8) != NRF_USBD_EPISOOUT_NO_DATA)
     {
         iso_ready_mask |= (1U << ep2bit(NRFX_USBD_EPOUT8));
     }
@@ -1171,7 +1162,7 @@ static void usbd_ep_data_handler(nrfx_usbd_ep_t ep, uint8_t bitpos)
          * the OUT handler might call usbd_ep_data_handler without calling
          * nrf_usbd_epin_dma_handler (or nrf_usbd_ep0in_dma_handler) for the IN transaction.
          */
-        if (nrf_usbd_event_get_and_clear(nrfx_usbd_ep_to_endevent(ep)))
+        if (nrf_usbd_event_get_and_clear(NRF_USBD, nrfx_usbd_ep_to_endevent(ep)))
         {
             if (ep != NRFX_USBD_EPIN0)
             {
@@ -1212,12 +1203,12 @@ static void ev_setup_data_handler(void)
 static void ev_setup_handler(void)
 {
     NRFX_LOG_DEBUG("USBD event: Setup (rt:%.2x r:%.2x v:%.4x i:%.4x l:%u )",
-        nrf_usbd_setup_bmrequesttype_get(),
-        nrf_usbd_setup_brequest_get(),
-        nrf_usbd_setup_wvalue_get(),
-        nrf_usbd_setup_windex_get(),
-        nrf_usbd_setup_wlength_get());
-    uint8_t bmRequestType = nrf_usbd_setup_bmrequesttype_get();
+        nrf_usbd_setup_bmrequesttype_get(NRF_USBD),
+        nrf_usbd_setup_brequest_get(NRF_USBD),
+        nrf_usbd_setup_wvalue_get(NRF_USBD),
+        nrf_usbd_setup_windex_get(NRF_USBD),
+        nrf_usbd_setup_wlength_get(NRF_USBD));
+    uint8_t bmRequestType = nrf_usbd_setup_bmrequesttype_get(NRF_USBD);
 
     if ((m_ep_dma_waiting | ((~m_ep_ready) & NRFX_USBD_EPIN_BIT_MASK))
         & (1U <<ep2bit(m_last_setup_dir)))
@@ -1245,7 +1236,7 @@ static void ev_setup_handler(void)
 
 static void ev_usbevent_handler(void)
 {
-    uint32_t event = nrf_usbd_eventcause_get_and_clear();
+    uint32_t event = nrf_usbd_eventcause_get_and_clear(NRF_USBD);
 
     if (event & NRF_USBD_EVENTCAUSE_ISOOUTCRC_MASK)
     {
@@ -1275,11 +1266,11 @@ static void ev_usbevent_handler(void)
         NRFX_LOG_DEBUG("USBD event: WUREQ (%s)", m_bus_suspend ? "In Suspend" : "Active");
         if (m_bus_suspend)
         {
-            NRFX_ASSERT(!nrf_usbd_lowpower_check());
+            NRFX_ASSERT(!nrf_usbd_lowpower_check(NRF_USBD));
             m_bus_suspend = false;
 
-            nrf_usbd_dpdmvalue_set(NRF_USBD_DPDMVALUE_RESUME);
-            nrf_usbd_task_trigger(NRF_USBD_TASK_DRIVEDPDM);
+            nrf_usbd_dpdmvalue_set(NRF_USBD, NRF_USBD_DPDMVALUE_RESUME);
+            nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_DRIVEDPDM);
 
             const nrfx_usbd_evt_t evt = {
                     .type = NRFX_USBD_EVT_WUREQ
@@ -1292,7 +1283,7 @@ static void ev_usbevent_handler(void)
 static void ev_epdata_handler(void)
 {
     /* Get all endpoints that have acknowledged transfer */
-    uint32_t dataepstatus = nrf_usbd_epdatastatus_get_and_clear();
+    uint32_t dataepstatus = nrf_usbd_epdatastatus_get_and_clear(NRF_USBD);
     if (nrfx_usbd_errata_104())
     {
         dataepstatus |= (m_simulated_dataepstatus &
@@ -1351,7 +1342,7 @@ static uint8_t usbd_dma_scheduler_algorithm(uint32_t req)
 static inline size_t usbd_ep_iso_capacity(nrfx_usbd_ep_t ep)
 {
     (void)ep;
-    nrf_usbd_isosplit_t split = nrf_usbd_isosplit_get();
+    nrf_usbd_isosplit_t split = nrf_usbd_isosplit_get(NRF_USBD);
     if (NRF_USBD_ISOSPLIT_HALF == split)
     {
         return NRFX_USBD_ISOSIZE / 2;
@@ -1454,7 +1445,7 @@ static void usbd_dmareq_process(void)
             /* Update number of currently transferred bytes */
             p_state->transfer_cnt += transfer.size;
             /* Start transfer to the endpoint buffer */
-            nrf_usbd_ep_easydma_set(ep, transfer.p_data.addr, (uint32_t)transfer.size);
+            nrf_usbd_ep_easydma_set(NRF_USBD, ep, transfer.p_data.addr, (uint32_t)transfer.size);
 
             if (nrfx_usbd_errata_104())
             {
@@ -1464,25 +1455,25 @@ static void usbd_dmareq_process(void)
                     uint32_t cnt = (uint32_t)(-1);
                     do
                     {
-                        nrf_usbd_event_clear(NRF_USBD_EVENT_STARTED);
+                        nrf_usbd_event_clear(NRF_USBD, NRF_USBD_EVENT_STARTED);
                         usbd_dma_start(ep);
                         nrfx_systick_delay_us(2);
                         ++cnt;
-                    }while (!nrf_usbd_event_check(NRF_USBD_EVENT_STARTED));
+                    }while (!nrf_usbd_event_check(NRF_USBD, NRF_USBD_EVENT_STARTED));
                     if (cnt)
                     {
                         NRFX_USBD_LOG_PROTO1_FIX_PRINTF("   DMA restarted: %u times", cnt);
                     }
 
                     nrfx_systick_delay_us(30);
-                    while (0 == (0x20 & *((volatile uint32_t *)(NRF_USBD_BASE + 0x474))))
+                    while (0 == (0x20 & *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x474))))
                     {
                         nrfx_systick_delay_us(2);
                     }
                     nrfx_systick_delay_us(1);
 
                     ++cnt_end;
-                } while (!nrf_usbd_event_check(nrfx_usbd_ep_to_endevent(ep)));
+                } while (!nrf_usbd_event_check(NRF_USBD, nrfx_usbd_ep_to_endevent(ep)));
                 if (cnt_end)
                 {
                     NRFX_USBD_LOG_PROTO1_FIX_PRINTF("   DMA fully restarted: %u times", cnt_end);
@@ -1494,8 +1485,8 @@ static void usbd_dmareq_process(void)
                 /* There is a lot of USBD registers that cannot be accessed during EasyDMA transfer.
                  * This is quick fix to maintain stability of the stack.
                  * It cost some performance but makes stack stable. */
-                while (!nrf_usbd_event_check(nrfx_usbd_ep_to_endevent(ep)) &&
-                       !nrf_usbd_event_check(NRF_USBD_EVENT_USBRESET))
+                while (!nrf_usbd_event_check(NRF_USBD, nrfx_usbd_ep_to_endevent(ep)) &&
+                       !nrf_usbd_event_check(NRF_USBD, NRF_USBD_EVENT_USBRESET))
                 {
                     /* Empty */
                 }
@@ -1559,7 +1550,7 @@ static const nrfx_irq_handler_t m_isr[] =
  */
 void nrfx_usbd_irq_handler(void)
 {
-    const uint32_t enabled = nrf_usbd_int_enable_get();
+    const uint32_t enabled = nrf_usbd_int_enable_get(NRF_USBD);
     uint32_t to_process = enabled;
     uint32_t active = 0;
 
@@ -1567,7 +1558,8 @@ void nrfx_usbd_irq_handler(void)
     while (to_process)
     {
         uint8_t event_nr = __CLZ(__RBIT(to_process));
-        if (nrf_usbd_event_get_and_clear((nrf_usbd_event_t)nrfx_bitpos_to_event(event_nr)))
+        if (nrf_usbd_event_get_and_clear(NRF_USBD,
+                                         (nrf_usbd_event_t)nrfx_bitpos_to_event(event_nr)))
         {
             active |= 1UL << event_nr;
         }
@@ -1581,54 +1573,54 @@ void nrfx_usbd_irq_handler(void)
         {
             uint8_t usbi, uoi, uii;
             /* Testing */
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7A9;
-            uii = (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7A9;
+            uii = (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             if (0 != uii)
             {
-                uii &= (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+                uii &= (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             }
 
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AA;
-            uoi = (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AA;
+            uoi = (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             if (0 != uoi)
             {
-                uoi &= (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+                uoi &= (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             }
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AB;
-            usbi = (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AB;
+            usbi = (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             if (0 != usbi)
             {
-                usbi &= (uint8_t)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+                usbi &= (uint8_t)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
             }
             /* Processing */
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AC;
-            uii &= (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AC;
+            uii &= (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
             if (0 != uii)
             {
                 uint8_t rb;
                 m_simulated_dataepstatus |= ((uint32_t)uii) << NRFX_USBD_EPIN_BITPOS_0;
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7A9;
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) = uii;
-                rb = (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7A9;
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) = uii;
+                rb = (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
                 NRFX_USBD_LOG_PROTO1_FIX_PRINTF("   uii: 0x%.2x (0x%.2x)", uii, rb);
                 (void)rb;
             }
 
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AD;
-            uoi &= (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AD;
+            uoi &= (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
             if (0 != uoi)
             {
                 uint8_t rb;
                 m_simulated_dataepstatus |= ((uint32_t)uoi) << NRFX_USBD_EPOUT_BITPOS_0;
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AA;
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) = uoi;
-                rb = (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AA;
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) = uoi;
+                rb = (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
                 NRFX_USBD_LOG_PROTO1_FIX_PRINTF("   uoi: 0x%.2u (0x%.2x)", uoi, rb);
                 (void)rb;
             }
 
-            *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AE;
-            usbi &= (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+            *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AE;
+            usbi &= (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
             if (0 != usbi)
             {
                 uint8_t rb;
@@ -1640,9 +1632,9 @@ void nrfx_usbd_irq_handler(void)
                 {
                     active |= USBD_INTEN_USBRESET_Msk;
                 }
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7AB;
-                *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) = usbi;
-                rb = (uint8_t)*((volatile uint32_t *)(NRF_USBD_BASE + 0x804));
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7AB;
+                *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) = usbi;
+                rb = (uint8_t)*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804));
                 NRFX_USBD_LOG_PROTO1_FIX_PRINTF("   usbi: 0x%.2u (0x%.2x)", usbi, rb);
                 (void)rb;
             }
@@ -1737,7 +1729,7 @@ void nrfx_usbd_enable(void)
     NRFX_ASSERT(m_drv_state == NRFX_DRV_STATE_INITIALIZED);
 
     /* Prepare for READY event receiving */
-    nrf_usbd_eventcause_clear(NRF_USBD_EVENTCAUSE_READY_MASK);
+    nrf_usbd_eventcause_clear(NRF_USBD, NRF_USBD_EVENTCAUSE_READY_MASK);
 
     if (nrfx_usbd_errata_187())
     {
@@ -1772,13 +1764,13 @@ void nrfx_usbd_enable(void)
     }
 
     /* Enable the peripheral */
-    nrf_usbd_enable();
+    nrf_usbd_enable(NRF_USBD);
     /* Waiting for peripheral to enable, this should take a few us */
-    while (0 == (NRF_USBD_EVENTCAUSE_READY_MASK & nrf_usbd_eventcause_get()))
+    while (0 == (NRF_USBD_EVENTCAUSE_READY_MASK & nrf_usbd_eventcause_get(NRF_USBD)))
     {
         /* Empty loop */
     }
-    nrf_usbd_eventcause_clear(NRF_USBD_EVENTCAUSE_READY_MASK);
+    nrf_usbd_eventcause_clear(NRF_USBD, NRF_USBD_EVENTCAUSE_READY_MASK);
 
     if (nrfx_usbd_errata_171())
     {
@@ -1799,13 +1791,13 @@ void nrfx_usbd_enable(void)
 
     if (nrfx_usbd_errata_166())
     {
-        *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7E3;
-        *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) = 0x40;
+        *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7E3;
+        *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) = 0x40;
         __ISB();
         __DSB();
     }
 
-    nrf_usbd_isosplit_set(NRF_USBD_ISOSPLIT_HALF);
+    nrf_usbd_isosplit_set(NRF_USBD, NRF_USBD_ISOSPLIT_HALF);
 
     if (NRFX_USBD_CONFIG_ISO_IN_ZLP)
     {
@@ -1848,8 +1840,8 @@ void nrfx_usbd_disable(void)
     nrfx_usbd_stop();
 
     /* Disable all parts */
-    nrf_usbd_int_disable(nrf_usbd_int_enable_get());
-    nrf_usbd_disable();
+    nrf_usbd_int_disable(NRF_USBD, nrf_usbd_int_enable_get(NRF_USBD));
+    nrf_usbd_disable(NRF_USBD);
     usbd_dma_pending_clear();
     m_drv_state = NRFX_DRV_STATE_INITIALIZED;
 }
@@ -1875,14 +1867,14 @@ void nrfx_usbd_start(bool enable_sof)
    }
 
    /* Enable all required interrupts */
-   nrf_usbd_int_enable(ints_to_enable);
+   nrf_usbd_int_enable(NRF_USBD, ints_to_enable);
 
    /* Enable interrupt globally */
-   NRFX_IRQ_PRIORITY_SET(USBD_IRQn, NRFX_USBD_CONFIG_IRQ_PRIORITY);
+   NRFX_IRQ_PRIORITY_SET(USBD_IRQn, NRFX_USBD_DEFAULT_CONFIG_IRQ_PRIORITY);
    NRFX_IRQ_ENABLE(USBD_IRQn);
 
    /* Enable pullups */
-   nrf_usbd_pullup_enable();
+   nrf_usbd_pullup_enable(NRF_USBD);
 }
 
 void nrfx_usbd_stop(void)
@@ -1898,13 +1890,13 @@ void nrfx_usbd_stop(void)
         usbd_ep_abort_all();
 
         /* Disable pullups */
-        nrf_usbd_pullup_disable();
+        nrf_usbd_pullup_disable(NRF_USBD);
 
         /* Disable interrupt globally */
         NRFX_IRQ_DISABLE(USBD_IRQn);
 
         /* Disable all interrupts */
-        nrf_usbd_int_disable(~0U);
+        nrf_usbd_int_disable(NRF_USBD, ~0U);
     }
 }
 
@@ -1932,12 +1924,12 @@ bool nrfx_usbd_suspend(void)
     {
         usbd_ep_abort_all();
 
-        if (!(nrf_usbd_eventcause_get() & NRF_USBD_EVENTCAUSE_RESUME_MASK))
+        if (!(nrf_usbd_eventcause_get(NRF_USBD) & NRF_USBD_EVENTCAUSE_RESUME_MASK))
         {
-            nrf_usbd_lowpower_enable();
-            if (nrf_usbd_eventcause_get() & NRF_USBD_EVENTCAUSE_RESUME_MASK)
+            nrf_usbd_lowpower_enable(NRF_USBD);
+            if (nrf_usbd_eventcause_get(NRF_USBD) & NRF_USBD_EVENTCAUSE_RESUME_MASK)
             {
-                nrf_usbd_lowpower_disable();
+                nrf_usbd_lowpower_disable(NRF_USBD);
             }
             else
             {
@@ -1955,9 +1947,9 @@ bool nrfx_usbd_wakeup_req(void)
     bool started = false;
 
     NRFX_CRITICAL_SECTION_ENTER();
-    if (m_bus_suspend && nrf_usbd_lowpower_check())
+    if (m_bus_suspend && nrf_usbd_lowpower_check(NRF_USBD))
     {
-        nrf_usbd_lowpower_disable();
+        nrf_usbd_lowpower_disable(NRF_USBD);
         started = true;
 
         if (nrfx_usbd_errata_171())
@@ -1982,17 +1974,17 @@ bool nrfx_usbd_wakeup_req(void)
 
 bool nrfx_usbd_suspend_check(void)
 {
-    return nrf_usbd_lowpower_check();
+    return nrf_usbd_lowpower_check(NRF_USBD);
 }
 
 void nrfx_usbd_suspend_irq_config(void)
 {
-    nrf_usbd_int_disable(m_irq_disabled_in_suspend);
+    nrf_usbd_int_disable(NRF_USBD, m_irq_disabled_in_suspend);
 }
 
 void nrfx_usbd_active_irq_config(void)
 {
-    nrf_usbd_int_enable(m_irq_disabled_in_suspend);
+    nrf_usbd_int_enable(NRF_USBD, m_irq_disabled_in_suspend);
 }
 
 bool nrfx_usbd_bus_suspend_check(void)
@@ -2027,18 +2019,18 @@ uint16_t nrfx_usbd_ep_max_packet_size_get(nrfx_usbd_ep_t ep)
 
 bool nrfx_usbd_ep_enable_check(nrfx_usbd_ep_t ep)
 {
-    return nrf_usbd_ep_enable_check(ep_to_hal(ep));
+    return nrf_usbd_ep_enable_check(NRF_USBD, ep_to_hal(ep));
 }
 
 void nrfx_usbd_ep_enable(nrfx_usbd_ep_t ep)
 {
-    nrf_usbd_int_enable(nrfx_usbd_ep_to_int(ep));
+    nrf_usbd_int_enable(NRF_USBD, nrfx_usbd_ep_to_int(ep));
 
-    if (nrf_usbd_ep_enable_check(ep))
+    if (nrf_usbd_ep_enable_check(NRF_USBD, ep))
     {
         return;
     }
-    nrf_usbd_ep_enable(ep_to_hal(ep));
+    nrf_usbd_ep_enable(NRF_USBD, ep_to_hal(ep));
     if ((NRF_USBD_EP_NR_GET(ep) != 0) &&
         NRF_USBD_EPOUT_CHECK(ep) &&
         !NRF_USBD_EPISO_CHECK(ep))
@@ -2053,32 +2045,31 @@ void nrfx_usbd_ep_enable(nrfx_usbd_ep_t ep)
 void nrfx_usbd_ep_disable(nrfx_usbd_ep_t ep)
 {
     usbd_ep_abort(ep);
-    nrf_usbd_ep_disable(ep_to_hal(ep));
-    nrf_usbd_int_disable(nrfx_usbd_ep_to_int(ep));
+    nrf_usbd_ep_disable(NRF_USBD, ep_to_hal(ep));
+    nrf_usbd_int_disable(NRF_USBD, nrfx_usbd_ep_to_int(ep));
 }
 
 void nrfx_usbd_ep_default_config(void)
 {
-    nrf_usbd_int_disable(
-        NRF_USBD_INT_ENDEPIN1_MASK  |
-        NRF_USBD_INT_ENDEPIN2_MASK  |
-        NRF_USBD_INT_ENDEPIN3_MASK  |
-        NRF_USBD_INT_ENDEPIN4_MASK  |
-        NRF_USBD_INT_ENDEPIN5_MASK  |
-        NRF_USBD_INT_ENDEPIN6_MASK  |
-        NRF_USBD_INT_ENDEPIN7_MASK  |
-        NRF_USBD_INT_ENDISOIN0_MASK |
-        NRF_USBD_INT_ENDEPOUT1_MASK |
-        NRF_USBD_INT_ENDEPOUT2_MASK |
-        NRF_USBD_INT_ENDEPOUT3_MASK |
-        NRF_USBD_INT_ENDEPOUT4_MASK |
-        NRF_USBD_INT_ENDEPOUT5_MASK |
-        NRF_USBD_INT_ENDEPOUT6_MASK |
-        NRF_USBD_INT_ENDEPOUT7_MASK |
-        NRF_USBD_INT_ENDISOOUT0_MASK
+    nrf_usbd_int_disable(NRF_USBD, NRF_USBD_INT_ENDEPIN1_MASK  |
+                                   NRF_USBD_INT_ENDEPIN2_MASK  |
+                                   NRF_USBD_INT_ENDEPIN3_MASK  |
+                                   NRF_USBD_INT_ENDEPIN4_MASK  |
+                                   NRF_USBD_INT_ENDEPIN5_MASK  |
+                                   NRF_USBD_INT_ENDEPIN6_MASK  |
+                                   NRF_USBD_INT_ENDEPIN7_MASK  |
+                                   NRF_USBD_INT_ENDISOIN0_MASK |
+                                   NRF_USBD_INT_ENDEPOUT1_MASK |
+                                   NRF_USBD_INT_ENDEPOUT2_MASK |
+                                   NRF_USBD_INT_ENDEPOUT3_MASK |
+                                   NRF_USBD_INT_ENDEPOUT4_MASK |
+                                   NRF_USBD_INT_ENDEPOUT5_MASK |
+                                   NRF_USBD_INT_ENDEPOUT6_MASK |
+                                   NRF_USBD_INT_ENDEPOUT7_MASK |
+                                   NRF_USBD_INT_ENDISOOUT0_MASK
     );
-    nrf_usbd_int_enable(NRF_USBD_INT_ENDEPIN0_MASK | NRF_USBD_INT_ENDEPOUT0_MASK);
-    nrf_usbd_ep_all_disable();
+    nrf_usbd_int_enable(NRF_USBD, NRF_USBD_INT_ENDEPIN0_MASK | NRF_USBD_INT_ENDEPOUT0_MASK);
+    nrf_usbd_ep_default_config(NRF_USBD);
 }
 
 nrfx_err_t nrfx_usbd_ep_transfer(
@@ -2261,7 +2252,7 @@ nrfx_usbd_ep_status_t nrfx_usbd_ep_status_get(nrfx_usbd_ep_t ep, size_t * p_size
 
 size_t nrfx_usbd_epout_size_get(nrfx_usbd_ep_t ep)
 {
-    return nrf_usbd_epout_size_get(ep_to_hal(ep));
+    return nrf_usbd_epout_size_get(NRF_USBD, ep_to_hal(ep));
 }
 
 bool nrfx_usbd_ep_is_busy(nrfx_usbd_ep_t ep)
@@ -2272,7 +2263,7 @@ bool nrfx_usbd_ep_is_busy(nrfx_usbd_ep_t ep)
 void nrfx_usbd_ep_stall(nrfx_usbd_ep_t ep)
 {
     NRFX_LOG_DEBUG("USB: EP %x stalled.", ep);
-    nrf_usbd_ep_stall(ep_to_hal(ep));
+    nrf_usbd_ep_stall(NRF_USBD, ep_to_hal(ep));
 }
 
 void nrfx_usbd_ep_stall_clear(nrfx_usbd_ep_t ep)
@@ -2281,27 +2272,27 @@ void nrfx_usbd_ep_stall_clear(nrfx_usbd_ep_t ep)
     {
         nrfx_usbd_transfer_out_drop(ep);
     }
-    nrf_usbd_ep_unstall(ep_to_hal(ep));
+    nrf_usbd_ep_unstall(NRF_USBD, ep_to_hal(ep));
 }
 
 bool nrfx_usbd_ep_stall_check(nrfx_usbd_ep_t ep)
 {
-    return nrf_usbd_ep_is_stall(ep_to_hal(ep));
+    return nrf_usbd_ep_is_stall(NRF_USBD, ep_to_hal(ep));
 }
 
 void nrfx_usbd_ep_dtoggle_clear(nrfx_usbd_ep_t ep)
 {
-    nrf_usbd_dtoggle_set(ep, NRF_USBD_DTOGGLE_DATA0);
+    nrf_usbd_dtoggle_set(NRF_USBD, ep, NRF_USBD_DTOGGLE_DATA0);
 }
 
 void nrfx_usbd_setup_get(nrfx_usbd_setup_t * p_setup)
 {
     memset(p_setup, 0, sizeof(nrfx_usbd_setup_t));
-    p_setup->bmRequestType = nrf_usbd_setup_bmrequesttype_get();
-    p_setup->bRequest      = nrf_usbd_setup_brequest_get();
-    p_setup->wValue        = nrf_usbd_setup_wvalue_get();
-    p_setup->wIndex        = nrf_usbd_setup_windex_get();
-    p_setup->wLength       = nrf_usbd_setup_wlength_get();
+    p_setup->bmRequestType = nrf_usbd_setup_bmrequesttype_get(NRF_USBD);
+    p_setup->bRequest      = nrf_usbd_setup_brequest_get(NRF_USBD);
+    p_setup->wValue        = nrf_usbd_setup_wvalue_get(NRF_USBD);
+    p_setup->wIndex        = nrf_usbd_setup_windex_get(NRF_USBD);
+    p_setup->wLength       = nrf_usbd_setup_wlength_get(NRF_USBD);
 }
 
 void nrfx_usbd_setup_data_clear(void)
@@ -2313,26 +2304,26 @@ void nrfx_usbd_setup_data_clear(void)
          * solution to be used only before production version of the chip. */
         uint32_t primask_copy = __get_PRIMASK();
         __disable_irq();
-        nrf_usbd_task_trigger(NRF_USBD_TASK_EP0RCVOUT);
-        nrf_usbd_task_trigger(NRF_USBD_TASK_EP0RCVOUT);
+        nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_EP0RCVOUT);
+        nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_EP0RCVOUT);
         __set_PRIMASK(primask_copy);
     }
     else
     {
-        nrf_usbd_task_trigger(NRF_USBD_TASK_EP0RCVOUT);
+        nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_EP0RCVOUT);
     }
 }
 
 void nrfx_usbd_setup_clear(void)
 {
     NRFX_LOG_DEBUG(">> ep0status >>");
-    nrf_usbd_task_trigger(NRF_USBD_TASK_EP0STATUS);
+    nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_EP0STATUS);
 }
 
 void nrfx_usbd_setup_stall(void)
 {
     NRFX_LOG_DEBUG("Setup stalled.");
-    nrf_usbd_task_trigger(NRF_USBD_TASK_EP0STALL);
+    nrf_usbd_task_trigger(NRF_USBD, NRF_USBD_TASK_EP0STALL);
 }
 
 nrfx_usbd_ep_t nrfx_usbd_last_setup_dir_get(void)
@@ -2348,9 +2339,9 @@ void nrfx_usbd_transfer_out_drop(nrfx_usbd_ep_t ep)
     {
         NRFX_CRITICAL_SECTION_ENTER();
         m_ep_ready &= ~(1U << ep2bit(ep));
-        *((volatile uint32_t *)(NRF_USBD_BASE + 0x800)) = 0x7C5 + (2u * NRF_USBD_EP_NR_GET(ep));
-        *((volatile uint32_t *)(NRF_USBD_BASE + 0x804)) = 0;
-        (void)(*((volatile uint32_t *)(NRF_USBD_BASE + 0x804)));
+        *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x800)) = 0x7C5 + (2u * NRF_USBD_EP_NR_GET(ep));
+        *((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)) = 0;
+        (void)(*((volatile uint32_t *)((uint32_t)(NRF_USBD) + 0x804)));
         NRFX_CRITICAL_SECTION_EXIT();
     }
     else
@@ -2359,7 +2350,7 @@ void nrfx_usbd_transfer_out_drop(nrfx_usbd_ep_t ep)
         m_ep_ready &= ~(1U << ep2bit(ep));
         if (!NRF_USBD_EPISO_CHECK(ep))
         {
-            nrf_usbd_epout_clear(ep);
+            nrf_usbd_epout_clear(NRF_USBD, ep);
         }
         NRFX_CRITICAL_SECTION_EXIT();
     }

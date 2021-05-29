@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_SPI_H__
@@ -43,6 +34,7 @@
 
 #include <nrfx.h>
 #include <hal/nrf_spi.h>
+#include <hal/nrf_gpio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,6 +54,7 @@ typedef struct
     uint8_t        drv_inst_idx; ///< Index of the driver instance. For internal use only.
 } nrfx_spi_t;
 
+#ifndef __NRFX_DOXYGEN__
 enum {
 #if NRFX_CHECK(NRFX_SPI0_ENABLED)
     NRFX_SPI0_INST_IDX,
@@ -74,6 +67,7 @@ enum {
 #endif
     NRFX_SPI_ENABLED_COUNT
 };
+#endif
 
 /** @brief Macro for creating an instance of the SPI master driver. */
 #define NRFX_SPI_INSTANCE(id)                               \
@@ -112,20 +106,35 @@ typedef struct
     nrf_spi_frequency_t frequency;  ///< SPI frequency.
     nrf_spi_mode_t      mode;       ///< SPI mode.
     nrf_spi_bit_order_t bit_order;  ///< SPI bit order.
+    nrf_gpio_pin_pull_t miso_pull;  ///< MISO pull up configuration.
 } nrfx_spi_config_t;
 
-/** @brief SPI master instance default configuration. */
-#define NRFX_SPI_DEFAULT_CONFIG                           \
-{                                                         \
-    .sck_pin      = NRFX_SPI_PIN_NOT_USED,                \
-    .mosi_pin     = NRFX_SPI_PIN_NOT_USED,                \
-    .miso_pin     = NRFX_SPI_PIN_NOT_USED,                \
-    .ss_pin       = NRFX_SPI_PIN_NOT_USED,                \
-    .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY, \
-    .orc          = 0xFF,                                 \
-    .frequency    = NRF_SPI_FREQ_4M,                      \
-    .mode         = NRF_SPI_MODE_0,                       \
-    .bit_order    = NRF_SPI_BIT_ORDER_MSB_FIRST,          \
+/**
+ * @brief SPI master instance default configuration.
+ * This configuration sets up SPI with the following options:
+ * - over-run character set to 0xFF
+ * - clock frequency 4 MHz
+ * - mode 0 enabled (SCK active high, sample on leading edge of clock)
+ * - MSB shifted out first
+ * - MISO pull-up disabled
+ *
+ * @param[in] _pin_sck  SCK pin.
+ * @param[in] _pin_mosi MOSI pin.
+ * @param[in] _pin_miso MISO pin.
+ * @param[in] _pin_ss   SS pin.
+ */
+#define NRFX_SPI_DEFAULT_CONFIG(_pin_sck, _pin_mosi, _pin_miso, _pin_ss)    \
+{                                                                           \
+    .sck_pin      = _pin_sck,                                               \
+    .mosi_pin     = _pin_mosi,                                              \
+    .miso_pin     = _pin_miso,                                              \
+    .ss_pin       = _pin_ss,                                                \
+    .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,                   \
+    .orc          = 0xFF,                                                   \
+    .frequency    = NRF_SPI_FREQ_4M,                                        \
+    .mode         = NRF_SPI_MODE_0,                                         \
+    .bit_order    = NRF_SPI_BIT_ORDER_MSB_FIRST,                            \
+    .miso_pull    = NRF_GPIO_PIN_NOPULL,                                    \
 }
 
 /** @brief Single transfer descriptor structure. */
@@ -200,7 +209,7 @@ typedef void (* nrfx_spi_evt_handler_t)(nrfx_spi_evt_t const * p_event,
  *                                  possible only if @ref nrfx_prs module
  *                                  is enabled.
  */
-nrfx_err_t nrfx_spi_init(nrfx_spi_t const * const  p_instance,
+nrfx_err_t nrfx_spi_init(nrfx_spi_t const *        p_instance,
                          nrfx_spi_config_t const * p_config,
                          nrfx_spi_evt_handler_t    handler,
                          void *                    p_context);
@@ -210,7 +219,7 @@ nrfx_err_t nrfx_spi_init(nrfx_spi_t const * const  p_instance,
  *
  * @param[in] p_instance Pointer to the driver instance structure.
  */
-void nrfx_spi_uninit(nrfx_spi_t const * const p_instance);
+void nrfx_spi_uninit(nrfx_spi_t const * p_instance);
 
 /**
  * @brief Function for starting the SPI data transfer.
@@ -229,7 +238,7 @@ void nrfx_spi_uninit(nrfx_spi_t const * const p_instance);
  * @retval NRFX_ERROR_BUSY          The driver is not ready for a new transfer.
  * @retval NRFX_ERROR_NOT_SUPPORTED The provided parameters are not supported.
  */
-nrfx_err_t nrfx_spi_xfer(nrfx_spi_t const * const     p_instance,
+nrfx_err_t nrfx_spi_xfer(nrfx_spi_t const *           p_instance,
                          nrfx_spi_xfer_desc_t const * p_xfer_desc,
                          uint32_t                     flags);
 

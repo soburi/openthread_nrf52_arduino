@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRF_SPI_H__
@@ -112,8 +103,8 @@ typedef enum
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] event Event to be cleared.
  */
-__STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
-                                         nrf_spi_event_t event);
+NRF_STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
+                                           nrf_spi_event_t event);
 
 /**
  * @brief Function for retrieving the state of the SPI event.
@@ -124,8 +115,8 @@ __STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
  * @retval true  The event has been generated.
  * @retval false The event has not been generated.
  */
-__STATIC_INLINE bool nrf_spi_event_check(NRF_SPI_Type *  p_reg,
-                                         nrf_spi_event_t event);
+NRF_STATIC_INLINE bool nrf_spi_event_check(NRF_SPI_Type const * p_reg,
+                                           nrf_spi_event_t      event);
 
 /**
  * @brief Function for getting the address of the specified SPI event register.
@@ -135,8 +126,8 @@ __STATIC_INLINE bool nrf_spi_event_check(NRF_SPI_Type *  p_reg,
  *
  * @return Address of the specified event register.
  */
-__STATIC_INLINE uint32_t * nrf_spi_event_address_get(NRF_SPI_Type *  p_reg,
-                                                     nrf_spi_event_t event);
+NRF_STATIC_INLINE uint32_t nrf_spi_event_address_get(NRF_SPI_Type const * p_reg,
+                                                     nrf_spi_event_t      event);
 
 /**
  * @brief Function for enabling the specified interrupts.
@@ -144,8 +135,8 @@ __STATIC_INLINE uint32_t * nrf_spi_event_address_get(NRF_SPI_Type *  p_reg,
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] mask  Mask of interrupts to be enabled.
  */
-__STATIC_INLINE void nrf_spi_int_enable(NRF_SPI_Type * p_reg,
-                                        uint32_t       mask);
+NRF_STATIC_INLINE void nrf_spi_int_enable(NRF_SPI_Type * p_reg,
+                                          uint32_t       mask);
 
 /**
  * @brief Function for disabling the specified interrupts.
@@ -153,34 +144,32 @@ __STATIC_INLINE void nrf_spi_int_enable(NRF_SPI_Type * p_reg,
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] mask  Mask of interrupts to be disabled.
  */
-__STATIC_INLINE void nrf_spi_int_disable(NRF_SPI_Type * p_reg,
-                                         uint32_t       mask);
+NRF_STATIC_INLINE void nrf_spi_int_disable(NRF_SPI_Type * p_reg,
+                                           uint32_t       mask);
 
 /**
- * @brief Function for retrieving the state of a given interrupt.
+ * @brief Function for checking if the specified interrupts are enabled.
  *
- * @param[in] p_reg   Pointer to the structure of registers of the peripheral.
- * @param[in] spi_int Interrupt to be checked.
+ * @param[in] p_reg Pointer to the structure of registers of the peripheral.
+ * @param[in] mask  Mask of interrupts to be checked.
  *
- * @retval true  The interrupt is enabled.
- * @retval false The interrupt is not enabled.
+ * @return Mask of enabled interrupts.
  */
-__STATIC_INLINE bool nrf_spi_int_enable_check(NRF_SPI_Type *     p_reg,
-                                              nrf_spi_int_mask_t spi_int);
+NRF_STATIC_INLINE uint32_t nrf_spi_int_enable_check(NRF_SPI_Type const * p_reg, uint32_t mask);
 
 /**
  * @brief Function for enabling the SPI peripheral.
  *
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  */
-__STATIC_INLINE void nrf_spi_enable(NRF_SPI_Type * p_reg);
+NRF_STATIC_INLINE void nrf_spi_enable(NRF_SPI_Type * p_reg);
 
 /**
  * @brief Function for disabling the SPI peripheral.
  *
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  */
-__STATIC_INLINE void nrf_spi_disable(NRF_SPI_Type * p_reg);
+NRF_STATIC_INLINE void nrf_spi_disable(NRF_SPI_Type * p_reg);
 
 /**
  * @brief Function for configuring SPI pins.
@@ -193,10 +182,10 @@ __STATIC_INLINE void nrf_spi_disable(NRF_SPI_Type * p_reg);
  * @param[in] mosi_pin MOSI pin number.
  * @param[in] miso_pin MISO pin number.
  */
-__STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
-                                      uint32_t       sck_pin,
-                                      uint32_t       mosi_pin,
-                                      uint32_t       miso_pin);
+NRF_STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
+                                        uint32_t       sck_pin,
+                                        uint32_t       mosi_pin,
+                                        uint32_t       miso_pin);
 
 /**
  * @brief Function for writing data to the SPI transmitter register.
@@ -204,7 +193,7 @@ __STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
  * @param[in] p_reg Pointer to the structure of registers of the peripheral.
  * @param[in] data  TX data to send.
  */
-__STATIC_INLINE void nrf_spi_txd_set(NRF_SPI_Type * p_reg, uint8_t data);
+NRF_STATIC_INLINE void nrf_spi_txd_set(NRF_SPI_Type * p_reg, uint8_t data);
 
 /**
  * @brief Function for reading data from the SPI receiver register.
@@ -213,7 +202,7 @@ __STATIC_INLINE void nrf_spi_txd_set(NRF_SPI_Type * p_reg, uint8_t data);
  *
  * @return RX data received.
  */
-__STATIC_INLINE uint8_t nrf_spi_rxd_get(NRF_SPI_Type * p_reg);
+NRF_STATIC_INLINE uint8_t nrf_spi_rxd_get(NRF_SPI_Type const * p_reg);
 
 /**
  * @brief Function for setting the SPI master data rate.
@@ -221,8 +210,8 @@ __STATIC_INLINE uint8_t nrf_spi_rxd_get(NRF_SPI_Type * p_reg);
  * @param[in] p_reg     Pointer to the structure of registers of the peripheral.
  * @param[in] frequency SPI frequency.
  */
-__STATIC_INLINE void nrf_spi_frequency_set(NRF_SPI_Type *      p_reg,
-                                           nrf_spi_frequency_t frequency);
+NRF_STATIC_INLINE void nrf_spi_frequency_set(NRF_SPI_Type *      p_reg,
+                                             nrf_spi_frequency_t frequency);
 
 /**
  * @brief Function for setting the SPI configuration.
@@ -231,15 +220,15 @@ __STATIC_INLINE void nrf_spi_frequency_set(NRF_SPI_Type *      p_reg,
  * @param[in] spi_mode      SPI mode.
  * @param[in] spi_bit_order SPI bit order.
  */
-__STATIC_INLINE void nrf_spi_configure(NRF_SPI_Type *      p_reg,
-                                       nrf_spi_mode_t      spi_mode,
-                                       nrf_spi_bit_order_t spi_bit_order);
+NRF_STATIC_INLINE void nrf_spi_configure(NRF_SPI_Type *      p_reg,
+                                         nrf_spi_mode_t      spi_mode,
+                                         nrf_spi_bit_order_t spi_bit_order);
 
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
+#ifndef NRF_DECLARE_ONLY
 
-__STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
-                                         nrf_spi_event_t event)
+NRF_STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
+                                           nrf_spi_event_t event)
 {
     *((volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event)) = 0x0UL;
 #if __CORTEX_M == 0x04
@@ -248,50 +237,49 @@ __STATIC_INLINE void nrf_spi_event_clear(NRF_SPI_Type *  p_reg,
 #endif
 }
 
-__STATIC_INLINE bool nrf_spi_event_check(NRF_SPI_Type *  p_reg,
-                                         nrf_spi_event_t event)
+NRF_STATIC_INLINE bool nrf_spi_event_check(NRF_SPI_Type const * p_reg,
+                                           nrf_spi_event_t      event)
 {
     return (bool)*(volatile uint32_t *)((uint8_t *)p_reg + (uint32_t)event);
 }
 
-__STATIC_INLINE uint32_t * nrf_spi_event_address_get(NRF_SPI_Type *  p_reg,
-                                                     nrf_spi_event_t event)
+NRF_STATIC_INLINE uint32_t nrf_spi_event_address_get(NRF_SPI_Type const * p_reg,
+                                                     nrf_spi_event_t      event)
 {
-    return (uint32_t *)((uint8_t *)p_reg + (uint32_t)event);
+    return (uint32_t)((uint8_t *)p_reg + (uint32_t)event);
 }
 
-__STATIC_INLINE void nrf_spi_int_enable(NRF_SPI_Type * p_reg,
-                                        uint32_t       mask)
+NRF_STATIC_INLINE void nrf_spi_int_enable(NRF_SPI_Type * p_reg,
+                                          uint32_t       mask)
 {
     p_reg->INTENSET = mask;
 }
 
-__STATIC_INLINE void nrf_spi_int_disable(NRF_SPI_Type * p_reg,
-                                         uint32_t       mask)
+NRF_STATIC_INLINE void nrf_spi_int_disable(NRF_SPI_Type * p_reg,
+                                           uint32_t       mask)
 {
     p_reg->INTENCLR = mask;
 }
 
-__STATIC_INLINE bool nrf_spi_int_enable_check(NRF_SPI_Type *     p_reg,
-                                              nrf_spi_int_mask_t spi_int)
+NRF_STATIC_INLINE uint32_t nrf_spi_int_enable_check(NRF_SPI_Type const * p_reg, uint32_t mask)
 {
-    return (bool)(p_reg->INTENSET & spi_int);
+    return p_reg->INTENSET & mask;
 }
 
-__STATIC_INLINE void nrf_spi_enable(NRF_SPI_Type * p_reg)
+NRF_STATIC_INLINE void nrf_spi_enable(NRF_SPI_Type * p_reg)
 {
     p_reg->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
 }
 
-__STATIC_INLINE void nrf_spi_disable(NRF_SPI_Type * p_reg)
+NRF_STATIC_INLINE void nrf_spi_disable(NRF_SPI_Type * p_reg)
 {
     p_reg->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
 }
 
-__STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
-                                      uint32_t       sck_pin,
-                                      uint32_t       mosi_pin,
-                                      uint32_t       miso_pin)
+NRF_STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
+                                        uint32_t       sck_pin,
+                                        uint32_t       mosi_pin,
+                                        uint32_t       miso_pin)
 {
 #if defined(SPI_PSEL_SCK_CONNECT_Pos)
     p_reg->PSEL.SCK = sck_pin;
@@ -312,25 +300,25 @@ __STATIC_INLINE void nrf_spi_pins_set(NRF_SPI_Type * p_reg,
 #endif
 }
 
-__STATIC_INLINE void nrf_spi_txd_set(NRF_SPI_Type * p_reg, uint8_t data)
+NRF_STATIC_INLINE void nrf_spi_txd_set(NRF_SPI_Type * p_reg, uint8_t data)
 {
     p_reg->TXD = data;
 }
 
-__STATIC_INLINE uint8_t nrf_spi_rxd_get(NRF_SPI_Type * p_reg)
+NRF_STATIC_INLINE uint8_t nrf_spi_rxd_get(NRF_SPI_Type const * p_reg)
 {
     return p_reg->RXD;
 }
 
-__STATIC_INLINE void nrf_spi_frequency_set(NRF_SPI_Type *      p_reg,
-                                           nrf_spi_frequency_t frequency)
+NRF_STATIC_INLINE void nrf_spi_frequency_set(NRF_SPI_Type *      p_reg,
+                                             nrf_spi_frequency_t frequency)
 {
-    p_reg->FREQUENCY = frequency;
+    p_reg->FREQUENCY = (uint32_t)frequency;
 }
 
-__STATIC_INLINE void nrf_spi_configure(NRF_SPI_Type *      p_reg,
-                                       nrf_spi_mode_t      spi_mode,
-                                       nrf_spi_bit_order_t spi_bit_order)
+NRF_STATIC_INLINE void nrf_spi_configure(NRF_SPI_Type *      p_reg,
+                                         nrf_spi_mode_t      spi_mode,
+                                         nrf_spi_bit_order_t spi_bit_order)
 {
     uint32_t config = (spi_bit_order == NRF_SPI_BIT_ORDER_MSB_FIRST ?
         SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
@@ -360,7 +348,7 @@ __STATIC_INLINE void nrf_spi_configure(NRF_SPI_Type *      p_reg,
     p_reg->CONFIG = config;
 }
 
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // NRF_DECLARE_ONLY
 
 /** @} */
 

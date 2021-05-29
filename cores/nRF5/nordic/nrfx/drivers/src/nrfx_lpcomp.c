@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -61,9 +52,10 @@ static nrfx_drv_state_t             m_state = NRFX_DRV_STATE_UNINITIALIZED;
 
 static void lpcomp_execute_handler(nrf_lpcomp_event_t event, uint32_t event_mask)
 {
-    if (nrf_lpcomp_event_check(event) && nrf_lpcomp_int_enable_check(event_mask))
+    if (nrf_lpcomp_event_check(NRF_LPCOMP, event) &&
+        nrf_lpcomp_int_enable_check(NRF_LPCOMP, event_mask))
     {
-        nrf_lpcomp_event_clear(event);
+        nrf_lpcomp_event_clear(NRF_LPCOMP, event);
         NRFX_LOG_DEBUG("Event: %s.", EVT_TO_STR(event));
 
         m_lpcomp_event_handler(event);
@@ -107,31 +99,31 @@ nrfx_err_t nrfx_lpcomp_init(nrfx_lpcomp_config_t const * p_config,
     }
 #endif
 
-    nrf_lpcomp_configure(&(p_config->hal));
+    nrf_lpcomp_configure(NRF_LPCOMP, &(p_config->hal));
 
-    nrf_lpcomp_input_select(p_config->input);
+    nrf_lpcomp_input_select(NRF_LPCOMP, p_config->input);
 
     switch (p_config->hal.detection)
     {
         case NRF_LPCOMP_DETECT_UP:
-            nrf_lpcomp_int_enable(LPCOMP_INTENSET_UP_Msk);
+            nrf_lpcomp_int_enable(NRF_LPCOMP, LPCOMP_INTENSET_UP_Msk);
             break;
 
         case NRF_LPCOMP_DETECT_DOWN:
-            nrf_lpcomp_int_enable(LPCOMP_INTENSET_DOWN_Msk);
+            nrf_lpcomp_int_enable(NRF_LPCOMP, LPCOMP_INTENSET_DOWN_Msk);
             break;
 
         case NRF_LPCOMP_DETECT_CROSS:
-            nrf_lpcomp_int_enable(LPCOMP_INTENSET_CROSS_Msk);
+            nrf_lpcomp_int_enable(NRF_LPCOMP, LPCOMP_INTENSET_CROSS_Msk);
             break;
 
         default:
             break;
     }
-    nrf_lpcomp_shorts_enable(NRF_LPCOMP_SHORT_READY_SAMPLE_MASK);
+    nrf_lpcomp_shorts_enable(NRF_LPCOMP, NRF_LPCOMP_SHORT_READY_SAMPLE_MASK);
 
-    NRFX_IRQ_PRIORITY_SET(LPCOMP_IRQn, p_config->interrupt_priority);
-    NRFX_IRQ_ENABLE(LPCOMP_IRQn);
+    NRFX_IRQ_PRIORITY_SET(nrfx_get_irq_number(NRF_LPCOMP), p_config->interrupt_priority);
+    NRFX_IRQ_ENABLE(nrfx_get_irq_number(NRF_LPCOMP));
 
     m_state = NRFX_DRV_STATE_INITIALIZED;
 
@@ -143,7 +135,7 @@ nrfx_err_t nrfx_lpcomp_init(nrfx_lpcomp_config_t const * p_config,
 void nrfx_lpcomp_uninit(void)
 {
     NRFX_ASSERT(m_state != NRFX_DRV_STATE_UNINITIALIZED);
-    NRFX_IRQ_DISABLE(LPCOMP_IRQn);
+    NRFX_IRQ_DISABLE(nrfx_get_irq_number(NRF_LPCOMP));
     nrfx_lpcomp_disable();
 #if NRFX_CHECK(NRFX_PRS_ENABLED)
     nrfx_prs_release(NRF_LPCOMP);
@@ -156,8 +148,8 @@ void nrfx_lpcomp_uninit(void)
 void nrfx_lpcomp_enable(void)
 {
     NRFX_ASSERT(m_state == NRFX_DRV_STATE_INITIALIZED);
-    nrf_lpcomp_enable();
-    nrf_lpcomp_task_trigger(NRF_LPCOMP_TASK_START);
+    nrf_lpcomp_enable(NRF_LPCOMP);
+    nrf_lpcomp_task_trigger(NRF_LPCOMP, NRF_LPCOMP_TASK_START);
     m_state = NRFX_DRV_STATE_POWERED_ON;
     NRFX_LOG_INFO("Enabled.");
 }
@@ -165,8 +157,8 @@ void nrfx_lpcomp_enable(void)
 void nrfx_lpcomp_disable(void)
 {
     NRFX_ASSERT(m_state == NRFX_DRV_STATE_POWERED_ON);
-    nrf_lpcomp_disable();
-    nrf_lpcomp_task_trigger(NRF_LPCOMP_TASK_STOP);
+    nrf_lpcomp_disable(NRF_LPCOMP);
+    nrf_lpcomp_task_trigger(NRF_LPCOMP, NRF_LPCOMP_TASK_STOP);
     m_state = NRFX_DRV_STATE_INITIALIZED;
     NRFX_LOG_INFO("Disabled.");
 }

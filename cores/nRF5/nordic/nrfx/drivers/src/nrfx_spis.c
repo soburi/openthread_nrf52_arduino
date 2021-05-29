@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2013 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -132,7 +123,7 @@ typedef struct
 
 static spis_cb_t m_cb[NRFX_SPIS_ENABLED_COUNT];
 
-nrfx_err_t nrfx_spis_init(nrfx_spis_t  const * const p_instance,
+nrfx_err_t nrfx_spis_init(nrfx_spis_t const *        p_instance,
                           nrfx_spis_config_t const * p_config,
                           nrfx_spis_event_handler_t  event_handler,
                           void *                     p_context)
@@ -266,7 +257,7 @@ nrfx_err_t nrfx_spis_init(nrfx_spis_t  const * const p_instance,
     // [the GPIOTE driver may be already initialized at this point (by this
     //  driver when another SPIS instance is used, or by an application code),
     //  so just ignore the returned value]
-    (void)nrfx_gpiote_init();
+    (void)nrfx_gpiote_init(NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
     static nrfx_gpiote_in_config_t const csn_gpiote_config =
         NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
     nrfx_err_t gpiote_err_code = nrfx_gpiote_in_init(p_config->csn_pin,
@@ -299,7 +290,7 @@ nrfx_err_t nrfx_spis_init(nrfx_spis_t  const * const p_instance,
 }
 
 
-void nrfx_spis_uninit(nrfx_spis_t const * const p_instance)
+void nrfx_spis_uninit(nrfx_spis_t const * p_instance)
 {
     spis_cb_t * p_cb = &m_cb[p_instance->drv_inst_idx];
     NRFX_ASSERT(p_cb->state != NRFX_DRV_STATE_UNINITIALIZED);
@@ -374,11 +365,11 @@ static void spis_state_change(NRF_SPIS_Type   * p_spis,
     spis_state_entry_action_execute(p_spis, p_cb);
 }
 
-nrfx_err_t nrfx_spis_buffers_set(nrfx_spis_t const * const p_instance,
-                                 uint8_t           const * p_tx_buffer,
-                                 size_t                    tx_buffer_length,
-                                 uint8_t                 * p_rx_buffer,
-                                 size_t                    rx_buffer_length)
+nrfx_err_t nrfx_spis_buffers_set(nrfx_spis_t const * p_instance,
+                                 uint8_t const *     p_tx_buffer,
+                                 size_t              tx_buffer_length,
+                                 uint8_t *           p_rx_buffer,
+                                 size_t              rx_buffer_length)
 {
     NRFX_ASSERT(p_tx_buffer != NULL || tx_buffer_length == 0);
     NRFX_ASSERT(p_rx_buffer != NULL || rx_buffer_length == 0);

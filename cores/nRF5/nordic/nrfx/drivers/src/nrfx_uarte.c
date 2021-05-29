@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <nrfx.h>
@@ -122,9 +113,9 @@ static void apply_config(nrfx_uarte_t        const * p_instance,
     }
 
     nrf_uarte_baudrate_set(p_instance->p_reg, p_config->baudrate);
-    nrf_uarte_configure(p_instance->p_reg, p_config->parity, p_config->hwfc);
+    nrf_uarte_configure(p_instance->p_reg, &p_config->hal_cfg);
     nrf_uarte_txrx_pins_set(p_instance->p_reg, p_config->pseltxd, p_config->pselrxd);
-    if (p_config->hwfc == NRF_UARTE_HWFC_ENABLED)
+    if (p_config->hal_cfg.hwfc == NRF_UARTE_HWFC_ENABLED)
     {
         if (p_config->pselcts != NRF_UARTE_PSEL_DISCONNECTED)
         {
@@ -200,6 +191,38 @@ static void pins_to_default(nrfx_uarte_t const * p_instance)
     }
 }
 
+static void apply_workaround_for_enable_anomaly(nrfx_uarte_t const * p_instance)
+{
+#if defined(NRF5340_XXAA_APPLICATION) || defined(NRF5340_XXAA_NETWORK) || defined(NRF9160_XXAA)
+    // Apply workaround for anomalies:
+    // - nRF9160 - anomaly 23
+    // - nRF5340 - anomaly 44
+    volatile uint32_t const * rxenable_reg =
+        (volatile uint32_t *)(((uint32_t)p_instance->p_reg) + 0x564);
+    volatile uint32_t const * txenable_reg =
+        (volatile uint32_t *)(((uint32_t)p_instance->p_reg) + 0x568);
+
+    if (*txenable_reg == 1)
+    {
+        nrf_uarte_task_trigger(p_instance->p_reg, NRF_UARTE_TASK_STOPTX);
+    }
+
+    if (*rxenable_reg == 1)
+    {
+        nrf_uarte_enable(p_instance->p_reg);
+        nrf_uarte_task_trigger(p_instance->p_reg, NRF_UARTE_TASK_STOPRX);
+
+        while (*rxenable_reg)
+        {}
+
+        (void)nrf_uarte_errorsrc_get_and_clear(p_instance->p_reg);
+        nrf_uarte_disable(p_instance->p_reg);
+    }
+#else
+    (void)(p_instance);
+#endif // defined(NRF5340_XXAA_APPLICATION) || defined(NRF5340_XXAA_NETWORK) || defined(NRF9160_XXAA)
+}
+
 nrfx_err_t nrfx_uarte_init(nrfx_uarte_t const *        p_instance,
                            nrfx_uarte_config_t const * p_config,
                            nrfx_uarte_event_handler_t  event_handler)
@@ -245,6 +268,8 @@ nrfx_err_t nrfx_uarte_init(nrfx_uarte_t const *        p_instance,
 
     apply_config(p_instance, p_config);
 
+    apply_workaround_for_enable_anomaly(p_instance);
+
     p_cb->handler   = event_handler;
     p_cb->p_context = p_config->p_context;
 
@@ -267,6 +292,7 @@ nrfx_err_t nrfx_uarte_init(nrfx_uarte_t const *        p_instance,
 void nrfx_uarte_uninit(nrfx_uarte_t const * p_instance)
 {
     uarte_control_block_t * p_cb = &m_cb[p_instance->drv_inst_idx];
+    NRF_UARTE_Type * p_reg = p_instance->p_reg;
 
     if (p_cb->handler)
     {
@@ -274,18 +300,28 @@ void nrfx_uarte_uninit(nrfx_uarte_t const * p_instance)
     }
     // Make sure all transfers are finished before UARTE is disabled
     // to achieve the lowest power consumption.
-    nrf_uarte_shorts_disable(p_instance->p_reg, NRF_UARTE_SHORT_ENDRX_STARTRX);
-    nrf_uarte_task_trigger(p_instance->p_reg, NRF_UARTE_TASK_STOPRX);
-    nrf_uarte_event_clear(p_instance->p_reg, NRF_UARTE_EVENT_TXSTOPPED);
-    nrf_uarte_task_trigger(p_instance->p_reg, NRF_UARTE_TASK_STOPTX);
-    while (!nrf_uarte_event_check(p_instance->p_reg, NRF_UARTE_EVENT_TXSTOPPED))
+    nrf_uarte_shorts_disable(p_reg, NRF_UARTE_SHORT_ENDRX_STARTRX);
+
+    // Check if there is any ongoing reception.
+    if (p_cb->rx_buffer_length)
+    {
+        nrf_uarte_event_clear(p_reg, NRF_UARTE_EVENT_RXTO);
+        nrf_uarte_task_trigger(p_reg, NRF_UARTE_TASK_STOPRX);
+    }
+
+    nrf_uarte_event_clear(p_reg, NRF_UARTE_EVENT_TXSTOPPED);
+    nrf_uarte_task_trigger(p_reg, NRF_UARTE_TASK_STOPTX);
+
+    // Wait for TXSTOPPED event and for RXTO event, provided that there was ongoing reception.
+    while (!nrf_uarte_event_check(p_reg, NRF_UARTE_EVENT_TXSTOPPED) ||
+           (p_cb->rx_buffer_length && !nrf_uarte_event_check(p_reg, NRF_UARTE_EVENT_RXTO)))
     {}
 
-    nrf_uarte_disable(p_instance->p_reg);
+    nrf_uarte_disable(p_reg);
     pins_to_default(p_instance);
 
 #if NRFX_CHECK(NRFX_PRS_ENABLED)
-    nrfx_prs_release(p_instance->p_reg);
+    nrfx_prs_release(p_reg);
 #endif
 
     p_cb->state   = NRFX_DRV_STATE_UNINITIALIZED;

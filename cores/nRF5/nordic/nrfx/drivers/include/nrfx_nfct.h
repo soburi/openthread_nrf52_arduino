@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2018 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_NFCT_H__
@@ -125,9 +116,9 @@ typedef struct
     nrfx_nfct_param_id_t   id;               ///< Type of parameter.
     union
     {
-        uint32_t           fdt;              ///< NFC-A Frame Delay Time. Filled when nrfx_nfct_param_t::id is @ref NRFX_NFCT_PARAM_ID_FDT.
-        uint8_t            sel_res_protocol; ///< NFC-A value of the 'Protocol' field in the SEL_RES frame. Filled when nrfx_nfct_param_t::id is @ref NRFX_NFCT_PARAM_ID_SEL_RES.
-        nrfx_nfct_nfcid1_t nfcid1;           ///< NFC-A NFCID1 value (tag identifier). Filled when nrfx_nfct_param_t::id is @ref NRFX_NFCT_PARAM_ID_NFCID1.
+        uint32_t           fdt;              ///< NFC-A Frame Delay Time. Filled when nrfx_nfct_param_t.id is @ref NRFX_NFCT_PARAM_ID_FDT.
+        uint8_t            sel_res_protocol; ///< NFC-A value of the 'Protocol' field in the SEL_RES frame. Filled when nrfx_nfct_param_t.id is @ref NRFX_NFCT_PARAM_ID_SEL_RES.
+        nrfx_nfct_nfcid1_t nfcid1;           ///< NFC-A NFCID1 value (tag identifier). Filled when nrfx_nfct_param_t.id is @ref NRFX_NFCT_PARAM_ID_NFCID1.
     } data;                                  ///< Union to store parameter data.
 } nrfx_nfct_param_t;
 
@@ -163,9 +154,9 @@ typedef struct
     nrfx_nfct_evt_id_t evt_id;                       ///< Type of event.
     union
     {
-        nrfx_nfct_evt_rx_frameend_t   rx_frameend;   ///< End of the RX frame data. Filled when nrfx_nfct_evt_t::evt_id is @ref NRFX_NFCT_EVT_RX_FRAMEEND.
-        nrfx_nfct_evt_tx_framestart_t tx_framestart; ///< Start of the TX frame data. Filled when nrfx_nfct_evt_t::evt_id is @ref NRFX_NFCT_EVT_TX_FRAMESTART.
-        nrfx_nfct_evt_error_t         error;         ///< Error data. Filled when nrfx_nfct_evt_t::evt_id is @ref NRFX_NFCT_EVT_ERROR.
+        nrfx_nfct_evt_rx_frameend_t   rx_frameend;   ///< End of the RX frame data. Filled when nrfx_nfct_evt_t.evt_id is @ref NRFX_NFCT_EVT_RX_FRAMEEND.
+        nrfx_nfct_evt_tx_framestart_t tx_framestart; ///< Start of the TX frame data. Filled when nrfx_nfct_evt_t.evt_id is @ref NRFX_NFCT_EVT_TX_FRAMESTART.
+        nrfx_nfct_evt_error_t         error;         ///< Error data. Filled when nrfx_nfct_evt_t.evt_id is @ref NRFX_NFCT_EVT_ERROR.
     } params;                                        ///< Union to store event data.
 } nrfx_nfct_evt_t;
 
@@ -329,21 +320,12 @@ void nrfx_nfct_irq_handler(void);
  * To implement the second workaround, power reset is used to release the clock acquired by NFCT
  * after the field is turned off. Note that the NFCT register configuration is restored to defaults.
  *
- * If you are using the nRF52840 chip, rev. Engineering A, the workarounds for the following anomalies
- * are applied:
- * - 98. NFCT: The NFCT is not able to communicate with the peer.
- * - 116. NFCT does not release HFCLK when switching from ACTIVATED to SENSE mode.
- * - 144. NFCT: Not optimal NFC performance
- *
- * If you are using the nRF52840 chip, rev. 1, or rev. Engineering B or C, the workarounds for the following
+ * If you are using the nRF52833, nRF52840 or nRF5340 chips, the workarounds for the following
  * anomalies are applied:
  * - 190. NFCT: Event FIELDDETECTED can be generated too early.
  * To implement this workaround, an instance of NRF_TIMER is used. After the NFC field is detected,
  * the timing module measures the necessary waiting period after which NFCT can be activated.
  * This debouncing technique is used to filter possible field instabilities.
- *
- * The application of the implemented workarounds for the nRF52840 chip is determined at runtime and depends
- * on the chip variant.
  *
  * The current code contains a patch for the anomaly 25 (NFCT: Reset value of
  * SENSRES register is incorrect), so that the module now works on Windows Phone.

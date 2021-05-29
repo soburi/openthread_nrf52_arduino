@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2016 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_CLOCK_H__
@@ -59,10 +50,12 @@ extern "C" {
 /** @brief Clock events. */
 typedef enum
 {
-    NRFX_CLOCK_EVT_HFCLK_STARTED, ///< HFCLK has been started.
-    NRFX_CLOCK_EVT_LFCLK_STARTED, ///< LFCLK has been started.
-    NRFX_CLOCK_EVT_CTTO,          ///< Calibration timeout.
-    NRFX_CLOCK_EVT_CAL_DONE       ///< Calibration has been done.
+    NRFX_CLOCK_EVT_HFCLK_STARTED,      ///< HFCLK has been started.
+    NRFX_CLOCK_EVT_LFCLK_STARTED,      ///< LFCLK has been started.
+    NRFX_CLOCK_EVT_CTTO,               ///< Calibration timeout.
+    NRFX_CLOCK_EVT_CAL_DONE,           ///< Calibration has been done.
+    NRFX_CLOCK_EVT_HFCLKAUDIO_STARTED, ///< HFCLKAUDIO has been started.
+    NRFX_CLOCK_EVT_HFCLK192M_STARTED,  ///< HFCLK192M has been started.
 } nrfx_clock_evt_type_t;
 
 /**
@@ -94,33 +87,136 @@ void nrfx_clock_disable(void);
 /** @brief Function for uninitializing the clock module. */
 void nrfx_clock_uninit(void);
 
-/** @brief Function for starting the LFCLK. */
-void nrfx_clock_lfclk_start(void);
+/**
+ * @brief Function for starting the specified clock domain.
+ *
+ * @param[in] domain Clock domain.
+ */
+void nrfx_clock_start(nrf_clock_domain_t domain);
 
-/** @brief Function for stopping the LFCLK. */
-void nrfx_clock_lfclk_stop(void);
+/**
+ * @brief Function for stopping the specified clock domain.
+ *
+ * @param[in] domain Clock domain.
+ */
+void nrfx_clock_stop(nrf_clock_domain_t domain);
+
+/**
+ * @brief Function for checking the specified clock domain state.
+ *
+ * XTAL source is assumed for domains with multiple sources.
+ *
+ * @param[in]  domain  Clock domain.
+ * @param[out] clk_src Clock source that is running. Set to NULL if not needed.
+ *                     Ignored for HFCLKAUDIO domain. Typecast it to @ref nrf_clock_lfclk_t for
+ *                     LFCLK and @ref nrf_clock_hfclk_t for HFCLK and HFCLK192M.
+ *
+ * @retval true  The clock domain is running.
+ * @retval false The clock domain is not running.
+ */
+NRFX_STATIC_INLINE bool nrfx_clock_is_running(nrf_clock_domain_t domain, void * clk_src);
+
+#if NRF_CLOCK_HAS_HFCLK_DIV || NRF_CLOCK_HAS_HFCLK_192M
+/**
+ * @brief Function for setting the specified clock domain divider.
+ *
+ * @param[in] domain Clock domain.
+ * @param[in] div    New divider for the clock domain.
+ *
+ * @retval NRFX_SUCCESS             Divider successfully set.
+ * @retval NRFX_ERROR_NOT_SUPPORTED Domain does not support setting the divider.
+ * @retval NRFX_ERROR_INVALID_PARAM Divider not supported by the specified domain.
+ */
+nrfx_err_t nrfx_clock_divider_set(nrf_clock_domain_t    domain,
+                                  nrf_clock_hfclk_div_t div);
+
+/**
+ * @brief Function for getting the specified clock domain divider.
+ *
+ * @param[in] domain Clock domain.
+ *
+ * @return Current divider for the specified clock domain.
+ */
+
+NRFX_STATIC_INLINE nrf_clock_hfclk_div_t nrfx_clock_divider_get(nrf_clock_domain_t domain);
+#endif
+
+/**
+ * @brief Function for starting the LFCLK.
+ *
+ * @note This function is deprecated. Use @ref nrfx_clock_start instead.
+ */
+NRFX_STATIC_INLINE void nrfx_clock_lfclk_start(void);
+
+/**
+ * @brief Function for stopping the LFCLK.
+ *
+ * @note This function is deprecated. Use @ref nrfx_clock_stop instead.
+ */
+NRFX_STATIC_INLINE void nrfx_clock_lfclk_stop(void);
 
 /**
  * @brief Function for checking the LFCLK state.
  *
+ * @note This function is deprecated. Use @ref nrfx_clock_is_running instead.
+ *
  * @retval true  The LFCLK is running.
  * @retval false The LFCLK is not running.
  */
-__STATIC_INLINE bool nrfx_clock_lfclk_is_running(void);
+NRFX_STATIC_INLINE bool nrfx_clock_lfclk_is_running(void);
 
-/** @brief Function for starting the high-accuracy source HFCLK. */
-void nrfx_clock_hfclk_start(void);
+/**
+ * @brief Function for starting the high-accuracy source HFCLK.
+ *
+ * @note This function is deprecated. Use @ref nrfx_clock_start instead.
+ */
+NRFX_STATIC_INLINE void nrfx_clock_hfclk_start(void);
 
-/** @brief Function for stopping the external high-accuracy source HFCLK. */
-void nrfx_clock_hfclk_stop(void);
+/**
+ * @brief Function for stopping the external high-accuracy source HFCLK.
+ *
+ * @note This function is deprecated. Use @ref nrfx_clock_stop instead.
+ */
+NRFX_STATIC_INLINE void nrfx_clock_hfclk_stop(void);
 
 /**
  * @brief Function for checking the HFCLK state.
  *
+ * @note This function is deprecated. Use @ref nrfx_clock_is_running instead.
+ *
  * @retval true  The HFCLK is running (XTAL source).
  * @retval false The HFCLK is not running.
  */
-__STATIC_INLINE bool nrfx_clock_hfclk_is_running(void);
+NRFX_STATIC_INLINE bool nrfx_clock_hfclk_is_running(void);
+
+
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+/**
+ * @brief Function for setting the HFCLKAUDIO configuration.
+ *
+ * The frequency of HFCLKAUDIO ranges from 10.666 MHz to 13.333 MHz in 40.7 Hz steps.
+ * To calculate @p freq_value corresponding to the chosen frequency, use the following equation:
+ * FREQ_VALUE = 2^16 * ((12 * f_out / 32M) - 4)
+ *
+ * @warning Chosen frequency must fit in 11.176 MHz - 11.402 MHz or 12.165 MHz - 12.411 MHz
+ *          frequency bands.
+ *
+ * @param[in] freq_value New FREQ_VALUE for HFCLKAUDIO.
+ */
+NRFX_STATIC_INLINE void nrfx_clock_hfclkaudio_config_set(uint16_t freq_value);
+
+/**
+ * @brief Function for getting the HFCLKAUDIO configuration.
+ *
+ * The frequency of HFCLKAUDIO ranges from 10.666 MHz to 13.333 MHz in 40.7 Hz steps.
+ * To calculate frequency corresponding to the returned FREQ_VALUE, use the following equation:
+ * f_out = 32M * (4 + FREQ_VALUE * 2^(-16))/12
+ *
+ * @return Current value of FREQ_VALUE for HFCLKAUDIO.
+ */
+NRFX_STATIC_INLINE uint16_t nrfx_clock_hfclkaudio_config_get(void);
+
+#endif
 
 /**
  * @brief Function for starting the calibration of internal LFCLK.
@@ -160,7 +256,7 @@ void nrfx_clock_calibration_timer_stop(void);
  *
  * @return Task address.
  */
-__STATIC_INLINE uint32_t nrfx_clock_ppi_task_addr(nrf_clock_task_t task);
+NRFX_STATIC_INLINE uint32_t nrfx_clock_ppi_task_addr(nrf_clock_task_t task);
 
 /**@brief Function for returning a requested event address for the clock driver module.
  *
@@ -168,30 +264,92 @@ __STATIC_INLINE uint32_t nrfx_clock_ppi_task_addr(nrf_clock_task_t task);
  *
  * @return Event address.
  */
-__STATIC_INLINE uint32_t nrfx_clock_ppi_event_addr(nrf_clock_event_t event);
+NRFX_STATIC_INLINE uint32_t nrfx_clock_ppi_event_addr(nrf_clock_event_t event);
 
+#ifndef NRFX_DECLARE_ONLY
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-__STATIC_INLINE uint32_t nrfx_clock_ppi_task_addr(nrf_clock_task_t task)
+#if NRF_CLOCK_HAS_HFCLK_DIV || NRF_CLOCK_HAS_HFCLK_192M
+NRFX_STATIC_INLINE nrf_clock_hfclk_div_t nrfx_clock_divider_get(nrf_clock_domain_t domain)
 {
-    return nrf_clock_task_address_get(task);
+    switch (domain)
+    {
+#if NRF_CLOCK_HAS_HFCLK_DIV
+        case NRF_CLOCK_DOMAIN_HFCLK:
+            return nrf_clock_hfclk_div_get(NRF_CLOCK);
+#endif
+#if NRF_CLOCK_HAS_HFCLK192M
+        case NRF_CLOCK_DOMAIN_HFCLK192M:
+            return nrf_clock_hfclk192m_div_get(NRF_CLOCK);
+#endif
+        default:
+            NRFX_ASSERT(0);
+            return 0;
+    }
+}
+#endif // NRF_CLOCK_HAS_HFCLK_DIV || NRF_CLOCK_HAS_HFCLK_192M
+
+NRFX_STATIC_INLINE void nrfx_clock_lfclk_start(void)
+{
+    nrfx_clock_start(NRF_CLOCK_DOMAIN_LFCLK);
 }
 
-__STATIC_INLINE uint32_t nrfx_clock_ppi_event_addr(nrf_clock_event_t event)
+NRFX_STATIC_INLINE void nrfx_clock_lfclk_stop(void)
 {
-    return nrf_clock_event_address_get(event);
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_LFCLK);
 }
 
-__STATIC_INLINE bool nrfx_clock_hfclk_is_running(void)
+NRFX_STATIC_INLINE void nrfx_clock_hfclk_start(void)
 {
-    return nrf_clock_hf_is_running(NRF_CLOCK_HFCLK_HIGH_ACCURACY);
+    nrfx_clock_start(NRF_CLOCK_DOMAIN_HFCLK);
 }
 
-__STATIC_INLINE bool nrfx_clock_lfclk_is_running(void)
+NRFX_STATIC_INLINE void nrfx_clock_hfclk_stop(void)
 {
-    return nrf_clock_lf_is_running();
+    nrfx_clock_stop(NRF_CLOCK_DOMAIN_HFCLK);
 }
-#endif //SUPPRESS_INLINE_IMPLEMENTATION
+
+NRFX_STATIC_INLINE uint32_t nrfx_clock_ppi_task_addr(nrf_clock_task_t task)
+{
+    return nrf_clock_task_address_get(NRF_CLOCK, task);
+}
+
+NRFX_STATIC_INLINE uint32_t nrfx_clock_ppi_event_addr(nrf_clock_event_t event)
+{
+    return nrf_clock_event_address_get(NRF_CLOCK, event);
+}
+
+NRFX_STATIC_INLINE bool nrfx_clock_is_running(nrf_clock_domain_t domain, void * clk_src)
+{
+    return nrf_clock_is_running(NRF_CLOCK, domain, clk_src);
+}
+
+NRFX_STATIC_INLINE bool nrfx_clock_hfclk_is_running(void)
+{
+    nrf_clock_hfclk_t clk_src;
+    bool ret = nrfx_clock_is_running(NRF_CLOCK_DOMAIN_HFCLK, &clk_src);
+    return (ret && (clk_src == NRF_CLOCK_HFCLK_HIGH_ACCURACY));
+}
+
+NRFX_STATIC_INLINE bool nrfx_clock_lfclk_is_running(void)
+{
+    return nrfx_clock_is_running(NRF_CLOCK_DOMAIN_LFCLK, NULL);
+}
+
+#if NRF_CLOCK_HAS_HFCLKAUDIO
+
+NRFX_STATIC_INLINE void nrfx_clock_hfclkaudio_config_set(uint16_t freq_value)
+{
+    nrf_clock_hfclkaudio_config_set(NRF_CLOCK, freq_value);
+}
+
+NRFX_STATIC_INLINE uint16_t nrfx_clock_hfclkaudio_config_get(void)
+{
+    return nrf_clock_hfclkaudio_config_get(NRF_CLOCK);
+}
+
+#endif
+
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

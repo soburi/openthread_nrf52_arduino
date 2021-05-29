@@ -1,41 +1,32 @@
-/**
+/*
  * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
- *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form, except as embedded into a Nordic
- *    Semiconductor ASA integrated circuit in a product or a software update for
- *    such product, must reproduce the above copyright notice, this list of
- *    conditions and the following disclaimer in the documentation and/or other
- *    materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA integrated circuit.
- *
- * 5. Any software provided in binary form under this license must not be reverse
- *    engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef NRFX_QDEC_H__
@@ -70,20 +61,34 @@ typedef struct
     uint8_t              interrupt_priority; /**< QDEC interrupt priority. */
 } nrfx_qdec_config_t;
 
-/**@brief QDEC default configuration. */
-#define NRFX_QDEC_DEFAULT_CONFIG                                            \
-{                                                                           \
-    .reportper          = (nrf_qdec_reportper_t)NRFX_QDEC_CONFIG_REPORTPER, \
-    .sampleper          = (nrf_qdec_sampleper_t)NRFX_QDEC_CONFIG_SAMPLEPER, \
-    .psela              = NRFX_QDEC_CONFIG_PIO_A,                           \
-    .pselb              = NRFX_QDEC_CONFIG_PIO_B,                           \
-    .pselled            = NRFX_QDEC_CONFIG_PIO_LED,                         \
-    .ledpre             = NRFX_QDEC_CONFIG_LEDPRE,                          \
-    .ledpol             = (nrf_qdec_ledpol_t)NRFX_QDEC_CONFIG_LEDPOL,       \
-    .dbfen              = NRFX_QDEC_CONFIG_DBFEN,                           \
-    .sample_inten       = NRFX_QDEC_CONFIG_SAMPLE_INTEN,                    \
-    .interrupt_priority = NRFX_QDEC_CONFIG_IRQ_PRIORITY,                    \
-}
+/**
+ * @brief QDEC driver default configuration.
+ *
+ * This configuration sets up QDEC with the following options:
+ * - report period: 10 samples
+ * - sampling period: 16384 us
+ * - LED enabled for 500 us before sampling
+ * - LED polarity: active high
+ * - debouncing filter disabled
+ * - sample ready interrupt disabled
+ *
+ * @param[in] _pin_a   Pin for A encoder channel input.
+ * @param[in] _pin_b   Pin for B encoder channel input.
+ * @param[in] _pin_led Pin for LED output.
+ */
+#define NRFX_QDEC_DEFAULT_CONFIG(_pin_a, _pin_b, _pin_led)           \
+    {                                                                \
+        .reportper          = NRF_QDEC_REPORTPER_10,                 \
+        .sampleper          = NRF_QDEC_SAMPLEPER_16384us,            \
+        .psela              = _pin_a,                                \
+        .pselb              = _pin_b,                                \
+        .pselled            = _pin_led,                              \
+        .ledpre             = 500,                                   \
+        .ledpol             = NRF_QDEC_LEPOL_ACTIVE_HIGH,            \
+        .dbfen              = NRF_QDEC_DBFEN_DISABLE,                \
+        .sample_inten       = false,                                 \
+        .interrupt_priority = NRFX_QDEC_DEFAULT_CONFIG_IRQ_PRIORITY  \
+    }
 
 /** @brief QDEC sample event data. */
 typedef struct
@@ -168,10 +173,7 @@ void nrfx_qdec_accumulators_read(int16_t * p_acc, int16_t * p_accdbl);
  *
  * @return Task address.
  */
-__STATIC_INLINE uint32_t nrfx_qdec_task_address_get(nrf_qdec_task_t task)
-{
-    return (uint32_t)nrf_qdec_task_address_get(task);
-}
+NRFX_STATIC_INLINE uint32_t nrfx_qdec_task_address_get(nrf_qdec_task_t task);
 
 /**
  * @brief Function for returning the address of the specified QDEC event.
@@ -180,10 +182,19 @@ __STATIC_INLINE uint32_t nrfx_qdec_task_address_get(nrf_qdec_task_t task)
  *
  * @return Event address.
  */
-__STATIC_INLINE uint32_t nrfx_qdec_event_address_get(nrf_qdec_event_t event)
+NRFX_STATIC_INLINE uint32_t nrfx_qdec_event_address_get(nrf_qdec_event_t event);
+
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE uint32_t nrfx_qdec_task_address_get(nrf_qdec_task_t task)
 {
-    return (uint32_t)nrf_qdec_event_address_get(event);
+    return nrf_qdec_task_address_get(NRF_QDEC, task);
 }
+
+NRFX_STATIC_INLINE uint32_t nrfx_qdec_event_address_get(nrf_qdec_event_t event)
+{
+    return nrf_qdec_event_address_get(NRF_QDEC, event);
+}
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 
