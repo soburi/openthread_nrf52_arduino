@@ -187,10 +187,10 @@ size_t IPAddress::V6RawAccessor::printTo(Print& p) const
 {
     size_t count = 0;
 
-    count += p.print(addr[0], HEX);
+    count += p.print(htons(addr[0]), HEX);
     for(int i=1; i<8; i++) {
 	count += p.print(":");
-        count += p.print(addr[i], HEX);
+        count += p.print(htons(addr[i]), HEX);
     }
     return count;
 }
