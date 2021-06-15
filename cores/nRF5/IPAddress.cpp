@@ -36,6 +36,12 @@ IPAddress::IPAddress()
     memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
+IPAddress::IPAddress(const IPAddress& addr)
+    : v6(_address.u16)
+{
+    memcpy(&_address, &addr._address, sizeof(_address));
+}
+
 IPAddress::IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3)
     : v6(_address.u16)
 {
