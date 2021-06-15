@@ -36,6 +36,12 @@ IPAddress::IPAddress()
     memcpy(_address.u8, addrbytes, sizeof(addrbytes));
 }
 
+IPAddress::IPAddress(const IPAddress& addr)
+    : v6(_address.u16)
+{
+    memcpy(&_address, &addr._address, sizeof(_address));
+}
+
 IPAddress::IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3)
     : v6(_address.u16)
 {
@@ -187,10 +193,10 @@ size_t IPAddress::V6RawAccessor::printTo(Print& p) const
 {
     size_t count = 0;
 
-    count += p.print(addr[0], HEX);
+    count += p.print(htons(addr[0]), HEX);
     for(int i=1; i<8; i++) {
 	count += p.print(":");
-        count += p.print(addr[i], HEX);
+        count += p.print(htons(addr[i]), HEX);
     }
     return count;
 }

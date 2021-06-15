@@ -132,6 +132,17 @@ portFORCE_INLINE static BaseType_t otrPortIsInsideInterrupt(void)
         otrTaskNotifyGive(); \
     } while (0)
 
+#define OT_API_CALL_RET(ty, ...) \
+    { ty ret; \
+    do                       \
+    {                        \
+        otrLock();           \
+        ret = __VA_ARGS__;   \
+        otrUnlock();         \
+        otrTaskNotifyGive(); \
+    } while (0);             \
+    return ret; }
+
 #ifdef __cplusplus
 }
 #endif

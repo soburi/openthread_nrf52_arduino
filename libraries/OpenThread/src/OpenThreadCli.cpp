@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2020 Tokita, Hiroshi  All right reserved.
+  Copyright (c) 2020-2021 Tokita, Hiroshi  All right reserved.
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ size_t OpenThreadCliClass::write(uint8_t b)
     otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "otCliConsoleInputLine %s", cmdline_buffer);
 
     if(cmdline_i > 0) {
+      cliStream->write(b);
       otCliConsoleInputLine(reinterpret_cast<char*>(cmdline_buffer), cmdline_i);
     }
     cmdline_i = 0;
@@ -81,7 +82,7 @@ void OpenThreadCliClass::begin(Stream& strm, bool echoback, const char* prompt)
 
 void OpenThreadCliClass::process()
 {
-  if(cliStream && cliStream->available() > 0 ) {
+  while(cliStream && cliStream->available() > 0 ) {
     otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "OpenThreadCliClass::process()");
     char c = cliStream->read();
     write(c);

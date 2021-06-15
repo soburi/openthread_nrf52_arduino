@@ -89,6 +89,7 @@ private:
 public:
     // Constructors
     IPAddress();
+    IPAddress(const IPAddress&);
     IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_octet, uint8_t fourth_octet);
     IPAddress(uint32_t address);
     IPAddress(const uint8_t *address);
@@ -124,6 +125,8 @@ public:
 #if defined(ENABLE_IPV6)
     IPAddress& operator=(const IPAddress& addr);
     IPAddress& operator=(const uint16_t *address);
+    operator const otIp6Address*() const { return &_address.ot; }
+    operator otIp6Address*() { return &_address.ot; }
 #endif
 
     virtual size_t printTo(Print& p) const;

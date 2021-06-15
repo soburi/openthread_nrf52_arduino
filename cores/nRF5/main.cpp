@@ -99,21 +99,6 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
-void waitLoop(uint32_t aSignal)
-{
-  uint32_t notifyValue = 0;
-
-  do
-  {
-    xTaskNotifyWait(aSignal, aSignal, &notifyValue, portMAX_DELAY);
-  } while ((notifyValue & aSignal) == 0);
-}
-
-void notifyLoop(uint32_t aSignal)
-{
-  xTaskNotify(_loopHandle, aSignal, eSetBits);
-}
-
 extern "C"
 {
 

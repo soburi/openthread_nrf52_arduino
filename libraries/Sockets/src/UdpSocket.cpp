@@ -61,7 +61,9 @@ uint8_t UDPSocket::begin(IPAddress address, uint16_t port){
   int ret = 0;
   struct otSockAddr addr = {0};
   addr.mPort = port;
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
   COPY_V6ADDR(addr.mAddress.mFields.m16, address.v6);
+#pragma GCC diagnostic pop
   //scope id
 
   tx_buffer_len = 0;
@@ -83,7 +85,9 @@ void UDPSocket::stop(){
 int UDPSocket::beginPacket(IPAddress ip, uint16_t port){
   if(!port) return 0;
 
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
   COPY_V6ADDR(msginfo.mPeerAddr.mFields.m16, ip.v6);
+#pragma GCC diagnostic pop
   msginfo.mPeerPort = port;
 
   tx_buffer_len = 0;

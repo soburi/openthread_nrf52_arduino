@@ -64,7 +64,9 @@ public:
   int read(char* buffer, size_t len);
   int peek();
   inline void flush() { }
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
   inline IPAddress remoteIP() { return remote_ip.mFields.m16; }
+#pragma GCC diagnostic pop
   inline uint16_t remotePort() { return remote_port; }
   using Print::write; // pull in write(str) and write(buf, size) from Print
 

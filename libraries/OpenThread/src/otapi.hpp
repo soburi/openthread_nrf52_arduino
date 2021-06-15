@@ -1,4 +1,57 @@
-  class OTBackboneRouter {
+/*
+  Copyright (c) 2021 Tokita, Hiroshi  All right reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+#pragma once
+
+#include <openthread-core-config.h>
+#include <openthread/config.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <openthread/error.h>
+#include <openthread/backbone_router.h>
+#include <openthread/backbone_router_ftd.h>
+#include <openthread/border_agent.h>
+#include <openthread/coap.h>
+#include <openthread/coap_secure.h>
+#include <openthread/commissioner.h>
+#include <openthread/dns.h>
+#include <openthread/heap.h>
+#include <openthread/icmp6.h>
+#include <openthread/jam_detection.h>
+#include <openthread/joiner.h>
+#include <openthread/link.h>
+#include <openthread/link_raw.h>
+#include <openthread/netdata.h>
+#include <openthread/netdiag.h>
+#include <openthread/sntp.h>
+#include <openthread/thread.h>
+#include <openthread/thread_ftd.h>
+#include <openthread/udp.h>
+
+class OpenThreadClass;
+
+struct mbedtls_entropy_context;
+struct mbedtls_ctr_drbg_context;
+
+namespace OTAPI {
+
+#if (OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_2)
+  class BackboneRouter {
   friend class OpenThreadClass;
   public:
     otError GetPrimary(otBackboneRouterConfig* aConfig);
@@ -10,14 +63,18 @@
     void SetEnabled(bool aEnable);
     void SetRegistrationJitter(uint8_t aJitter);
   };
+#endif
 
-  class OTBorderAgent {
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ENABLE
+  class BorderAgent {
   friend class OpenThreadClass;
   public:
     otBorderAgentState GetState();
   };
+#endif
 
-  class OTBorderRouter {
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
+  class BorderRouter {
   friend class OpenThreadClass;
   public:
     otError AddOnMeshPrefix(const otBorderRouterConfig* aConfig);
@@ -29,8 +86,10 @@
     otError RemoveOnMeshPrefix(const otIp6Prefix* aPrefix);
     otError RemoveRoute(const otIp6Prefix* aPrefix);
   };
+#endif
 
-  class OTChannelManager {
+#if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE && OPENTHREAD_FTD
+  class ChannelManager {
   friend class OpenThreadClass;
   public:
     bool GetAutoChannelSelectionEnabled();
@@ -47,8 +106,10 @@
     void SetFavoredChannels(uint32_t aChannelMask);
     void SetSupportedChannels(uint32_t aChannelMask);
   };
+#endif
 
-  class OTChannelMonitor {
+#if OPENTHREAD_CONFIG_CHANNEL_MONITOR_ENABLE
+  class ChannelMonitor {
   friend class OpenThreadClass;
   public:
     bool IsEnabled();
@@ -59,8 +120,10 @@
     uint32_t GetSampleInterval();
     uint32_t GetSampleWindow();
   };
+#endif
 
-  class OTChildSupervision {
+#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
+  class ChildSupervision {
   friend class OpenThreadClass;
   public:
     uint16_t GetCheckTimeout();
@@ -68,49 +131,51 @@
     void SetCheckTimeout(uint16_t aTimeout);
     void SetInterval(uint16_t aInterval);
   };
-
-  class OTCli {
+#endif
+/*
+  class Cli {
   friend class OpenThreadClass;
   public:
-    //void Cli::AppendResult(otError aError);
+    void AppendResult(otError aError);
     void ConsoleInit(otCliConsoleOutputCallback aCallback, void* aContext);
-    //void Cli::ConsoleInputLine(char* aBuf, uint16_t aBufLength);
-    //void Cli::Output(const char* aString, uint16_t aLength);
-    //void Cli::OutputBytes(const uint8_t* aBytes, uint8_t aLength);
-    //void Cli::OutputFormat(const char* aFmt,...);
-    //void Cli::PlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat, va_list aArgs);
-    //void Cli::SetUserCommands(const otCliCommand* aUserCommands, uint8_t aLength);
+    void ConsoleInputLine(char* aBuf, uint16_t aBufLength);
+    void Output(const char* aString, uint16_t aLength);
+    void OutputBytes(const uint8_t* aBytes, uint8_t aLength);
+    void OutputFormat(const char* aFmt,...);
+    void PlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat, va_list aArgs);
+    void SetUserCommands(const otCliCommand* aUserCommands, uint8_t aLength);
     void UartInit();
   };
-
-  class OTCoap {
+*/
+#if OPENTHREAD_CONFIG_COAP_API_ENABLE
+  class Coap {
   friend class OpenThreadClass;
   public:
-    //const char* Coap::MessageCodeToString(const otMessage* aMessage);
-    //const otCoapOption* Coap::OptionIteratorGetFirstOption(otCoapOptionIterator* aIterator);
-    //const otCoapOption* Coap::OptionIteratorGetFirstOptionMatching(otCoapOptionIterator* aIterator, uint16_t aOption);
-    //const otCoapOption* Coap::OptionIteratorGetNextOption(otCoapOptionIterator* aIterator);
-    //const otCoapOption* Coap::OptionIteratorGetNextOptionMatching(otCoapOptionIterator* aIterator, uint16_t aOption);
-    //const uint8_t* Coap::MessageGetToken(const otMessage* aMessage);
-    //otCoapCode Coap::MessageGetCode(const otMessage* aMessage);
-    //otCoapType Coap::MessageGetType(const otMessage* aMessage);
+    const char* MessageCodeToString(const otMessage* aMessage);
+    const otCoapOption* OptionIteratorGetFirstOption(otCoapOptionIterator* aIterator);
+    const otCoapOption* OptionIteratorGetFirstOptionMatching(otCoapOptionIterator* aIterator, uint16_t aOption);
+    const otCoapOption* OptionIteratorGetNextOption(otCoapOptionIterator* aIterator);
+    const otCoapOption* OptionIteratorGetNextOptionMatching(otCoapOptionIterator* aIterator, uint16_t aOption);
+    const uint8_t* MessageGetToken(const otMessage* aMessage);
+    otCoapCode MessageGetCode(const otMessage* aMessage);
+    otCoapType MessageGetType(const otMessage* aMessage);
     otError AddResource(otCoapResource* aResource);
-    //otError Coap::MessageAppendBlock1Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
-    //otError Coap::MessageAppendBlock2Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
-    //otError Coap::MessageAppendContentFormatOption(otMessage* aMessage, otCoapOptionContentFormat aContentFormat);
-    //otError Coap::MessageAppendMaxAgeOption(otMessage* aMessage, uint32_t aMaxAge);
-    //otError Coap::MessageAppendObserveOption(otMessage* aMessage, uint32_t aObserve);
-    //otError Coap::MessageAppendOption(otMessage* aMessage, uint16_t aNumber, uint16_t aLength, const void* aValue);
-    //otError Coap::MessageAppendProxyUriOption(otMessage* aMessage, const char* aUriPath);
-    //otError Coap::MessageAppendUintOption(otMessage* aMessage, uint16_t aNumber, uint32_t aValue);
-    //otError Coap::MessageAppendUriPathOptions(otMessage* aMessage, const char* aUriPath);
-    //otError Coap::MessageAppendUriQueryOption(otMessage* aMessage, const char* aUriQuery);
-    //otError Coap::MessageInitResponse(otMessage* aResponse, const otMessage* aRequest, otCoapType aType, otCoapCode aCode);
-    //otError Coap::MessageSetPayloadMarker(otMessage* aMessage);
-    //otError Coap::MessageSetToken(otMessage* aMessage, const uint8_t* aToken, uint8_t aTokenLength);
-    //otError Coap::OptionIteratorGetOptionUintValue(otCoapOptionIterator* aIterator, uint64_t* const aValue);
-    //otError Coap::OptionIteratorGetOptionValue(otCoapOptionIterator* aIterator, void* aValue);
-    //otError Coap::OptionIteratorInit(otCoapOptionIterator* aIterator, const otMessage* aMessage);
+    otError MessageAppendBlock1Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
+    otError MessageAppendBlock2Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
+    otError MessageAppendContentFormatOption(otMessage* aMessage, otCoapOptionContentFormat aContentFormat);
+    otError MessageAppendMaxAgeOption(otMessage* aMessage, uint32_t aMaxAge);
+    otError MessageAppendObserveOption(otMessage* aMessage, uint32_t aObserve);
+    otError MessageAppendOption(otMessage* aMessage, uint16_t aNumber, uint16_t aLength, const void* aValue);
+    otError MessageAppendProxyUriOption(otMessage* aMessage, const char* aUriPath);
+    otError MessageAppendUintOption(otMessage* aMessage, uint16_t aNumber, uint32_t aValue);
+    otError MessageAppendUriPathOptions(otMessage* aMessage, const char* aUriPath);
+    otError MessageAppendUriQueryOption(otMessage* aMessage, const char* aUriQuery);
+    otError MessageInitResponse(otMessage* aResponse, const otMessage* aRequest, otCoapType aType, otCoapCode aCode);
+    otError MessageSetPayloadMarker(otMessage* aMessage);
+    otError MessageSetToken(otMessage* aMessage, const uint8_t* aToken, uint8_t aTokenLength);
+    otError OptionIteratorGetOptionUintValue(otCoapOptionIterator* aIterator, uint64_t* const aValue);
+    otError OptionIteratorGetOptionValue(otCoapOptionIterator* aIterator, void* aValue);
+    otError OptionIteratorInit(otCoapOptionIterator* aIterator, const otMessage* aMessage);
     otError SendRequestWithParameters(otMessage* aMessage, const otMessageInfo* aMessageInfo, otCoapResponseHandler aHandler, void* aContext, const otCoapTxParameters* aTxParameters);
     otError SendResponseWithParameters(otMessage* aMessage, const otMessageInfo* aMessageInfo, const otCoapTxParameters* aTxParameters);
     otError Start(uint16_t aPort);
@@ -118,16 +183,18 @@
     otMessage* NewMessage(const otMessageSettings* aSettings);
     static otError SendRequest(otMessage* aMessage, const otMessageInfo* aMessageInfo, otCoapResponseHandler aHandler, void* aContext);
     static otError SendResponse(otMessage* aMessage, const otMessageInfo* aMessageInfo);
-    //uint16_t Coap::BlockSizeFromExponent(otCoapBlockSize aSize);
-    //uint16_t Coap::MessageGetMessageId(const otMessage* aMessage);
-    //uint8_t Coap::MessageGetTokenLength(const otMessage* aMessage);
-    //void Coap::MessageGenerateToken(otMessage* aMessage, uint8_t aTokenLength);
-    //void Coap::MessageInit(otMessage* aMessage, otCoapType aType, otCoapCode aCode);
+    uint16_t BlockSizeFromExponent(otCoapBlockSize aSize);
+    uint16_t MessageGetMessageId(const otMessage* aMessage);
+    uint8_t MessageGetTokenLength(const otMessage* aMessage);
+    void MessageGenerateToken(otMessage* aMessage, uint8_t aTokenLength);
+    void MessageInit(otMessage* aMessage, otCoapType aType, otCoapCode aCode);
     void RemoveResource(otCoapResource* aResource);
     void SetDefaultHandler(otCoapRequestHandler aHandler, void* aContext);
   };
+#endif
 
-  class OTCoapSecure {
+#if OPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE
+  class CoapSecure {
   friend class OpenThreadClass;
   public:
     bool IsConnected();
@@ -148,8 +215,10 @@
     void SetSslAuthMode(bool aVerifyPeerCertificate);
     void Stop();
   };
+#endif
 
-  class OTCommissioner {
+#if OPENTHREAD_CONFIG_COMMISSIONER_ENABLE && OPENTHREAD_FTD
+  class Commissioner {
   friend class OpenThreadClass;
   public:
     const char* GetProvisioningUrl();
@@ -167,30 +236,21 @@
     otError Stop();
     uint16_t GetSessionId();
   };
+#endif
 
-  class OTCrypto {
+  class Crypto {
   friend class OpenThreadClass;
   public:
-    //otError Crypto::EcdsaSign(uint8_t* aOutput, uint16_t* aOutputLength, const uint8_t* aInputHash, uint16_t aInputHashLength, const uint8_t* aPrivateKey, uint16_t aPrivateKeyLength);
-    //void Crypto::AesCcm(const uint8_t* aKey, uint16_t aKeyLength, uint8_t aTagLength, const void* aNonce, uint8_t aNonceLength, const void* aHeader, uint32_t aHeaderLength, void* aPlainText, void* aCipherText, uint32_t aLength, bool aEncrypt, void* aTag);
-    //void Crypto::HmacSha256(const uint8_t* aKey, uint16_t aKeyLength, const uint8_t* aBuf, uint16_t aBufLength, uint8_t* aHash);
-    //mbedtls_ctr_drbg_context* RandomCrypto::MbedTlsContextGet(void);
-    //otError RandomCrypto::FillBuffer(uint8_t* aBuffer, uint16_t aSize);
-    //uint16_t RandomNonCrypto::GetUint16(void);
-    //uint16_t RandomNonCrypto::GetUint16InRange(uint16_t aMin, uint16_t aMax);
-    //uint32_t RandomNonCrypto::AddJitter(uint32_t aValue, uint16_t aJitter);
-    //uint32_t RandomNonCrypto::GetUint32(void);
-    //uint32_t RandomNonCrypto::GetUint32InRange(uint32_t aMin, uint32_t aMax);
-    //uint8_t RandomNonCrypto::GetUint8(void);
-    //uint8_t RandomNonCrypto::GetUint8InRange(uint8_t aMin, uint8_t aMax);
-    //void RandomNonCrypto::FillBuffer(uint8_t* aBuffer, uint16_t aSize);
+    otError EcdsaSign(uint8_t* aOutput, uint16_t* aOutputLength, const uint8_t* aInputHash, uint16_t aInputHashLength, const uint8_t* aPrivateKey, uint16_t aPrivateKeyLength);
+    void AesCcm(const uint8_t* aKey, uint16_t aKeyLength, uint8_t aTagLength, const void* aNonce, uint8_t aNonceLength, const void* aHeader, uint32_t aHeaderLength, void* aPlainText, void* aCipherText, uint32_t aLength, bool aEncrypt, void* aTag);
+    void HmacSha256(const uint8_t* aKey, uint16_t aKeyLength, const uint8_t* aBuf, uint16_t aBufLength, uint8_t* aHash);
   };
 
-  class OTDataset {
+  class Dataset {
   friend class OpenThreadClass;
   public:
     bool IsCommissioned();
-    //otError Dataset::GeneratePskc(const char* aPassPhrase, const otNetworkName* aNetworkName, const otExtendedPanId* aExtPanId, otPskc* aPskc);
+    otError GeneratePskc(const char* aPassPhrase, const otNetworkName* aNetworkName, const otExtendedPanId* aExtPanId, otPskc* aPskc);
     otError GetActive(otOperationalDataset* aDataset);
     otError GetPending(otOperationalDataset* aDataset);
     otError SendMgmtActiveGet(const otOperationalDatasetComponents* aDatasetComponents, const uint8_t* aTlvTypes, uint8_t aLength, const otIp6Address* aAddress);
@@ -204,35 +264,39 @@
     uint32_t GetDelayTimerMinimal();
   };
 
-  class OTDiag {
+#if OPENTHREAD_CONFIG_DIAG_ENABLE
+  class Diag {
   friend class OpenThreadClass;
   public:
     bool IsEnabled();
     otError ProcessCmd(uint8_t aArgsLength, char* aArgs[], char* aOutput, size_t aOutputMaxLen);
     void ProcessCmdLine(const char* aString, char* aOutput, size_t aOutputMaxLen);
   };
+#endif
 
-  class OTDnsClient {
+#if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
+  class DnsClient {
   friend class OpenThreadClass;
   public:
     otError Query(const otDnsQuery* aQuery, otDnsResponseHandler aHandler, void* aContext);
   };
+#endif
 
-  class OTEntropy {
+  class Entropy {
   friend class OpenThreadClass;
   public:
-    //mbedtls_entropy_context* Entropy::MbedTlsContextGet(void);
+    mbedtls_entropy_context* MbedTlsContextGet(void);
   };
 
-  class OTHeap {
+  class Heap {
   friend class OpenThreadClass;
   public:
-    //void Heap::Free(void* aPointer);
-    //void Heap::SetCAllocFree(otHeapCAllocFn aCAlloc, otHeapFreeFn aFree);
-    //void* Heap::CAlloc(size_t aCount, size_t aSize);
+    void Free(void* aPointer);
+    void SetCAllocFree(otHeapCAllocFn aCAlloc, otHeapFreeFn aFree);
+    void* CAlloc(size_t aCount, size_t aSize);
   };
 
-  class OTIcmp6 {
+  class Icmp6 {
   friend class OpenThreadClass;
   public:
     otError RegisterHandler(otIcmp6Handler* aHandler);
@@ -241,23 +305,23 @@
     void SetEchoMode(otIcmp6EchoMode aMode);
   };
 
-  class OTInstance {
+  class Instance {
   friend class OpenThreadClass;
   public:
     bool IsInitialized();
     otError ErasePersistentInfo();
-    //otInstance* Instance::Init(void* aInstanceBuffer, size_t* aInstanceBufferSize);
-    //otInstance* Instance::InitSingle(void);
+    otInstance* Init(void* aInstanceBuffer, size_t* aInstanceBufferSize);
+    otInstance* InitSingle(void);
     void FactoryReset();
     void Finalize();
     void Reset();
   };
 
-  class OTIp6 {
+  class Ip6 {
   friend class OpenThreadClass;
   public:
-    //bool Ip6::IsAddressEqual(const otIp6Address* aFirst, const otIp6Address* aSecond);
-    //bool Ip6::IsAddressUnspecified(const otIp6Address* aAddress);
+    bool IsAddressEqual(const otIp6Address* aFirst, const otIp6Address* aSecond);
+    bool IsAddressUnspecified(const otIp6Address* aAddress);
     bool IsEnabled();
     bool IsMulticastPromiscuousEnabled();
     bool IsReceiveFilterEnabled();
@@ -267,7 +331,7 @@
     const uint16_t* GetUnsecurePorts(uint8_t* aNumEntries);
     otError AddUnicastAddress(const otNetifAddress* aAddress);
     otError AddUnsecurePort(uint16_t aPort);
-    //otError Ip6::AddressFromString(const char* aString, otIp6Address* aAddress);
+    otError AddressFromString(const char* aString, otIp6Address* aAddress);
     otError RemoveUnicastAddress(const otIp6Address* aAddress);
     otError RemoveUnsecurePort(uint16_t aPort);
     otError SelectSourceAddress(otMessageInfo* aMessageInfo);
@@ -277,7 +341,7 @@
     otError UnsubscribeMulticastAddress(const otIp6Address* aAddress);
     otMessage* NewMessage(const otMessageSettings* aSettings);
     otMessage* NewMessageFromBuffer(const uint8_t* aData, uint16_t aDataLength, const otMessageSettings* aSettings);
-    //uint8_t Ip6::PrefixMatch(const otIp6Address* aFirst, const otIp6Address* aSecond);
+    uint8_t PrefixMatch(const otIp6Address* aFirst, const otIp6Address* aSecond);
     void RemoveAllUnsecurePorts();
     void SetAddressCallback(otIp6AddressCallback aCallback, void* aCallbackContext);
     void SetMulticastPromiscuousEnabled(bool aEnabled);
@@ -287,7 +351,8 @@
     void SetSlaacPrefixFilter(otIp6SlaacPrefixFilter aFilter);
   };
 
-  class OTJamDetection {
+#if OPENTHREAD_CONFIG_JAM_DETECTION_ENABLE
+  class JamDetection {
   friend class OpenThreadClass;
   public:
     bool GetState();
@@ -302,8 +367,10 @@
     uint8_t GetBusyPeriod();
     uint8_t GetWindow();
   };
+#endif
 
-  class OTJoiner {
+#if OPENTHREAD_CONFIG_JOINER_ENABLE
+  class Joiner {
   friend class OpenThreadClass;
   public:
     otError Start(const char* aPskd, const char* aProvisioningUrl, const char* aVendorName, const char* aVendorModel, const char* aVendorSwVersion, const char* aVendorData, otJoinerCallback aCallback, void* aContext);
@@ -311,8 +378,9 @@
     void GetId(otExtAddress* aJoinerId);
     void Stop();
   };
+#endif
 
-  class OTLink {
+  class Link {
   friend class OpenThreadClass;
   public:
     bool IsActiveScanInProgress();
@@ -361,70 +429,77 @@
     void SetMaxFrameRetriesDirect(uint8_t aMaxFrameRetriesDirect);
     void SetMaxFrameRetriesIndirect(uint8_t aMaxFrameRetriesIndirect);
     void SetPcapCallback(otLinkPcapCallback aPcapCallback, void* aCallbackContext);
-    bool RawGetPromiscuous();
-    bool RawIsEnabled();
-    int8_t RawGetRssi();
-    otError RawEnergyScan(uint8_t aScanChannel, uint16_t aScanDuration, otLinkRawEnergyScanDone aCallback);
-    otError RawReceive(otLinkRawReceiveDone aCallback);
-    otError RawSetEnable(bool aEnabled);
-    otError RawSetPromiscuous(bool aEnable);
-    otError RawSetShortAddress(uint16_t aShortAddress);
-    otError RawSleep();
-    otError RawSrcMatchAddExtEntry(const otExtAddress* aExtAddress);
-    otError RawSrcMatchAddShortEntry(uint16_t aShortAddress);
-    otError RawSrcMatchClearExtEntries();
-    otError RawSrcMatchClearExtEntry(const otExtAddress* aExtAddress);
-    otError RawSrcMatchClearShortEntries();
-    otError RawSrcMatchClearShortEntry(uint16_t aShortAddress);
-    otError RawSrcMatchEnable(bool aEnable);
-    otError RawTransmit(otLinkRawTransmitDone aCallback);
-    otRadioCaps RawGetCaps();
-    otRadioFrame* RawGetTransmitBuffer();
   };
 
-  class OTLogging {
+#if OPENTHREAD_RADIO || OPENTHREAD_CONFIG_LINK_RAW_ENABLE
+  class LinkRaw {
   friend class OpenThreadClass;
   public:
-    //otLogLevel Logging::GetLevel(void);
-    //void Logging::SetLevel(otLogLevel aLogLevel);
+    bool GetPromiscuous();
+    bool IsEnabled();
+    int8_t GetRssi();
+    otError EnergyScan(uint8_t aScanChannel, uint16_t aScanDuration, otLinkRawEnergyScanDone aCallback);
+    otError Receive(otLinkRawReceiveDone aCallback);
+    otError SetEnable(bool aEnabled);
+    otError SetPromiscuous(bool aEnable);
+    otError SetShortAddress(uint16_t aShortAddress);
+    otError Sleep();
+    otError SrcMatchAddExtEntry(const otExtAddress* aExtAddress);
+    otError SrcMatchAddShortEntry(uint16_t aShortAddress);
+    otError SrcMatchClearExtEntries();
+    otError SrcMatchClearExtEntry(const otExtAddress* aExtAddress);
+    otError SrcMatchClearShortEntries();
+    otError SrcMatchClearShortEntry(uint16_t aShortAddress);
+    otError SrcMatchEnable(bool aEnable);
+    otError Transmit(otLinkRawTransmitDone aCallback);
+    otRadioCaps GetCaps();
+    otRadioFrame* GetTransmitBuffer();
+  };
+#endif
+
+  class Logging {
+  friend class OpenThreadClass;
+  public:
+    otLogLevel GetLevel(void);
+    void SetLevel(otLogLevel aLogLevel);
   };
 
-  class OTMessage {
+  class Message {
   friend class OpenThreadClass;
   public:
-    //bool Message::IsLinkSecurityEnabled(const otMessage* aMessage);
-    //int Message::Write(otMessage* aMessage, uint16_t aOffset, const void* aBuf, uint16_t aLength);
-    //int8_t Message::GetRss(const otMessage* aMessage);
-    //otError Message::Append(otMessage* aMessage, const void* aBuf, uint16_t aLength);
-    //otError Message::QueueDequeue(otMessageQueue* aQueue, otMessage* aMessage);
-    //otError Message::QueueEnqueue(otMessageQueue* aQueue, otMessage* aMessage);
-    //otError Message::QueueEnqueueAtHead(otMessageQueue* aQueue, otMessage* aMessage);
-    //otError Message::SetLength(otMessage* aMessage, uint16_t aLength);
-    //otError Message::SetOffset(otMessage* aMessage, uint16_t aOffset);
-    //otMessage* Message::QueueGetHead(otMessageQueue* aQueue);
-    //otMessage* Message::QueueGetNext(otMessageQueue* aQueue, const otMessage* aMessage);
-    //uint16_t Message::GetLength(const otMessage* aMessage);
-    //uint16_t Message::GetOffset(const otMessage* aMessage);
-    //uint16_t Message::Read(const otMessage* aMessage, uint16_t aOffset, void* aBuf, uint16_t aLength);
-    //void Message::Free(otMessage* aMessage);
+    bool IsLinkSecurityEnabled(const otMessage* aMessage);
+    int Write(otMessage* aMessage, uint16_t aOffset, const void* aBuf, uint16_t aLength);
+    int8_t GetRss(const otMessage* aMessage);
+    otError Append(otMessage* aMessage, const void* aBuf, uint16_t aLength);
+    otError QueueDequeue(otMessageQueue* aQueue, otMessage* aMessage);
+    otError QueueEnqueue(otMessageQueue* aQueue, otMessage* aMessage);
+    otError QueueEnqueueAtHead(otMessageQueue* aQueue, otMessage* aMessage);
+    otError SetLength(otMessage* aMessage, uint16_t aLength);
+    otError SetOffset(otMessage* aMessage, uint16_t aOffset);
+    otMessage* QueueGetHead(otMessageQueue* aQueue);
+    otMessage* QueueGetNext(otMessageQueue* aQueue, const otMessage* aMessage);
+    uint16_t GetLength(const otMessage* aMessage);
+    uint16_t GetOffset(const otMessage* aMessage);
+    uint16_t Read(const otMessage* aMessage, uint16_t aOffset, void* aBuf, uint16_t aLength);
+    void Free(otMessage* aMessage);
     void GetBufferInfo(otBufferInfo* aBufferInfo);
-    //void Message::QueueInit(otMessageQueue* aQueue);
-    //void Message::SetDirectTransmission(otMessage* aMessage, bool aEnabled);
+    void QueueInit(otMessageQueue* aQueue);
+    void SetDirectTransmission(otMessage* aMessage, bool aEnabled);
   };
-
-  class OTNcp {
+/*
+  class Ncp {
   friend class OpenThreadClass;
   public:
-    //otError Ncp::StreamWrite(int aStreamId, const uint8_t* aDataPtr, int aDataLen);
-    //void Ncp::HandleDidReceiveNewLegacyUlaPrefix(const uint8_t* aUlaPrefix);
-    //void Ncp::HandleLegacyNodeDidJoin(const otExtAddress* aExtAddr);
+    otError StreamWrite(int aStreamId, const uint8_t* aDataPtr, int aDataLen);
+    void HandleDidReceiveNewLegacyUlaPrefix(const uint8_t* aUlaPrefix);
+    void HandleLegacyNodeDidJoin(const otExtAddress* aExtAddr);
     void Init();
-    //void Ncp::PlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat, va_list aArgs);
-    //void Ncp::RegisterLegacyHandlers(const otNcpLegacyHandlers* aHandlers);
-    //void Ncp::RegisterPeekPokeDelagates(otNcpDelegateAllowPeekPoke aAllowPeekDelegate, otNcpDelegateAllowPeekPoke aAllowPokeDelegate);
+    void PlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat, va_list aArgs);
+    void RegisterLegacyHandlers(const otNcpLegacyHandlers* aHandlers);
+    void RegisterPeekPokeDelagates(otNcpDelegateAllowPeekPoke aAllowPeekDelegate, otNcpDelegateAllowPeekPoke aAllowPokeDelegate);
   };
-
-  class OTNetData {
+*/
+  class NetData {
   friend class OpenThreadClass;
   public:
     otError Get(bool aStable, uint8_t* aData, uint8_t* aDataLength);
@@ -435,7 +510,8 @@
     uint8_t GetVersion();
   };
 
-  class OTNetworkTime {
+#if OPENTHREAD_CONFIG_TIME_SYNC_ENABLE
+  class NetworkTime {
   friend class OpenThreadClass;
   public:
     otError SetSyncPeriod(uint16_t aTimeSyncPeriod);
@@ -445,47 +521,49 @@
     uint16_t GetXtalThreshold();
     void SyncSetCallback(otNetworkTimeSyncCallbackFn aCallbackFn, void* aCallbackContext);
   };
+#endif
 
-  class OTPlat {
+  class Plat {
   friend class OpenThreadClass;
   public:
-    //bool Plat::DiagModeGet(void);
+    bool DiagModeGet(void);
     otError DiagProcess(uint8_t aArgsLength, char* aArgs[], char* aOutput, size_t aOutputMaxLen);
     void DiagAlarmCallback();
-    //void Plat::DiagChannelSet(uint8_t aChannel);
-    //void Plat::DiagModeSet(bool aMode);
+    void DiagChannelSet(uint8_t aChannel);
+    void DiagModeSet(bool aMode);
     void DiagRadioReceived(otRadioFrame* aFrame, otError aError);
-    //void Plat::DiagTxPowerSet(int8_t aTxPower);
-    //otError Plat::EntropyGet(uint8_t* aOutput, uint16_t aOutputLength);
-    //void Plat::Log(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat,...);
-    //otError Plat::UdpBind(otUdpSocket* aUdpSocket);
-    //otError Plat::UdpClose(otUdpSocket* aUdpSocket);
-    //otError Plat::UdpConnect(otUdpSocket* aUdpSocket);
-    //otError Plat::UdpSend(otUdpSocket* aUdpSocket, otMessage* aMessage, const otMessageInfo* aMessageInfo);
-    //otError Plat::UdpSocket(otUdpSocket* aUdpSocket);
+    void DiagTxPowerSet(int8_t aTxPower);
+    otError EntropyGet(uint8_t* aOutput, uint16_t aOutputLength);
+    void Log(otLogLevel aLogLevel, otLogRegion aLogRegion, const char* aFormat,...);
+    otError UdpBind(otUdpSocket* aUdpSocket);
+    otError UdpClose(otUdpSocket* aUdpSocket);
+    otError UdpConnect(otUdpSocket* aUdpSocket);
+    otError UdpSend(otUdpSocket* aUdpSocket, otMessage* aMessage, const otMessageInfo* aMessageInfo);
+    otError UdpSocket(otUdpSocket* aUdpSocket);
   };
 
-  class OTRandomCrypto {
+  class RandomCrypto {
   friend class OpenThreadClass;
   public:
-    //mbedtls_ctr_drbg_context* RandomCrypto::MbedTlsContextGet(void);
-    //otError RandomCrypto::FillBuffer(uint8_t* aBuffer, uint16_t aSize);
+    mbedtls_ctr_drbg_context* MbedTlsContextGet(void);
+    otError FillBuffer(uint8_t* aBuffer, uint16_t aSize);
   };
 
-  class OTRandomNonCrypto {
+  class RandomNonCrypto {
   friend class OpenThreadClass;
   public:
-    //uint16_t RandomNonCrypto::GetUint16(void);
-    //uint16_t RandomNonCrypto::GetUint16InRange(uint16_t aMin, uint16_t aMax);
-    //uint32_t RandomNonCrypto::AddJitter(uint32_t aValue, uint16_t aJitter);
-    //uint32_t RandomNonCrypto::GetUint32(void);
-    //uint32_t RandomNonCrypto::GetUint32InRange(uint32_t aMin, uint32_t aMax);
-    //uint8_t RandomNonCrypto::GetUint8(void);
-    //uint8_t RandomNonCrypto::GetUint8InRange(uint8_t aMin, uint8_t aMax);
-    //void RandomNonCrypto::FillBuffer(uint8_t* aBuffer, uint16_t aSize);
+    uint16_t GetUint16(void);
+    uint16_t GetUint16InRange(uint16_t aMin, uint16_t aMax);
+    uint32_t AddJitter(uint32_t aValue, uint16_t aJitter);
+    uint32_t GetUint32(void);
+    uint32_t GetUint32InRange(uint32_t aMin, uint32_t aMax);
+    uint8_t GetUint8(void);
+    uint8_t GetUint8InRange(uint8_t aMin, uint8_t aMax);
+    void FillBuffer(uint8_t* aBuffer, uint16_t aSize);
   };
 
-  class OTServer {
+#if OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE
+  class Server {
   friend class OpenThreadClass;
   public:
     otError AddService(const otServiceConfig* aConfig);
@@ -494,27 +572,30 @@
     otError Register();
     otError RemoveService(uint32_t aEnterpriseNumber, const uint8_t* aServiceData, uint8_t aServiceDataLength);
   };
+#endif
 
-  class OTSntpClient {
+#if OPENTHREAD_CONFIG_SNTP_CLIENT_ENABLE
+  class SntpClient {
   friend class OpenThreadClass;
   public:
     otError Query(const otSntpQuery* aQuery, otSntpResponseHandler aHandler, void* aContext);
     void SetUnixEra(uint32_t aUnixEra);
   };
 
-  class OTTasklets {
+  class Tasklets {
   friend class OpenThreadClass;
   public:
     bool ArePending();
     void Process();
     void SignalPending();
   };
+#endif
 
-  class OTThread {
+  class Thread {
   friend class OpenThreadClass;
   public:
-    //const char* Thread::ErrorToString(otError aError);
-    //otError Thread::GetNextDiagnosticTlv(const otMessage* aMessage, otNetworkDiagIterator* aIterator, otNetworkDiagTlv* aNetworkDiagTlv);
+    const char* ErrorToString(otError aError);
+    otError GetNextDiagnosticTlv(const otMessage* aMessage, otNetworkDiagIterator* aIterator, otNetworkDiagTlv* aNetworkDiagTlv);
     otError SendDiagnosticGet(const otIp6Address* aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
     otError SendDiagnosticReset(const otIp6Address* aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
     void SetReceiveDiagnosticGetCallback(otReceiveDiagnosticGetCallback aCallback, void* aCallbackContext);
@@ -547,7 +628,7 @@
     otError SetNetworkName(const char* aNetworkName);
     otLinkModeConfig GetLinkMode();
     uint16_t GetRloc16();
-    //uint16_t Thread::GetVersion(void);
+    uint16_t GetVersion();
     uint32_t GetChildTimeout();
     uint32_t GetKeySequenceCounter();
     uint32_t GetKeySwitchGuardTime();
@@ -601,16 +682,16 @@
     void SetSteeringData(const otExtAddress* aExtAddress);
   };
 
-  class OTUdp {
+  class Udp {
   friend class OpenThreadClass;
   public:
     otError AddReceiver(otUdpReceiver* aUdpReceiver);
-    //otError Udp::Bind(otUdpSocket* aSocket, otSockAddr* aSockName);
-    //otError Udp::Close(otUdpSocket* aSocket);
-    //otError Udp::Connect(otUdpSocket* aSocket, otSockAddr* aSockName);
+    otError Bind(otUdpSocket* aSocket, otSockAddr* aSockName);
+    otError Close(otUdpSocket* aSocket);
+    otError Connect(otUdpSocket* aSocket, otSockAddr* aSockName);
     otError Open(otUdpSocket* aSocket, otUdpReceive aCallback, void* aContext);
     otError RemoveReceiver(otUdpReceiver* aUdpReceiver);
-    //otError Udp::Send(otUdpSocket* aSocket, otMessage* aMessage, const otMessageInfo* aMessageInfo);
+    otError Send(otUdpSocket* aSocket, otMessage* aMessage, const otMessageInfo* aMessageInfo);
     otError SendDatagram(otMessage* aMessage, otMessageInfo* aMessageInfo);
     otMessage* NewMessage(const otMessageSettings* aSettings);
     otUdpSocket* GetSockets();
@@ -618,3 +699,4 @@
     void ForwardSetForwarder(otUdpForwarder aForwarder, void* aContext);
   };
 
+}
