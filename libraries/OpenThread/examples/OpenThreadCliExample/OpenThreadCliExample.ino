@@ -13,11 +13,14 @@
 void setup() {
   // Initialize Serial
   Serial.begin(115200);
+  while(!Serial);
+
   Serial.println("-------------------------");
   Serial.println("---- OpenThread CLI -----");
   Serial.println("-------------------------");
   Serial.println();
-  
+
+  OpenThread.init();
   OpenThread.begin();
 
   // Bind CLI and Serial.
