@@ -4,8 +4,8 @@ openthread_nrf52_arduino(ot-arduino)
 
 original [README.md rename to BlueFruit_nRF52.md](BlueFruit_nRF52.md)
 
-ot-arduino is a arduino package for nRF52840 that integrated with openthread subsystem.
-This package provides API that is able to communicate by OpenThread protocol.
+ot-arduino is an arduino package for nRF52840 that is integrated with the OpenThread subsystem.
+This package provides API that can communicate by OpenThread protocol.
 
 Resources
 ----------------
@@ -16,37 +16,37 @@ Installation
 --------------
 
 Add https://soburi.github.io/openthread_nrf52_arduino/package_soburi_otnrf52_index.json as an 'Additional Board Manager URL' in Arduino property.
-And install from Borad Manager.
+And install from Board Manager.
 
-Limitation
+Preparation
 -------------
 
-Need J-Link adapter to upload binary.  (Not implement DFU yet.)
-This packages uses SoftDevice S140 v7.0.1.
-Write `s140_nrf52_7.0.1_softdevice.hex` and generated .hex file manually,
+Burn the bootloader at first from `[Tools] -> [Burn Bootloader]`
+(Need J-Link adapter to burn bootloader.)
+
 
 Libraries
 ---------------
 
 ### OpenThread library
 
-OpenThread library provides two type of api.
+OpenThread library provides two types of API.
 
-#### High Level API
+#### CLI-command-like API
 
-The High Level API provides a function with the same name as the CLI command.
+The  CLI-command-like API provides the same function as CLI commands.
 
-Each CLI command implements as function that name is same as command.
-Thus, it can use like a script on arduino code.
+Each API function is a similar name to the CLI command.
+It can use to implement as arduino sketch the same command typed in CLI.
 
-#### LowLevel API
+#### Low-Level API
 
-Low Level API is a wrapper function of openthread api that enclosed otrLock() and otrUnlock().
-That ensure API can execute without explicit exclusion.
+Low-Level API is wrapped OpenThread API with exclusive execution.
+That ensures API can call safely.
 
 
 ### Sockets Library
 
-arduino-esp32 has [Arduino style commnuication (WiFi) API](https://github.com/espressif/arduino-esp32/tree/master/libraries/WiFi/src) that suitable for porting to this package because built on same lwip stack as ot-rtos.
-This package provides Socket API that is ported from arduino-esp32's API.
+UdpSocket is available.
+TcpSocket(Server/Client) planned to implements the after https://github.com/openthread/openthread/pull/6650 merged.
 
