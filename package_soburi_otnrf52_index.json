@@ -6,6 +6,33 @@
           "name": "OpenThread nRF52840 Boards",
           "architecture": "nrf52",
           "category": "Contributed",
+          "version": "0.0.20210615",
+          "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20210615/openthread_nrf52_arduino_0.0.20210615.zip",
+          "archiveFileName": "openthread_nrf52_arduino-0.0.20210615.zip",
+          "checksum": "SHA-256:46730ddaf611a163b0ae15136642973609fd442aa025f8e952fe15927777bfa4",
+          "size": "28012464",
+          "boards": [
+            {
+              "name": "OpenThread nRF52840 boards"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "adafruit",
+              "name": "arm-none-eabi-gcc",
+              "version": "9-2019q4"
+            },
+            {
+              "packager": "adafruit",
+              "name": "nrfjprog",
+              "version": "9.4.0"
+            }
+          ]
+        },
+        {
+          "name": "OpenThread nRF52840 Boards",
+          "architecture": "nrf52",
+          "category": "Contributed",
           "version": "0.0.20200722",
           "url": "https://github.com/soburi/openthread_nrf52_arduino/releases/download/0.0.20200722/openthread_nrf52_arduino_0.0.20200722.zip",
           "archiveFileName": "openthread_nrf52_arduino-0.0.20200722.zip",
