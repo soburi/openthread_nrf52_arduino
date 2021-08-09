@@ -150,8 +150,6 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
   return sizeof(rgb);
 }
 
-
-
 void gesture_enable_callback(uint16_t conn_hdl, bool enabled)
 {
   (void) conn_hdl;
@@ -333,7 +331,6 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setTxPower(8);    // Check bluefruit.h for supported values
   Bluefruit.setName(DEVICE_NAME);
-  //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 

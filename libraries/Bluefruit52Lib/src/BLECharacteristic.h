@@ -43,23 +43,6 @@
 class AdafruitBluefruit;
 class BLEService;
 
-enum BleSecurityMode
-{
-  SECMODE_NO_ACCESS        = 0x00,
-  SECMODE_OPEN             = 0x11,
-  SECMODE_ENC_NO_MITM      = 0x21,
-  SECMODE_ENC_WITH_MITM    = 0x31,
-  SECMODE_SIGNED_NO_MITM   = 0x12,
-  SECMODE_SIGNED_WITH_MITM = 0x22
-};
-
-#define BLE_SECMODE_NO_ACCESS        ((ble_gap_conn_sec_mode_t) { .sm = 0, .lv = 0 })
-#define BLE_SECMODE_OPEN             ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 1 })
-#define BLE_SECMODE_ENC_NO_MITM      ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 2 })
-#define BLE_SECMODE_ENC_WITH_MITM    ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 3 })
-#define BLE_SECMODE_SIGNED_NO_MITM   ((ble_gap_conn_sec_mode_t) { .sm = 2, .lv = 1 })
-#define BLE_SECMODE_SIGNED_WITH_MITM ((ble_gap_conn_sec_mode_t) { .sm = 2, .lv = 2 })
-
 enum CharsProperties
 {
   CHR_PROPS_BROADCAST       = bit(0),
@@ -68,6 +51,17 @@ enum CharsProperties
   CHR_PROPS_WRITE           = bit(3),
   CHR_PROPS_NOTIFY          = bit(4),
   CHR_PROPS_INDICATE        = bit(5)
+};
+
+// same as CharsProperties, but make it easier to migrate from ArduinoBLE
+enum BLECharsProperties
+{
+  BLEBroadcast            = 0x01,
+  BLERead                 = 0x02,
+  BLEWriteWithoutResponse = 0x04,
+  BLEWrite                = 0x08,
+  BLENotify               = 0x10,
+  BLEIndicate             = 0x20
 };
 
 class BLECharacteristic
@@ -84,6 +78,8 @@ class BLECharacteristic
     // Constructors
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
+    BLECharacteristic(BLEUuid bleuuid, uint8_t properties);
+    BLECharacteristic(BLEUuid bleuuid, uint8_t properties, int max_len, bool fixed_len = false);
 
     // Destructor
     virtual ~BLECharacteristic();
@@ -95,7 +91,7 @@ class BLECharacteristic
     /*------------- Configure -------------*/
     void setUuid(BLEUuid bleuuid);
     void setProperties(uint8_t prop);
-    void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
+    void setPermission(SecureMode_t read_perm, SecureMode_t write_perm);
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
     void setBuffer(void* buf, uint16_t bufsize);
@@ -117,7 +113,7 @@ class BLECharacteristic
     virtual err_t begin(void);
 
     // Add Descriptor function must be called right after begin()
-    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm = SECMODE_OPEN, BleSecurityMode write_perm = SECMODE_NO_ACCESS);
+    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, SecureMode_t read_perm = SECMODE_OPEN, SecureMode_t write_perm = SECMODE_NO_ACCESS);
 
     ble_gatts_char_handles_t handles(void);
 
@@ -125,18 +121,19 @@ class BLECharacteristic
     uint16_t write   (const void* data, uint16_t len);
     uint16_t write   (const char* str);
 
-    uint16_t write8  (uint8_t  num);
-    uint16_t write16 (uint16_t num);
-    uint16_t write32 (uint32_t num);
-    uint16_t write32 (int      num);
-    uint16_t write32 (int32_t  num);
+    uint16_t write8     (uint8_t  num);
+    uint16_t write16    (uint16_t num);
+    uint16_t write32    (uint32_t num);
+    uint16_t write32    (int      num);
+    uint16_t writeFloat (float    num);
 
     /*------------- Read -------------*/
     uint16_t read  (void* buffer, uint16_t bufsize, uint16_t offset = 0);
 
-    uint8_t  read8 (void);
-    uint16_t read16(void);
-    uint32_t read32(void);
+    uint8_t  read8     (void);
+    uint16_t read16    (void);
+    uint32_t read32    (void);
+    float    readFloat (void);
 
     uint16_t getCccd(uint16_t conn_hdl);
 
@@ -152,6 +149,7 @@ class BLECharacteristic
     bool notify16 (uint16_t num);
     bool notify32 (uint32_t num);
     bool notify32 (int      num);
+    bool notify32 (float    fnum);
 
     /*------------- Notify multiple connections -------------*/
 //    bool notify   (uint16_t conn_hdl);
@@ -162,6 +160,7 @@ class BLECharacteristic
     bool notify16 (uint16_t conn_hdl, uint16_t num);
     bool notify32 (uint16_t conn_hdl, uint32_t num);
     bool notify32 (uint16_t conn_hdl, int      num);
+    bool notify32 (uint16_t conn_hdl, float    num);
 
     /*------------- Indicate -------------*/
     bool indicateEnabled(void);
@@ -174,6 +173,7 @@ class BLECharacteristic
     bool indicate16 (uint16_t num);
     bool indicate32 (uint32_t num);
     bool indicate32 (int      num);
+    bool indicate32 (float    num);
 
     /*------------- Indicate multiple connections -------------*/
     bool indicate   (uint16_t conn_hdl, const void* data, uint16_t len);
@@ -183,6 +183,7 @@ class BLECharacteristic
     bool indicate16 (uint16_t conn_hdl, uint16_t num);
     bool indicate32 (uint16_t conn_hdl, uint32_t num);
     bool indicate32 (uint16_t conn_hdl, int      num);
+    bool indicate32 (uint16_t conn_hdl, float    num);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
