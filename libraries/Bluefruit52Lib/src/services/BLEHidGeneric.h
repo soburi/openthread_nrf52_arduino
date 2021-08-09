@@ -41,31 +41,12 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-// include usb hid definitions
-#include "tinyusb/src/class/hid/hid.h"
+// include for usb hid definitions
+#include <Adafruit_TinyUSB.h>
+#include "class/hid/hid.h"
 
 extern const uint8_t hid_ascii_to_keycode[128][2];
 extern const uint8_t hid_keycode_to_ascii[128][2];
-
-/// HID Consumer Control Report
-typedef struct ATTR_PACKED
-{
-  uint16_t usage_value; ///< Usage value of the pressed control
-} hid_consumer_control_report_t;
-
-/// Gamepad report
-typedef struct ATTR_PACKED
-{
-  struct ATTR_PACKED
-  {
-    uint8_t x : 2;
-    uint8_t y : 2;
-    uint8_t : 4;
-  };
-
-  uint8_t buttons;
-}hid_gamepad_report_t;
-
 
 class BLEHidGeneric : public BLEService
 {

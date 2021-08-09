@@ -44,10 +44,6 @@
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
-#ifndef CFG_DEFAULT_NAME
-#define CFG_DEFAULT_NAME          "Bluefruit52"
-#endif
-
 #ifndef CFG_BLE_TASK_STACKSIZE
 #define CFG_BLE_TASK_STACKSIZE    (256*5)
 #endif
@@ -112,6 +108,9 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _ble_event_sem = NULL;
   _soc_event_sem = NULL;
+#ifdef ANT_LICENSE_KEY
+  _mprot_event_sem = NULL;
+#endif
 
   _led_blink_th  = NULL;
   _led_conn      = true;
@@ -122,20 +121,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _event_cb = NULL;
   _rssi_cb = NULL;
-
-  _sec_param = ((ble_gap_sec_params_t)
-                {
-                  .bond         = 1,
-                  .mitm         = 0,
-                  .lesc         = 0,
-                  .keypress     = 0,
-                  .io_caps      = BLE_GAP_IO_CAPS_NONE,
-                  .oob          = 0,
-                  .min_key_size = 7,
-                  .max_key_size = 16,
-                  .kdist_own    = { .enc = 1, .id = 1},
-                  .kdist_peer   = { .enc = 1, .id = 1},
-                });
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
@@ -143,7 +128,7 @@ void AdafruitBluefruit::configServiceChanged(bool changed)
   _sd_cfg.service_changed = (changed ? 1 : 0);
 }
 
-void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
+void AdafruitBluefruit::configUuid128Count(uint8_t uuid128_max)
 {
   _sd_cfg.uuid128_max = uuid128_max;
 }
@@ -366,6 +351,8 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Init Peripheral role
   VERIFY( Periph.begin() );
 
+  Security.begin();
+
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
@@ -515,7 +502,7 @@ bool AdafruitBluefruit::disconnect(uint16_t conn_hdl)
   return true; // not connected still return true
 }
 
-void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
+void AdafruitBluefruit::setEventCallback (event_cb_t fp)
 {
   _event_cb = fp;
 }
@@ -523,12 +510,6 @@ void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
 uint16_t AdafruitBluefruit::connHandle(void)
 {
   return _conn_hdl;
-}
-
-bool AdafruitBluefruit::connPaired(uint16_t conn_hdl)
-{
-  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
-  return conn && conn->paired();
 }
 
 uint16_t AdafruitBluefruit::getMaxMtu(uint8_t role)
@@ -541,7 +522,7 @@ BLEConnection* AdafruitBluefruit::Connection(uint16_t conn_hdl)
   return (conn_hdl < BLE_MAX_CONNECTION) ? _connection[conn_hdl] : NULL;
 }
 
-void AdafruitBluefruit::setRssiCallback(rssi_callback_t fp)
+void AdafruitBluefruit::setRssiCallback(rssi_cb_t fp)
 {
   _rssi_cb = fp;
 }
@@ -602,7 +583,11 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
-  if ( conn ) conn->_eventHandler(evt);
+  if ( conn )
+  {
+    conn->_eventHandler(evt);
+    Security._eventHandler(evt);
+  }
 
   switch(evt->header.evt_id)
   {
@@ -765,22 +750,6 @@ void AdafruitBluefruit::_setConnLed (bool on_off)
   }
 }
 
-/*------------------------------------------------------------------*/
-/* Bonds
- *------------------------------------------------------------------*/
-bool AdafruitBluefruit::requestPairing(uint16_t conn_hdl)
-{
-  BLEConnection* conn = this->Connection(conn_hdl);
-  VERIFY(conn);
-
-  return conn->requestPairing();
-}
-
-void AdafruitBluefruit::clearBonds(void)
-{
-  bond_clear_prph();
-}
-
 //--------------------------------------------------------------------+
 //
 //--------------------------------------------------------------------+
@@ -792,7 +761,7 @@ void Bluefruit_printInfo(void)
 
 void AdafruitBluefruit::printInfo(void)
 {
-  // Skip if Serial is not initialised
+  // Skip if Serial is not initialized
   if ( !Serial ) return;
   // prepare for ability to change output, based on compile-time flags
   Print& logger = Serial;
@@ -896,7 +865,7 @@ void AdafruitBluefruit::printInfo(void)
 
   Periph.printInfo();
 
-  /*------------- List the paried device -------------*/
+  /*------------- List the paired devices -------------*/
   if ( _prph_count )
   {
     logger.printf(title_fmt, "Peripheral Paired Devices");

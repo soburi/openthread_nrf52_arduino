@@ -85,7 +85,7 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
   Bluefruit.Periph.setConnInterval(6, 12); // 7.5 - 15 ms
@@ -207,6 +207,10 @@ void bleuart_rx_callback(uint16_t conn_hdl)
       red = (c565 & 0xf800) >> 8;
       green = (c565 & 0x07e0) >> 3;
       blue = (c565 & 0x001f) << 3;
+    }else
+    {
+      Serial.println("Error: incorrect color bits ");
+      while(1) yield();
     }
 
     // Convert RGB into Eink Color

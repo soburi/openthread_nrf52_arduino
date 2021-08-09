@@ -55,14 +55,16 @@
     // Default for others
     #define TFT_DC   10
     #define TFT_CS   9
-   #endif // 832
+  #endif
 
   #if   TFT_IN_USE == TFT_35_FEATHERWING
     #include "Adafruit_HX8357.h"
     Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+
   #elif TFT_IN_USE == TFT_24_FEATHERWING
     #include <Adafruit_ILI9341.h>
     Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
   #else
     #error "TFT display is not supported"
   #endif // TFT
@@ -150,7 +152,7 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
   Bluefruit.Periph.setConnInterval(6, 12); // 7.5 - 15 ms

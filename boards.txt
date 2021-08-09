@@ -16,7 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-menu.softdevice=Bootloader
+menu.softdevice=SoftDevice
 menu.debug=Debug
 
 # ----------------------------------
@@ -75,9 +75,9 @@ feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ----------------------------------
-# Feather Bluefruit sense
+# Feather nRF52840 sense
 # ----------------------------------
-feather52840sense.name=Adafruit Feather Bluefruit Sense
+feather52840sense.name=Adafruit Feather nRF52840 Sense
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 feather52840sense.vid.0=0x239A
@@ -293,9 +293,9 @@ cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
-# Bluefruit Metro nRF52840 Express
+# Metro nRF52840 Express
 # ----------------------------------
-metro52840.name=Adafruit Bluefruit Metro nRF52840 Express
+metro52840.name=Adafruit Metro nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 metro52840.vid.0=0x239A
@@ -459,15 +459,13 @@ particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 # ----------------------------------
 mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for bootloader, Arduino + Circuitpython App
 mdbt50qrx.vid.0=0x239A
-mdbt50qrx.pid.0=0x8029
+mdbt50qrx.pid.0=0x810B
 mdbt50qrx.vid.1=0x239A
-mdbt50qrx.pid.1=0x0029
+mdbt50qrx.pid.1=0x010B
 mdbt50qrx.vid.2=0x239A
-mdbt50qrx.pid.2=0x002A
-mdbt50qrx.vid.3=0x239A
-mdbt50qrx.pid.3=0x802A
+mdbt50qrx.pid.2=0x810C
 
 # Upload
 mdbt50qrx.bootloader.tool=bootburn
@@ -484,12 +482,12 @@ mdbt50qrx.build.f_cpu=64000000
 mdbt50qrx.build.board=MDBT50Q_RX
 mdbt50qrx.build.core=nRF5
 mdbt50qrx.build.variant=raytac_mdbt50q_rx
-mdbt50qrx.build.usb_manufacturer="Raytac Corporation"
-mdbt50qrx.build.usb_product="Raytac MDBT50Q - RX"
+mdbt50qrx.build.usb_manufacturer="Raytac"
+mdbt50qrx.build.usb_product="nRF52840 Dongle"
 mdbt50qrx.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 mdbt50qrx.build.ldscript=nrf52840_s140_v7.ld
 mdbt50qrx.build.vid=0x239A
-mdbt50qrx.build.pid=0x8029
+mdbt50qrx.build.pid=0x810B
 
 # SofDevice Menu
 mdbt50qrx.menu.softdevice.s140v7=S140 7.0.1

@@ -49,6 +49,10 @@
 
 #include "Arduino.h"
 
+#if defined(ARDUINO_NRF52_ADAFRUIT)
+#include <Adafruit_TinyUSB.h> // for Serial
+#endif
+
 static void* otCAlloc(size_t n, size_t size)
 {
   return memset(pvPortMalloc(n * size), 0, n * size);
