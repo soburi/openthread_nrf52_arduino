@@ -48,8 +48,6 @@
 #include "nrf_log_instance.h"
 #include "nrf_log_types.h"
 
-#include "common_func.h"
-
 #ifndef NRF_LOG_ERROR_COLOR
     #define NRF_LOG_ERROR_COLOR NRF_LOG_COLOR_DEFAULT
 #endif
@@ -142,19 +140,24 @@
 #if NRF_LOG_ENABLED
 #define NRF_LOG_INTERNAL_LOG_PUSH(_str) nrf_log_push(_str)
 #define LOG_INTERNAL_0(type, str) \
-    PRINTF(str)
+    nrf_log_frontend_std_0(type, str)
 #define LOG_INTERNAL_1(type, str, arg0) \
-    PRINTF(str, arg0)
+    /*lint -save -e571*/nrf_log_frontend_std_1(type, str, (uint32_t)(arg0))/*lint -restore*/
 #define LOG_INTERNAL_2(type, str, arg0, arg1) \
-    PRINTF(str, arg0, arg1)
+    /*lint -save -e571*/nrf_log_frontend_std_2(type, str, (uint32_t)(arg0), \
+            (uint32_t)(arg1))/*lint -restore*/
 #define LOG_INTERNAL_3(type, str, arg0, arg1, arg2) \
-    PRINTF(str, arg0, arg1, arg2)
+    /*lint -save -e571*/nrf_log_frontend_std_3(type, str, (uint32_t)(arg0), \
+            (uint32_t)(arg1), (uint32_t)(arg2))/*lint -restore*/
 #define LOG_INTERNAL_4(type, str, arg0, arg1, arg2, arg3) \
-    PRINTF(str, arg0, arg1, arg2, arg3)
+    /*lint -save -e571*/nrf_log_frontend_std_4(type, str, (uint32_t)(arg0), \
+            (uint32_t)(arg1), (uint32_t)(arg2), (uint32_t)(arg3))/*lint -restore*/
 #define LOG_INTERNAL_5(type, str, arg0, arg1, arg2, arg3, arg4) \
-    PRINTF(str, arg0, arg1, arg2, arg3, arg4)
+    /*lint -save -e571*/nrf_log_frontend_std_5(type, str, (uint32_t)(arg0), \
+            (uint32_t)(arg1), (uint32_t)(arg2), (uint32_t)(arg3), (uint32_t)(arg4))/*lint -restore*/
 #define LOG_INTERNAL_6(type, str, arg0, arg1, arg2, arg3, arg4, arg5) \
-    PRINTF(str, arg0, arg1, arg2, arg3, arg4, arg5)
+    /*lint -save -e571*/nrf_log_frontend_std_6(type, str, (uint32_t)(arg0), \
+            (uint32_t)(arg1), (uint32_t)(arg2), (uint32_t)(arg3), (uint32_t)(arg4), (uint32_t)(arg5))/*lint -restore*/
 
 
 #else //NRF_LOG_ENABLED
