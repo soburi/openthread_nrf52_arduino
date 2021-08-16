@@ -27,8 +27,8 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 
-#include "nrf_ble_gatt.h"
-#include "nrf_sdh_ble.h"
+//#include "nrf_ble_gatt.h"
+//#include "nrf_sdh_ble.h"
 
 
 namespace chip {
@@ -119,8 +119,8 @@ private:
         kMaxAdvertismentDataSetSize = 31  // TODO: verify this
     };
 
-    ble_gatts_char_handles_t mCHIPoBLECharHandle_RX;
-    ble_gatts_char_handles_t mCHIPoBLECharHandle_TX;
+    //ble_gatts_char_handles_t mCHIPoBLECharHandle_RX;
+    //ble_gatts_char_handles_t mCHIPoBLECharHandle_TX;
     CHIPoBLEServiceMode mServiceMode;
     uint16_t mNumGAPCons;
     uint16_t mSubscribedConIds[kMaxConnections];
@@ -130,7 +130,7 @@ private:
 
     void DriveBLEState(void);
     CHIP_ERROR ConfigureAdvertising(void);
-    CHIP_ERROR EncodeAdvertisingData(ble_gap_adv_data_t & gapAdvData);
+    //CHIP_ERROR EncodeAdvertisingData(ble_gap_adv_data_t & gapAdvData);
     CHIP_ERROR StartAdvertising(void);
     CHIP_ERROR StopAdvertising(void);
     void HandleSoftDeviceBLEEvent(const ChipDeviceEvent * event);
@@ -144,7 +144,7 @@ private:
     bool IsSubscribed(uint16_t conId);
 
     static void DriveBLEState(intptr_t arg);
-    static void SoftDeviceBLEEventCallback(const ble_evt_t * bleEvent, void * context);
+    //static void SoftDeviceBLEEventCallback(const ble_evt_t * bleEvent, void * context);
 };
 
 /**

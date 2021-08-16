@@ -40,7 +40,7 @@ compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-mcpu={build.mcu} -mthumb -mabi=aapcs {compiler.optimization_flag} -g -c {build.float_flags} -x assembler-with-cpp
 
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD
+compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++14 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
@@ -66,6 +66,57 @@ build.flags.openthread.ftd= -DOPENTHREAD_CONFIG_BORDER_AGENT_ENABLE=1 -DOPENTHRE
 build.flags.openthread= {build.flags.openthread.ftd} -DMBEDTLS_CONFIG_FILE={build.flags.mbedtls_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DOPENTHREAD_CONFIG_FILE={build.flags.openthread_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DCONFIG_GPIO_AS_PINRESET -D__HEAP_SIZE=8192 -D__STACK_SIZE=8192 -DFREERTOS -DNRF52840_XXAA -DBOARD_PCA10056 {build.flags.nordic_includes}
 build.flags.nordic_includes= -I{nordic.path}/config/nrf52840/config -I{nordic.path}/softdevice/common -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include/nrf52 -I{nordic.path}/nrfx -I{nordic.path}/nrfx/legacy -I{nordic.path}/nrfx/drivers/include -I{nordic.path}/nrfx/hal -I{nordic.path}/nrfx/mdk -I{nordic.path}/components/libraries/experimental_section_vars -I{nordic.path}/components/libraries/log -I{nordic.path}/components/libraries/strerror -I{nordic.path}/components/libraries/util -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem/three_pin_gpio -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/rsch/raal/softdevice -I{nordic.path}/external/nrf_security/config -I{nordic.path}/external/nrf_security/include -I{nordic.path}/external/nrf_security/mbedtls_plat_config -I{nordic.path}/external/nrf_security/nrf_cc310_plat/include -I{nordic.path}/external/openthread/include
 
+chip_dir={build.core.path}/connectedhomeip
+
+#I{chip_dir}/src/app/clusters/barrier-control-server
+#I{chip_dir}/src/app/clusters/basic
+#I{chip_dir}/src/app/clusters/binary-input-server
+#I{chip_dir}/src/app/clusters/color-control-server
+#I{chip_dir}/src/app/clusters/door-lock-server
+#I{chip_dir}/src/app/clusters/electrical-measurement-server
+#I{chip_dir}/src/app/clusters/groups-server
+#I{chip_dir}/src/app/clusters/ias-zone-client
+#I{chip_dir}/src/app/clusters/ias-zone-server
+#I{chip_dir}/src/app/clusters/identify
+#I{chip_dir}/src/app/clusters/level-control
+#I{chip_dir}/src/app/clusters/messaging-client
+#I{chip_dir}/src/app/clusters/messaging-server
+#I{chip_dir}/src/app/clusters/network-commissioning
+#I{chip_dir}/src/app/clusters/occupancy-sensor-server
+#I{chip_dir}/src/app/clusters/on-off-server
+#I{chip_dir}/src/app/clusters/ota-provider
+#I{chip_dir}/src/app/clusters/relative-humidity-measurement-server
+#I{chip_dir}/src/app/clusters/scenes
+#I{chip_dir}/src/app/clusters/scenes-client
+#I{chip_dir}/src/app/clusters/temperature-measurement-server
+#I{chip_dir}/src/app/clusters/zll-level-control-server
+#I{chip_dir}/src/app/clusters/zll-on-off-server
+#I{chip_dir}/src/app/clusters/zll-scenes-server
+#I{chip_dir}/src/app/common/gen/ids
+#I{chip_dir}/src/controller/java
+#I{chip_dir}/src/controller/python
+#I{chip_dir}/src/controller/python/chip/interaction_model
+#I{chip_dir}/src/controller/python/chip/internal
+#I{chip_dir}/src/include/platform/internal
+#I{chip_dir}/src/include/platform/internal/testing
+#I{chip_dir}/src/lib/asn1
+#I{chip_dir}/src/lib/core
+#I{chip_dir}/src/lib/mdns
+#I{chip_dir}/src/lib/mdns/minimal
+#I{chip_dir}/src/lib/mdns/minimal/core
+#I{chip_dir}/src/lib/mdns/minimal/records
+#I{chip_dir}/src/lib/mdns/minimal/responders
+#I{chip_dir}/src/lib/shell
+#I{chip_dir}/src/lib/shell/commands
+#I{chip_dir}/src/lib/support
+#I{chip_dir}/src/lib/support/pw_log_chip/public/pw_log_chip
+#I{chip_dir}/src/lib/support/verhoeff
+#I{chip_dir}/src/transport/raw
+#I{chip_dir}/src/transport/retransmit
+
+chip_includes= -DCHIP_HAVE_CONFIG_H=1 -I{chip_dir}/src/include -I{chip_dir}/src -I{chip_dir}/src/lib -I{chip_dir}/src/lwip/nrf5 -I{chip_dir}/src/lwip/nrf5/freertos -I{chip_dir}/src/app/clusters -I{chip_dir}/src/app/common/gen -I{chip_dir}/src/app/util -I{chip_dir}/src/ble -I{chip_dir}/src/controller -I{chip_dir}/src/controller/data_model -I{chip_dir}/src/credentials -I{chip_dir}/src/crypto -I{chip_dir}/src/crypto/hsm -I{chip_dir}/src/crypto/hsm/nxp -I{chip_dir}/src/include -I{chip_dir}/src/include/platform -I{chip_dir}/src/messaging -I{chip_dir}/src/platform -I{chip_dir}/src/protocols -I{chip_dir}/src/protocols/bdx -I{chip_dir}/src/protocols/echo -I{chip_dir}/src/protocols/secure_channel -I{chip_dir}/src/protocols/temp_zcl -I{chip_dir}/src/setup_payload -I{chip_dir}/src/system -I{chip_dir}/src/transport -I{chip_dir}/third_party/nlassert/repo/include -I{chip_dir}/third_party/nlio/repo/include -I{chip_dir}/third_party/ot-br-posix/repo/third_party/openthread/repo/examples/platforms/nrf528xx/src -DMBEDTLS_PK_WRITE_C -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_WRITE_C
+
+
 libnrf_cc310.path={nordic.path}/external/nrf_security/lib
 libopenthread.path={nordic.path}/external/openthread/lib/nrf52840/gcc
 
@@ -86,7 +137,7 @@ compiler.libraries.ldflags=
 compiler.elf2bin.extra_flags=
 compiler.elf2hex.extra_flags=
 
-compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Include/"
+compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Include/" {chip_includes}
 compiler.arm.cmsis.ldflags="-L{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Lib/GCC/" -larm_cortexM4lf_math
 
 # common compiler for nrf

@@ -1,3 +1,4 @@
+#if 0
 /**
  *
  *    Copyright (c) 2020 Project CHIP Authors
@@ -101,3 +102,4 @@ void emberAfBasicClusterServerInitCallback(chip::EndpointId endpoint)
                               reinterpret_cast<uint8_t *>(&firmwareRevision), ZCL_INT32U_ATTRIBUTE_TYPE);
     }
 }
+#endif

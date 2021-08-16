@@ -28,7 +28,7 @@
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 #include "FreeRTOS.h"
-#include "fds.h"
+//#include "fds.h"
 #include "semphr.h"
 
 #include <functional>
@@ -154,7 +154,7 @@ protected:
             kWaitQueueSpaceAvailable
         };
 
-        fds_record_desc_t RecordDesc;
+        //fds_record_desc_t RecordDesc;
         const uint8_t * RecordData;
         uint32_t RecordDataLengthWords;
         ret_code_t Result;
@@ -165,7 +165,7 @@ protected:
         inline FDSAsyncOp(uint8_t opType) : OpType(opType) {}
     };
 
-    using ForEachRecordFunct = std::function<CHIP_ERROR(const fds_flash_record_t & rec, bool & deleteRec)>;
+    //using ForEachRecordFunct = std::function<CHIP_ERROR(const fds_flash_record_t & rec, bool & deleteRec)>;
 
     static constexpr uint16_t kFDSWordSize = 4;
 
@@ -174,13 +174,13 @@ protected:
 
     static constexpr uint16_t GetFileId(uint32_t key);
     static constexpr uint16_t GetRecordKey(uint32_t key);
-    static CHIP_ERROR OpenRecord(NRF5Config::Key key, fds_record_desc_t & recDesc, fds_flash_record_t & rec);
-    static CHIP_ERROR ForEachRecord(uint16_t fileId, uint16_t recordKey, ForEachRecordFunct funct);
+    //static CHIP_ERROR OpenRecord(NRF5Config::Key key, fds_record_desc_t & recDesc, fds_flash_record_t & rec);
+    //static CHIP_ERROR ForEachRecord(uint16_t fileId, uint16_t recordKey, ForEachRecordFunct funct);
     static CHIP_ERROR DoAsyncFDSOp(FDSAsyncOp & asyncOp);
     static constexpr uint16_t FDSWords(size_t s);
 
 private:
-    static void HandleFDSEvent(const fds_evt_t * fdsEvent);
+    //static void HandleFDSEvent(const fds_evt_t * fdsEvent);
     static CHIP_ERROR MapFDSError(ret_code_t fdsRes);
 };
 

@@ -124,14 +124,14 @@ public:
      *
      * NOTE: the source node id is optional and may be missing.
      */
-    //const Optional<NodeId> & GetSourceNodeId() const { return mSourceNodeId; }
+    const Optional<NodeId> & GetSourceNodeId() const { return mSourceNodeId; }
 
     /**
      * Gets the destination node id in the current message.
      *
      * NOTE: the destination node id is optional and may be missing.
      */
-    //const Optional<NodeId> & GetDestinationNodeId() const { return mDestinationNodeId; }
+    const Optional<NodeId> & GetDestinationNodeId() const { return mDestinationNodeId; }
 
     uint16_t GetEncryptionKeyID() const { return mEncryptionKeyID; }
 
@@ -148,7 +148,7 @@ public:
         mFlags.Set(Header::FlagValues::kSecureSessionControlMessage, value);
         return *this;
     }
-/*
+
     PacketHeader & SetSourceNodeId(NodeId id)
     {
         mSourceNodeId.SetValue(id);
@@ -190,7 +190,7 @@ public:
         mFlags.Clear(Header::FlagValues::kDestinationNodeIdPresent);
         return *this;
     }
-*/
+
     PacketHeader & SetEncryptionKeyID(uint16_t id)
     {
         mEncryptionKeyID = id;
@@ -297,10 +297,10 @@ private:
     uint32_t mMessageId = 0;
 
     /// What node the message originated from
-    //Optional<NodeId> mSourceNodeId;
+    Optional<NodeId> mSourceNodeId;
 
     /// Intended recipient of the message.
-    //Optional<NodeId> mDestinationNodeId;
+    Optional<NodeId> mDestinationNodeId;
 
     /// Encryption Key ID
     uint16_t mEncryptionKeyID = 0;
@@ -350,7 +350,7 @@ public:
      *
      * NOTE: the Acknowledged Message Counter is optional and may be missing.
      */
-    //const Optional<uint32_t> & GetAckId() const { return mAckId; }
+    const Optional<uint32_t> & GetAckId() const { return mAckId; }
 
     /**
      * Set the message type for this header.  This requires setting the protocol
@@ -392,7 +392,6 @@ public:
         return *this;
     }
 
-#if 0
     PayloadHeader & SetAckId(uint32_t id)
     {
         mAckId.SetValue(id);
@@ -407,7 +406,7 @@ public:
         mExchangeFlags.Set(Header::ExFlagValues::kExchangeFlag_AckMsg, id.HasValue());
         return *this;
     }
-#endif
+
     /** Set the NeedsAck flag bit. */
     PayloadHeader & SetNeedsAck(bool inNeedsAck)
     {
@@ -542,7 +541,7 @@ private:
     Header::ExFlags mExchangeFlags;
 
     /// Message counter of a previous message that is being acknowledged by the current message
-    //Optional<uint32_t> mAckId;
+    Optional<uint32_t> mAckId;
 };
 
 /** Handles encoding/decoding of CHIP message headers */
