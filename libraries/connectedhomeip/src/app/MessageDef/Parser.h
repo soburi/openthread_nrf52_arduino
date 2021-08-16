@@ -1,7 +1,6 @@
-/**
+/*
  *
  *    Copyright (c) 2020 Project CHIP Authors
- *    Copyright (c) 2016-2017 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,85 +14,109 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-/**
- *    @file
- *      This file defines parser in CHIP interaction model
- *
- */
 
 #pragma once
 
-#include <app/util/basic-types.h>
-#include <core/CHIPCore.h>
-#include <core/CHIPTLV.h>
-#include <support/CodeUtils.h>
-#include <support/logging/CHIPLogging.h>
+#include <mdns/minimal/core/Constants.h>
+#include <mdns/minimal/core/DnsHeader.h>
+#include <mdns/minimal/core/QName.h>
 
-namespace chip {
-namespace app {
-class Parser
+namespace mdns {
+namespace Minimal {
+
+class QueryData
 {
 public:
-    /**
-     *  @brief Initialize the Builder object with TLVReader and ContainerType
-     *
-     *  @param [in] aReader TLVReader
-     *  @param [in] aOuterContainerType outer container type
-     *
-     */
-    void Init(const chip::TLV::TLVReader & aReader, chip::TLV::TLVType aOuterContainerType);
+    QueryData() {}
+    QueryData(const QueryData &) = default;
+    QueryData & operator=(const QueryData &) = default;
 
-    /**
-     *  @brief Initialize a TLVReader to point to the beginning of any tagged element in this request
-     *
-     *  @param [in]  aTagToFind Tag to find in the request
-     *  @param [out] apReader   A pointer to TLVReader, which will be initialized at the specified TLV element
-     *                          on success
-     *
-     *  @return #CHIP_NO_ERROR on success
-     */
-    CHIP_ERROR GetReaderOnTag(const uint64_t aTagToFind, chip::TLV::TLVReader * const apReader) const;
+    QueryData(QType type, QClass klass, bool unicast) : mType(type), mClass(klass), mAnswerViaUnicast(unicast) {}
 
-    /**
-     *  @brief Get the TLV Reader
-     *
-     *  @param [in] apReader A pointer to a TLVReader
-     *
-     */
-    void GetReader(chip::TLV::TLVReader * const apReader);
+    QueryData(QType type, QClass klass, bool unicast, const uint8_t * nameStart, const BytesRange & validData) :
+        mType(type), mClass(klass), mAnswerViaUnicast(unicast), mNameIterator(validData, nameStart)
+    {}
 
-protected:
-    chip::TLV::TLVReader mReader;
-    chip::TLV::TLVType mOuterContainerType;
-    Parser();
+    QType GetType() const { return mType; }
+    QClass GetClass() const { return mClass; }
+    bool RequestedUnicastAnswer() const { return mAnswerViaUnicast; }
 
-    template <typename T>
-    CHIP_ERROR GetUnsignedInteger(const uint8_t aContextTag, T * const apLValue) const
-    {
-        return GetSimpleValue(aContextTag, chip::TLV::kTLVType_UnsignedInteger, apLValue);
-    };
+    /// Boot advertisement is an internal query meant to advertise all available
+    /// services at device startup time.
+    bool IsBootAdvertising() const { return mIsBootAdvertising; }
+    void SetIsBootAdvertising(bool isBootAdvertising) { mIsBootAdvertising = isBootAdvertising; }
 
-    template <typename T>
-    CHIP_ERROR GetSimpleValue(const uint8_t aContextTag, const chip::TLV::TLVType aTLVType, T * const apLValue) const
-    {
-        CHIP_ERROR err = CHIP_NO_ERROR;
-        chip::TLV::TLVReader reader;
+    SerializedQNameIterator GetName() const { return mNameIterator; }
 
-        *apLValue = 0;
+    /// Parses a query structure
+    ///
+    /// Parses the query at [start] and updates start to the end of the structure.
+    ///
+    /// returns true on parse success, false on failure.
+    bool Parse(const BytesRange & validData, const uint8_t ** start);
 
-        err = mReader.FindElementWithTag(chip::TLV::ContextTag(aContextTag), reader);
-        SuccessOrExit(err);
+    /// Write out this query data back into an output buffer.
+    bool Append(HeaderRef & hdr, chip::Encoding::BigEndian::BufferWriter & out) const;
 
-        VerifyOrExit(aTLVType == reader.GetType(), err = CHIP_ERROR_WRONG_TLV_TYPE);
+private:
+    QType mType            = QType::ANY;
+    QClass mClass          = QClass::ANY;
+    bool mAnswerViaUnicast = false;
+    SerializedQNameIterator mNameIterator;
 
-        err = reader.Get(*apLValue);
-        SuccessOrExit(err);
-
-    exit:
-        ChipLogIfFalse((CHIP_NO_ERROR == err) || (CHIP_END_OF_TLV == err));
-
-        return err;
-    };
+    /// Flag as a boot-time internal query. This allows query replies
+    /// to be built accordingly.
+    bool mIsBootAdvertising = false;
 };
-}; // namespace app
-}; // namespace chip
+
+class ResourceData
+{
+public:
+    ResourceData() {}
+
+    ResourceData(const ResourceData &) = default;
+    ResourceData & operator=(const ResourceData &) = default;
+
+    QType GetType() const { return mType; }
+    QClass GetClass() const { return mClass; }
+    uint64_t GetTtlSeconds() const { return mTtl; }
+    SerializedQNameIterator GetName() const { return mNameIterator; }
+    const BytesRange & GetData() const { return mData; }
+
+    /// Parses a resource data structure
+    ///
+    /// Parses the daata at [start] and updates start to the end of the structure.
+    /// Updates [out] with the parsed data on success.
+    ///
+    /// returns true on parse success, false on failure.
+    bool Parse(const BytesRange & validData, const uint8_t ** start);
+
+private:
+    SerializedQNameIterator mNameIterator;
+    QType mType   = QType::ANY;
+    QClass mClass = QClass::ANY;
+    uint64_t mTtl = 0;
+    BytesRange mData;
+};
+
+class ParserDelegate
+{
+public:
+    virtual ~ParserDelegate() {}
+
+    virtual void OnHeader(ConstHeaderRef & header) = 0;
+
+    virtual void OnQuery(const QueryData & data) = 0;
+
+    virtual void OnResource(ResourceType type, const ResourceData & data) = 0;
+};
+
+/// Parses a mMDNS packet.
+///
+/// Calls appropriate delegate callbacks while parsing
+///
+/// returns true if packet was succesfully parsed, false otherwise
+bool ParsePacket(const BytesRange & packetData, ParserDelegate * delegate);
+
+} // namespace Minimal
+} // namespace mdns
