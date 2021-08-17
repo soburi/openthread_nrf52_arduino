@@ -114,8 +114,7 @@ chip_dir={build.core.path}/connectedhomeip
 #I{chip_dir}/src/transport/raw
 #I{chip_dir}/src/transport/retransmit
 
-chip_includes= -DCHIP_HAVE_CONFIG_H=1 -I{chip_dir}/src/include -I{chip_dir}/src -I{chip_dir}/src/lib -I{chip_dir}/src/lwip/nrf5 -I{chip_dir}/src/lwip/nrf5/freertos -I{chip_dir}/src/app/util -I{chip_dir}/src/app/common -I{chip_dir}/src/controller/data_model -I{chip_dir}/third_party/nlassert/repo/include -I{chip_dir}/third_party/nlunit-test/repo/src -I{chip_dir}/third_party/nlio/repo/include -I{chip_dir}/third_party/nlfaultinjection/repo/include -I{chip_dir}/third_party/lwip/repo/lwip/src/include -I{chip_dir}/third_party/jlink/segger_rtt/RTT -I{chip_dir}/third_party/ot-br-posix/repo/third_party/openthread/repo/examples/platforms/nrf528xx/src -DMBEDTLS_PK_WRITE_C -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_WRITE_C
-
+chip_includes= -DCHIP_HAVE_CONFIG_H=1 -I{chip_dir}/src/lwip/nrf5 -I{chip_dir}/src/lwip/nrf5/freertos -I{chip_dir}/src/include -I{chip_dir}/src -I{chip_dir}/gen/include -I{chip_dir}/third_party/lwip/repo/lwip/src/include -I{chip_dir}/src/lib -I{chip_dir}/examples/platform/nrf5/app/project_include -I{chip_dir}/examples/platform/nrf5/util/include -I{chip_dir}/examples/platform/nrf5/app/include -I{chip_dir}/src/app/util -I{chip_dir}/src/app/common -I{chip_dir}/src/controller/data_model -I{chip_dir}/third_party/nlassert/repo/include -I{chip_dir}/third_party/nlunit-test/repo/src -I{chip_dir}/third_party/nlio/repo/include -I{chip_dir}/third_party/nlfaultinjection/repo/include -DMBEDTLS_PK_WRITE_C -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_WRITE_C
 
 libnrf_cc310.path={nordic.path}/external/nrf_security/lib
 libopenthread.path={nordic.path}/external/openthread/lib/nrf52840/gcc
