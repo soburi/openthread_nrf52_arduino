@@ -1,3 +1,4 @@
+#if 0
 /*
  *
  *    Copyright (c) 2019 Google LLC.
@@ -146,3 +147,4 @@ int vfiprintf(FILE * stream, const char * format, va_list ap)
     /* Stdio not supported */
     return -1;
 }
+#endif
