@@ -25,13 +25,9 @@
 
 #pragma once
 
-using namespace std;
-
 #include <credentials/CHIPCert.h>
 #include <crypto/CHIPCryptoPAL.h>
 #include <support/DLLUtil.h>
-
-#include <cerrno>
 
 #include <algorithm>
 #include <map>

@@ -17,152 +17,57 @@
 
 #pragma once
 
-#include <core/CHIPError.h>
-#include <inet/IPAddress.h>
-#include <inet/InetInterface.h>
-#include <inet/InetLayer.h>
-#include <inet/UDPEndPoint.h>
+#include <app/server/AppDelegate.h>
+#include <inet/InetConfig.h>
+#include <messaging/ExchangeMgr.h>
+#include <transport/AdminPairingTable.h>
+#include <transport/SecureSessionMgr.h>
+#include <transport/TransportMgr.h>
+#include <transport/raw/BLE.h>
+#include <transport/raw/UDP.h>
 
-#include <mdns/minimal/core/BytesRange.h>
+constexpr size_t kMaxBlePendingPackets = 1;
 
-namespace mdns {
-namespace Minimal {
-
-namespace BroadcastIpAddresses {
-
-// Get standard mDNS Broadcast addresses
-
-void GetIpv6Into(chip::Inet::IPAddress & dest);
-void GetIpv4Into(chip::Inet::IPAddress & dest);
-
-} // namespace BroadcastIpAddresses
-
-/// Provides a list of intefaces to listen on.
-///
-/// When listening on IP, both IP address type (IPv4 or IPv6) and interface id
-/// are important. In particular, when using link-local IP addresses, the actual
-/// interface matters (e.g. FF02::FB will care over which IPv6 interface it is sent)
-///
-/// For MDNS in particular, you may want:
-///  - IPv4 listen on INET_NULL_INTERFACEID
-///  - IPv6 listen on every specific interface id available (except local loopback and other
-///    not usable interfaces like docker)
-class ListenIterator
-{
-public:
-    virtual ~ListenIterator() {}
-
-    // Get the next interface/address type to listen on
-    virtual bool Next(chip::Inet::InterfaceId * id, chip::Inet::IPAddressType * type) = 0;
-};
-
-/// Handles mDNS Server Callbacks
-class ServerDelegate
-{
-public:
-    virtual ~ServerDelegate() {}
-
-    // Callback of when a query is received
-    virtual void OnQuery(const BytesRange & data, const chip::Inet::IPPacketInfo * info) = 0;
-
-    // Callback of when a response is received
-    virtual void OnResponse(const BytesRange & data, const chip::Inet::IPPacketInfo * info) = 0;
-};
-
-// Defines an mDNS server that listens on one or more interfaces.
-//
-// I can send and receive mDNS packets (requests/replies)
-class ServerBase
-{
-public:
-    struct EndpointInfo
-    {
-        chip::Inet::InterfaceId interfaceId = INET_NULL_INTERFACEID;
-        chip::Inet::IPAddressType addressType;
-        chip::Inet::UDPEndPoint * udp = nullptr;
-    };
-
-    ServerBase(EndpointInfo * endpointStorage, size_t kStorageSize) : mEndpoints(endpointStorage), mEndpointCount(kStorageSize)
-    {
-        for (size_t i = 0; i < mEndpointCount; i++)
-        {
-            mEndpoints[i].udp = nullptr;
-        }
-
-        BroadcastIpAddresses::GetIpv6Into(mIpv6BroadcastAddress);
-
+using DemoTransportMgr = chip::TransportMgr<chip::Transport::UDP
 #if INET_CONFIG_ENABLE_IPV4
-        BroadcastIpAddresses::GetIpv4Into(mIpv4BroadcastAddress);
+                                            ,
+                                            chip::Transport::UDP
 #endif
-    }
-    virtual ~ServerBase();
-
-    /// Closes all currently open endpoints
-    void Shutdown();
-
-    /// Listen on the given interfaces/address types.
-    ///
-    /// Since mDNS uses link-local addresses, one generally wants to listen on all
-    /// non-loopback interfaces.
-    CHIP_ERROR Listen(chip::Inet::InetLayer * inetLayer, ListenIterator * it, uint16_t port);
-
-    /// Send the specified packet to a destination IP address over the specified address
-    virtual CHIP_ERROR DirectSend(chip::System::PacketBufferHandle && data, const chip::Inet::IPAddress & addr, uint16_t port,
-                                  chip::Inet::InterfaceId interface);
-
-    /// Send a specific packet broadcast to all interfaces
-    virtual CHIP_ERROR BroadcastSend(chip::System::PacketBufferHandle && data, uint16_t port);
-
-    /// Send a specific packet broadcast to a specific interface
-    virtual CHIP_ERROR BroadcastSend(chip::System::PacketBufferHandle && data, uint16_t port, chip::Inet::InterfaceId interface);
-
-    ServerBase & SetDelegate(ServerDelegate * d)
-    {
-        mDelegate = d;
-        return *this;
-    }
-
-    /// How many endpoints are availabe to be used by the server.
-    size_t GetEndpointCount() const { return mEndpointCount; }
-
-    /// Get the endpoints that are used by this server
-    ///
-    /// Entries with non-null UDP are considered usable.
-    const EndpointInfo * GetEndpoints() const { return mEndpoints; }
-
-    /// A server is considered listening if any UDP endpoint is active.
-    ///
-    /// This is expected to return false after any Shutdown() and will
-    /// return true IFF lListen was called and the listen iterator successfully
-    /// found a valid listening interface.
-    bool IsListening() const;
-
-private:
-    static void OnUdpPacketReceived(chip::Inet::IPEndPointBasis * endPoint, chip::System::PacketBufferHandle && buffer,
-                                    const chip::Inet::IPPacketInfo * info);
-
-    EndpointInfo * mEndpoints;   // possible endpoints, to listen on multiple interfaces
-    const size_t mEndpointCount; // how many endpoints are allocated
-    ServerDelegate * mDelegate = nullptr;
-
-    // Broadcast IP addresses are cached to not require a string parse every time
-    // Ideally we should be able to constexpr these
-    chip::Inet::IPAddress mIpv6BroadcastAddress;
-#if INET_CONFIG_ENABLE_IPV4
-    chip::Inet::IPAddress mIpv4BroadcastAddress;
+#if CONFIG_NETWORK_LAYER_BLE
+                                            ,
+                                            chip::Transport::BLE<kMaxBlePendingPackets>
 #endif
-};
+                                            >;
 
-template <size_t kCount>
-class Server : public ServerBase
+/**
+ * Initialize DataModelHandler and start CHIP datamodel server, the server
+ * assumes the platform's networking has been setup already.
+ *
+ * @param [in] delegate   An optional AppDelegate
+ */
+void InitServer(AppDelegate * delegate = nullptr);
+
+CHIP_ERROR AddTestPairing();
+
+chip::Transport::AdminPairingTable & GetGlobalAdminPairingTable();
+
+namespace chip {
+
+enum class ResetAdmins
 {
-public:
-    Server() : ServerBase(mAllocatedStorage, kCount) {}
-    ~Server() {}
-
-private:
-    EndpointInfo mAllocatedStorage[kCount];
+    kYes,
+    kNo,
 };
 
-} // namespace Minimal
-} // namespace mdns
+enum class PairingWindowAdvertisement
+{
+    kBle,
+    kMdns,
+};
+} // namespace chip
+
+/**
+ * Open the pairing window using default configured parameters.
+ */
+CHIP_ERROR OpenDefaultPairingWindow(chip::ResetAdmins resetAdmins,
+                                    chip::PairingWindowAdvertisement advertisementMode = chip::PairingWindowAdvertisement::kBle);
