@@ -149,12 +149,7 @@
 //--------------------------------------------------------------------+
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
-#if __cplusplus
-  #define PRINTF    ::printf
-#else
-  #define PRINTF    printf
-#endif
-
+#include "log_printf.h"
 
 #if CFG_DEBUG
   #define LOG_LV1(...)          ADALOG(__VA_ARGS__)

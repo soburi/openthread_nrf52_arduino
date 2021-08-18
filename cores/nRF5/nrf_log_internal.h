@@ -48,7 +48,7 @@
 #include "nrf_log_instance.h"
 #include "nrf_log_types.h"
 
-#include "common_func.h"
+#include "log_printf.h"
 
 #ifndef NRF_LOG_ERROR_COLOR
     #define NRF_LOG_ERROR_COLOR NRF_LOG_COLOR_DEFAULT
