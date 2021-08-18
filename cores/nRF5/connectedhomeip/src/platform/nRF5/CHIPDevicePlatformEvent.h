@@ -27,8 +27,10 @@
 
 #include <platform/CHIPDeviceEvent.h>
 
-//#include "ble.h"
-//#include "nrf_ble_gatt.h"
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
+#include "ble.h"
+#include "nrf_ble_gatt.h"
+#endif
 
 namespace chip {
 namespace DeviceLayer {
@@ -60,7 +62,7 @@ enum InternalPlatformSpecificEventTypes
  */
 struct ChipDevicePlatformEvent final
 {
-#if 0
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
     union
     {
         struct

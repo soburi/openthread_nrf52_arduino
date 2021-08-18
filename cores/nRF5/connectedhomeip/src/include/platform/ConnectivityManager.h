@@ -24,7 +24,6 @@
 #pragma once
 
 #include <support/CodeUtils.h>
-#include <string.h>
 
 namespace chip {
 
