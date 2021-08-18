@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/*#include "boards.h"*/
 #include "nrf_delay.h"
 #include "nrf_log.h"
 #ifdef SOFTDEVICE_PRESENT
@@ -17,22 +16,15 @@
 #if NRF_CRYPTO_ENABLED
 #include "nrf_cc310_platform.h"
 #endif
-//#include "mem_manager.h"
 #if CHIP_ENABLE_OPENTHREAD
 extern "C" {
-//#include "multiprotocol_802154_config.h"
+#include "multiprotocol_802154_config.h"
 #include "nrf_802154.h"
 #include "nrf_cc310_platform_abort.h"
 #include "nrf_cc310_platform_mutex.h"
 #include <openthread/platform/platform-softdevice.h>
 }
 #endif // CHIP_ENABLE_OPENTHREAD
-
-#if NRF_LOG_ENABLED
-//#include "nrf_log_backend_uart.h"
-//#include "nrf_log_ctrl.h"
-//#include "nrf_log_default_backends.h"
-#endif // NRF_LOG_ENABLED
 
 #if CHIP_ENABLE_OPENTHREAD
 #include <mbedtls/platform.h>
@@ -104,7 +96,7 @@ ret_code_t ChipInit()
 
     // Configure multiprotocol to work with BLE.
     {
-        uint32_t retval = 0;//multiprotocol_802154_mode_set(MULTIPROTOCOL_802154_MODE_FAST_SWITCHING_TIMES);
+        uint32_t retval = multiprotocol_802154_mode_set(MULTIPROTOCOL_802154_MODE_FAST_SWITCHING_TIMES);
 
         if (retval != NRF_SUCCESS)
         {
