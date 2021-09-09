@@ -3,11 +3,47 @@
 SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
 
+/* Total size of device FLASH in bytes */
+TOTAL_FLASH_SIZE = 0x100000;
+
+/* Total size of device RAM in bytes */
+TOTAL_RAM_SIZE = 0x40000;
+
+/* Size of an individual FLASH page in bytes */
+FLASH_PAGE_SIZE = 4096;
+
+/* Number of FLASH pages reserved for Nordic FDS.  NOTE: This MUST correspond
+ * to the value specified for FDS_VIRTUAL_PAGES in app_config.h */
+FDS_FLASH_PAGES = 2;
+
+/* Number of FLASH pages reserved for OpenThread data storage. */
+OT_DATA_FLASH_PAGES = 4;
+
+BOOTLOADER_SIZE = 32768;
+BOOTLOADER_SETTINGS_SIZE = 4096;
+MBR_PARAMS_PAGE_SIZE = 4096;
+BOOTLOADER_CONFIG_SIZE = 8192;
+
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x27000, LENGTH = 0xd5000
-  RAM (rwx) :  ORIGIN = 0x20005968, LENGTH = 0x3a698
-  ot_flash_data (r) : ORIGIN = 0xfc000, LENGTH = 0x4000
+    /* FLASH region occupied by the Nordic SoftDevice */
+    SD_FLASH (rx) : ORIGIN = 0, LENGTH = 0x27000
+
+    /* RAM region used by the Nordic SoftDevice */
+    SD_RAM (rw) : ORIGIN = 0x20000000, LENGTH = 0x5968
+
+    BOOTLOADER_SETTINGS (rw) : ORIGIN = TOTAL_FLASH_SIZE            - BOOTLOADER_SETTINGS_SIZE,                LENGTH = BOOTLOADER_SETTINGS_SIZE
+    MBR_PARAMS_PAGE (rw) :     ORIGIN = ORIGIN(BOOTLOADER_SETTINGS) - MBR_PARAMS_PAGE_SIZE,                    LENGTH = MBR_PARAMS_PAGE_SIZE
+    BOOTLOADER_CONFIG (r):     ORIGIN = ORIGIN(MBR_PARAMS_PAGE)     - BOOTLOADER_CONFIG_SIZE,                  LENGTH = BOOTLOADER_CONFIG_SIZE
+    BOOTLOADER(r):             ORIGIN = ORIGIN(BOOTLOADER_CONFIG)   - BOOTLOADER_SIZE,                         LENGTH = BOOTLOADER_SIZE
+    FDS_FLASH (rw) :           ORIGIN = ORIGIN(BOOTLOADER)          - (FLASH_PAGE_SIZE * FDS_FLASH_PAGES),     LENGTH = (FLASH_PAGE_SIZE * FDS_FLASH_PAGES)
+    ot_flash_data (rw) :       ORIGIN = ORIGIN(FDS_FLASH)           - (FLASH_PAGE_SIZE * OT_DATA_FLASH_PAGES), LENGTH = (FLASH_PAGE_SIZE * OT_DATA_FLASH_PAGES)
+    
+    /* FLASH region used for application code and read-only data. */
+    FLASH (rx) : ORIGIN = ORIGIN(SD_FLASH) + LENGTH(SD_FLASH), LENGTH = ORIGIN(ot_flash_data) - ORIGIN(FLASH)
+    
+    /* RAM region used for application dynamic data. */
+    RAM (rw) : ORIGIN = ORIGIN(SD_RAM) + LENGTH(SD_RAM), LENGTH = TOTAL_RAM_SIZE - LENGTH(SD_RAM)
 }
 
 SECTIONS

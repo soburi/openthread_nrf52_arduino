@@ -6726,7 +6726,7 @@
 // <i> As a result the reserved space can be used by other modules.
 
 #ifndef FDS_VIRTUAL_PAGES_RESERVED
-#define FDS_VIRTUAL_PAGES_RESERVED 4
+#define FDS_VIRTUAL_PAGES_RESERVED 2
 #endif
 
 // </h> 

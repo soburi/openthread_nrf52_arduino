@@ -40,7 +40,7 @@ compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-mcpu={build.mcu} -mthumb -mabi=aapcs {compiler.optimization_flag} -g -c {build.float_flags} -x assembler-with-cpp
 
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD
+compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++14 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
@@ -58,20 +58,71 @@ build.debug_flags=-DCFG_DEBUG=0
 build.logger_flags=-DCFG_LOGGER=1
 build.sysview_flags=-DCFG_SYSVIEW=0
 
-build.flags.uart_lock="uart_lock.h"
-build.flags.openthread_config="openthread-config-wrap.h"
+build.flags.openthread_project_core_config="OpenThreadConfig.h"
 build.flags.mbedtls_config="nrf-config.h"
 build.flags.mbedtls_user_config="nrf52840-mbedtls-config.h"
-build.flags.openthread.ftd= -DOPENTHREAD_CONFIG_BORDER_AGENT_ENABLE=1 -DOPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE=1 -DOPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE=1 -DOPENTHREAD_CONFIG_COAP_API_ENABLE=1 -DOPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE=1 -DOPENTHREAD_CONFIG_COMMISSIONER_ENABLE=1 -DOPENTHREAD_CONFIG_DHCP6_CLIENT_ENABLE=1 -DOPENTHREAD_CONFIG_DHCP6_SERVER_ENABLE=1 -DOPENTHREAD_CONFIG_DIAG_ENABLE=1 -DOPENTHREAD_CONFIG_DNS_CLIENT_ENABLE=1 -DOPENTHREAD_CONFIG_ECDSA_ENABLE=1 -DOPENTHREAD_CONFIG_ENABLE_BUILTIN_MBEDTLS=0 -DOPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE=1 -DOPENTHREAD_CONFIG_IP6_SLAAC_ENABLE=1 -DOPENTHREAD_CONFIG_JAM_DETECTION_ENABLE=1 -DOPENTHREAD_CONFIG_JOINER_ENABLE=1 -DOPENTHREAD_CONFIG_LINK_RAW_ENABLE=1 -DOPENTHREAD_CONFIG_MAC_FILTER_ENABLE=1 -DOPENTHREAD_CONFIG_NCP_UART_ENABLE=1 -DOPENTHREAD_CONFIG_SNTP_CLIENT_ENABLE=1 -DOPENTHREAD_CONFIG_THREAD_VERSION=2 -DOPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE=1 -DOPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE=1 -DOPENTHREAD_CONFIG_UDP_FORWARD_ENABLE=1 -DOPENTHREAD_ENABLE_NCP_SPINEL_ENCRYPTER=0 -DOPENTHREAD_ENABLE_VENDOR_EXTENSION=0 -DOPENTHREAD_EXAMPLES_SIMULATION=0 -DOPENTHREAD_FTD=1 -DOPENTHREAD_MTD=0 -DOPENTHREAD_PLATFORM_POSIX=0 -DOPENTHREAD_POSIX_CONFIG_DAEMON_ENABLE=0 -DOPENTHREAD_RADIO=0
-build.flags.openthread= {build.flags.openthread.ftd} -DMBEDTLS_CONFIG_FILE={build.flags.mbedtls_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DOPENTHREAD_CONFIG_FILE={build.flags.openthread_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DCONFIG_GPIO_AS_PINRESET -D__HEAP_SIZE=8192 -D__STACK_SIZE=8192 -DFREERTOS -DNRF52840_XXAA -DBOARD_PCA10056 {build.flags.nordic_includes}
-build.flags.nordic_includes= -I{nordic.path}/config/nrf52840/config -I{nordic.path}/softdevice/common -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include/nrf52 -I{nordic.path}/nrfx -I{nordic.path}/nrfx/legacy -I{nordic.path}/nrfx/drivers/include -I{nordic.path}/nrfx/hal -I{nordic.path}/nrfx/mdk -I{nordic.path}/components/libraries/experimental_section_vars -I{nordic.path}/components/libraries/log -I{nordic.path}/components/libraries/strerror -I{nordic.path}/components/libraries/util -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem/three_pin_gpio -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/rsch/raal/softdevice -I{nordic.path}/external/nrf_security/config -I{nordic.path}/external/nrf_security/include -I{nordic.path}/external/nrf_security/mbedtls_plat_config -I{nordic.path}/external/nrf_security/nrf_cc310_plat/include -I{nordic.path}/external/openthread/include
+build.flags.openthread= -DUSE_APP_CONFIG -DOPENTHREAD_FTD=1 -DMBEDTLS_CONFIG_FILE={build.flags.mbedtls_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DOPENTHREAD_PROJECT_CORE_CONFIG_FILE={build.flags.openthread_project_core_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DCONFIG_GPIO_AS_PINRESET -D__HEAP_SIZE=8192 -D__STACK_SIZE=8192 -DFREERTOS -DNRF52840_XXAA -DBOARD_PCA10056 {build.flags.nordic_includes} -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_PARSE_C -DMBEDTLS_X509_CSR_WRITE_C
+build.flags.nordic_includes= -I{nordic.path}/config/nrf52840/config -I{nordic.path}/softdevice/common -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include/nrf52 -I{nordic.path}/nrfx -I{nordic.path}/nrfx/legacy -I{nordic.path}/nrfx/drivers/include -I{nordic.path}/nrfx/hal -I{nordic.path}/nrfx/mdk -I{nordic.path}/components/ble/common -I{nordic.path}/components/ble/nrf_ble_gatt -I{nordic.path}/components/libraries/atomic -I{nordic.path}/components/libraries/atomic_fifo -I{nordic.path}/components/libraries/balloc -I{nordic.path}/components/libraries/button -I{nordic.path}/components/libraries/fds -I{nordic.path}/components/libraries/fstorage -I{nordic.path}/components/libraries/mem_manager -I{nordic.path}/components/libraries/memobj -I{nordic.path}/components/libraries/ringbuf -I{nordic.path}/components/libraries/timer -I{nordic.path}/components/boards -I{nordic.path}/components/libraries/delay -I{nordic.path}/components/libraries/experimental_section_vars -I{nordic.path}/components/libraries/log -I{nordic.path}/components/libraries/strerror -I{nordic.path}/components/libraries/util -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem/three_pin_gpio -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/rsch/raal/softdevice -I{nordic.path}/external/nrf_security/config -I{nordic.path}/external/nrf_security/include -I{nordic.path}/external/nrf_security/mbedtls_plat_config -I{nordic.path}/external/nrf_security/nrf_cc310_plat/include -I{nordic.path}/external/openthread/include -I{nordic.path}/external/nlassert/include -I{nordic.path}/external/nlunit-test/src -I{nordic.path}/external/nlio/include -I{nordic.path}/external/nlfaultinjection/include -I{nordic.path}/examples/multiprotocol/app_utils/
+
+chip_dir={build.core.path}/nordic/external/connectedhomeip
+
+#I{chip_dir}/src/app/clusters/barrier-control-server
+#I{chip_dir}/src/app/clusters/basic
+#I{chip_dir}/src/app/clusters/binary-input-server
+#I{chip_dir}/src/app/clusters/color-control-server
+#I{chip_dir}/src/app/clusters/door-lock-server
+#I{chip_dir}/src/app/clusters/electrical-measurement-server
+#I{chip_dir}/src/app/clusters/groups-server
+#I{chip_dir}/src/app/clusters/ias-zone-client
+#I{chip_dir}/src/app/clusters/ias-zone-server
+#I{chip_dir}/src/app/clusters/identify
+#I{chip_dir}/src/app/clusters/level-control
+#I{chip_dir}/src/app/clusters/messaging-client
+#I{chip_dir}/src/app/clusters/messaging-server
+#I{chip_dir}/src/app/clusters/network-commissioning
+#I{chip_dir}/src/app/clusters/occupancy-sensor-server
+#I{chip_dir}/src/app/clusters/on-off-server
+#I{chip_dir}/src/app/clusters/ota-provider
+#I{chip_dir}/src/app/clusters/relative-humidity-measurement-server
+#I{chip_dir}/src/app/clusters/scenes
+#I{chip_dir}/src/app/clusters/scenes-client
+#I{chip_dir}/src/app/clusters/temperature-measurement-server
+#I{chip_dir}/src/app/clusters/zll-level-control-server
+#I{chip_dir}/src/app/clusters/zll-on-off-server
+#I{chip_dir}/src/app/clusters/zll-scenes-server
+#I{chip_dir}/src/app/common/gen/ids
+#I{chip_dir}/src/controller/java
+#I{chip_dir}/src/controller/python
+#I{chip_dir}/src/controller/python/chip/interaction_model
+#I{chip_dir}/src/controller/python/chip/internal
+#I{chip_dir}/src/include/platform/internal
+#I{chip_dir}/src/include/platform/internal/testing
+#I{chip_dir}/src/lib/asn1
+#I{chip_dir}/src/lib/core
+#I{chip_dir}/src/lib/mdns
+#I{chip_dir}/src/lib/mdns/minimal
+#I{chip_dir}/src/lib/mdns/minimal/core
+#I{chip_dir}/src/lib/mdns/minimal/records
+#I{chip_dir}/src/lib/mdns/minimal/responders
+#I{chip_dir}/src/lib/shell
+#I{chip_dir}/src/lib/shell/commands
+#I{chip_dir}/src/lib/support
+#I{chip_dir}/src/lib/support/pw_log_chip/public/pw_log_chip
+#I{chip_dir}/src/lib/support/verhoeff
+#I{chip_dir}/src/transport/raw
+#I{chip_dir}/src/transport/retransmit
+
+chip_includes= -DCHIP_HAVE_CONFIG_H=1 -I{chip_dir}/src/lwip/nrf5 -I{chip_dir}/src/lwip/freertos -I{chip_dir}/src/lwip/nrf5/freertos -I{chip_dir}/src/include -I{chip_dir}/src -I{chip_dir}/gen/include -I{chip_dir}/third_party/lwip/repo/lwip/src/include -I{chip_dir}/src/lib -I{chip_dir}/examples/platform/nrf5/app/project_include -I{chip_dir}/examples/platform/nrf5/util/include -I{chip_dir}/examples/platform/nrf5/app/include -I{chip_dir}/src/app/util -I{chip_dir}/src/app/common -I{chip_dir}/src/controller/data_model -I{chip_dir}/examples/lock-app/nrf5/main/include
+
+chip_libs = {chip_dir}/lib/core.a {chip_dir}/lib/mdns.a {chip_dir}/lib/minimal.a {chip_dir}/lib/records.a {chip_dir}/lib/responders.a {chip_dir}/lib/libASN1.a {chip_dir}/lib/libBdx.a {chip_dir}/lib/libBleLayer.a {chip_dir}/lib/libChannelAPI.a {chip_dir}/lib/libCHIPAppServer.a {chip_dir}/lib/libChipController.a {chip_dir}/lib/libChipCore.a {chip_dir}/lib/libChipCrypto.a {chip_dir}/lib/libCHIPDataModel.a {chip_dir}/lib/libChipProtocols.a {chip_dir}/lib/libCredentials.a {chip_dir}/lib/libDeviceLayer.a {chip_dir}/lib/libInetLayer.a {chip_dir}/lib/libMessagingLayer.a {chip_dir}/lib/libRawTransport.a {chip_dir}/lib/libSecureChannel.a {chip_dir}/lib/libSetupPayload.a {chip_dir}/lib/libSupportLayer.a {chip_dir}/lib/libSystemLayer.a {chip_dir}/lib/libTransportLayer.a
+
 
 libnrf_cc310.path={nordic.path}/external/nrf_security/lib
 libopenthread.path={nordic.path}/external/openthread/lib/nrf52840/gcc
 
 build.libnrf_cc310= {libnrf_cc310.path}/libmbedcrypto_cc310_backend.a {libnrf_cc310.path}/libmbedcrypto_glue.a {libnrf_cc310.path}/libmbedcrypto_glue_cc310.a {libnrf_cc310.path}/libmbedcrypto_glue_vanilla.a {libnrf_cc310.path}/libmbedcrypto_vanilla_backend.a {libnrf_cc310.path}/libmbedtls_base_vanilla.a {libnrf_cc310.path}/libmbedtls_tls_vanilla.a {libnrf_cc310.path}/libmbedtls_x509_vanilla.a {libnrf_cc310.path}/libnrf_cc310_platform_0.9.2.a
-build.libopenthread={libopenthread.path}/libopenthread-cli-ftd.a {libopenthread.path}/libopenthread-ftd.a {libopenthread.path}/libopenthread-platform-utils.a {libopenthread.path}/libopenthread-nrf52840-softdevice-sdk.a {libopenthread.path}/libnordicsemi-nrf52840-radio-driver-softdevice.a
 
+build.libopenthread={libopenthread.path}/libopenthread-cli-ftd.a {libopenthread.path}/libopenthread-ftd.a {libopenthread.path}/libopenthread-platform-utils.a {libopenthread.path}/libopenthread-nrf52840-softdevice-sdk.a {libopenthread.path}/libnordicsemi_nrf52840_radio_driver_softdevice.a {libopenthread.path}/libopenthread-nrf52840-transport.a
 
 # USB flags
 build.flags.usb= -DUSBCON -DUSE_TINYUSB -DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
@@ -86,7 +137,7 @@ compiler.libraries.ldflags=
 compiler.elf2bin.extra_flags=
 compiler.elf2hex.extra_flags=
 
-compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Include/"
+compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Include/" {chip_includes}
 compiler.arm.cmsis.ldflags="-L{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Lib/GCC/" -larm_cortexM4lf_math
 
 # common compiler for nrf
@@ -113,7 +164,7 @@ recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU=
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
 
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {compiler.arm.cmsis.ldflags} {object_files} {build.libnrf_cc310} {build.libopenthread} -Wl,--whole-archive "{build.path}/{archive_file}" -Wl,--no-whole-archive -lc -lnosys -lm -lstdc++ -Wl,--end-group
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {compiler.arm.cmsis.ldflags} {object_files} {build.libnrf_cc310} {build.libopenthread} {chip_libs} -Wl,--whole-archive "{build.path}/{archive_file}" -Wl,--no-whole-archive -lc -lnosys -lm -lstdc++ -Wl,--end-group
 
 ## Create output (bin file)
 #recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
