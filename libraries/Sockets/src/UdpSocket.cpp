@@ -18,6 +18,7 @@
 
 #include "UdpSocket.h"
 #include <openthread/udp.h>
+#include <openthread/instance.h>
 #include <openthread/openthread-freertos.h>
 
 #define log_e(...) ADALOG("UDPSKT", __VA_ARGS__)
@@ -33,7 +34,7 @@ UDPSocket::~UDPSocket(){
 static int _begin(otUdpSocket* socket, otSockAddr* addr, otUdpReceive handler, void* context) {
   otError err = OT_ERROR_NONE;
 
-  err = otUdpClose(socket);
+  OT_API_CALL(err = otUdpClose(otrGetInstance(), socket));
   if(err != OT_ERROR_NONE) {
     log_e("could not close socket: %s", otThreadErrorToString(err));
     return 0;
@@ -41,16 +42,16 @@ static int _begin(otUdpSocket* socket, otSockAddr* addr, otUdpReceive handler, v
 
   socket->mContext = NULL;
 
-  err = otUdpOpen(otrGetInstance(), socket, handler, context);
+  OT_API_CALL(err = otUdpOpen(otrGetInstance(), socket, handler, context));
   if(err != OT_ERROR_NONE) {
     log_e("could not create socket: %s", otThreadErrorToString(err));
     return 0;
   }
 
-  err = otUdpBind(socket, addr);
+  OT_API_CALL(err = otUdpBind(otrGetInstance(), socket, addr));
   if(err != OT_ERROR_NONE) {
     log_e("could not bind socket: %s", otThreadErrorToString(err));
-    otUdpClose(socket);
+    OT_API_CALL(otUdpClose(otrGetInstance(), socket));
     socket->mContext = NULL;
     return 0;
   }
@@ -74,7 +75,7 @@ uint8_t UDPSocket::begin(IPAddress address, uint16_t port){
 
 void UDPSocket::stop(){
   otError err = OT_ERROR_NONE;
-  OT_API_CALL(err = otUdpClose(&socket));
+  OT_API_CALL(err = otUdpClose(otrGetInstance(), &socket));
   if(err != OT_ERROR_NONE) {
     log_e("could not close socket: %s", otThreadErrorToString(err));
   }
@@ -123,7 +124,7 @@ static int _endPacket(otUdpSocket* socket, const char* buf, size_t buflen, otMes
     return 0;
   }
 
-  err = otUdpSend(socket, msg, msginfo);
+  OT_API_CALL(err = otUdpSend(otrGetInstance(), socket, msg, msginfo));
   if(err != OT_ERROR_NONE){
     log_e("could not send data: %s", otThreadErrorToString(err));
     if(msg != NULL) otMessageFree(msg);

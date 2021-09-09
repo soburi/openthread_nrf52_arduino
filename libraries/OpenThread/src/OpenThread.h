@@ -24,6 +24,9 @@
 #include "OpenThread_cmds.hpp"
 #include "otapi.hpp"
 
+#define OTAPI_PACKAGE_NAME "OpenThread"
+#define OTAPI_PACKAGE_VERSION "1.0.0"
+
 class OpenThreadClass : public OpenThread_cmds {
 public:
 

@@ -79,7 +79,6 @@ public:
   size_t printTo(Print& p) const {
     size_t n = 0;
     if (conf.mRxOnWhenIdle)       n += p.print("r");
-    if (conf.mSecureDataRequests) n += p.print("s");
     if (conf.mDeviceType)         n += p.print("d");
     if (conf.mNetworkData)        n += p.print("n");
     return n;

@@ -16,20 +16,26 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#define _GNU_SOURCE 1
+
 #include "OpenThreadCli.h"
 #include <openthread/cli.h>
 #include <openthread/openthread-freertos.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-int OpenThreadCliClass::consoleCallback(const char *aBuf, uint16_t aBufLength, void *aContext)
+ssize_t OpenThreadCliClass::cookie_write(void *cookie, const char *data, size_t len)
 {
-  otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "OpenThreadCliClass::consoleCallback");
-  char buf[128];
-  strncpy(buf, aBuf, aBufLength < 127 ? aBufLength : 127);
-  buf[aBufLength] = 0;
-  otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "%s", buf);
+    Stream* strm = reinterpret_cast<Stream*>(cookie);
+    return strm->write(data, len);
+}
 
-  Stream* strm = reinterpret_cast<Stream*>(aContext);
-  return (strm) ? strm->write(aBuf, aBufLength) : aBufLength;
+int OpenThreadCliClass::outputCallback(void *aContext, const char* aFormat, va_list aArgument)
+{
+  static const cookie_io_functions_t vtable = { NULL, cookie_write, NULL, NULL };
+
+  FILE* f = fopencookie(aContext, "w", vtable);
+  return vfprintf(f, aFormat, aArgument);
 }
 
 size_t OpenThreadCliClass::write(uint8_t b)
@@ -40,7 +46,7 @@ size_t OpenThreadCliClass::write(uint8_t b)
 
     if(cmdline_i > 0) {
       cliStream->write(b);
-      otCliConsoleInputLine(reinterpret_cast<char*>(cmdline_buffer), cmdline_i);
+      otCliInputLine(reinterpret_cast<char*>(cmdline_buffer));
     }
     cmdline_i = 0;
   }
@@ -77,7 +83,7 @@ void OpenThreadCliClass::begin(Stream& strm, bool echoback, const char* prompt)
   cliStream = &strm;
   enableEchoback = echoback;
   promptString = prompt;
-  otCliConsoleInit(otrGetInstance(), consoleCallback, cliStream);
+  otCliInit(otrGetInstance(), outputCallback, cliStream);
 }
 
 void OpenThreadCliClass::process()

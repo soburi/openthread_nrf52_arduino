@@ -318,8 +318,7 @@ OT_FUNC_4_IMPL(otError, diag, Diag, ProcessCmd, uint8_t, char**, char*, size_t);
 //otError OTCMD::discover(uint32_t, otHandleActiveScanResult, void*);
 //otError OTCMD::discover(otActiveScanResult*, size_t, uint32_t);
 #if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
-//otError OTCMD::dns_resolve(const char*, const otIp6Address*, uint16_t, otDnsResponseHandler, void*);
-//otError OTCMD::dns_resolve(const char*, otDnsResponseHandler, void*);
+otError OTCMD::dns_resolve(const char* hostname, otDnsAddressCallback handler, void* context, const otDnsQueryConfig* config);
 #endif
 #if OPENTHREAD_FTD
 OTEidCacheIterator OTCMD::eidcache()
@@ -398,8 +397,7 @@ OT_FUNC_1_IMPL(otError, ipmaddr_del, Ip6, UnsubscribeMulticastAddress, const otI
 OT_FUNC_0_IMPL(bool, ipmaddr_promiscuous, Ip6, IsMulticastPromiscuousEnabled);
 OT_V_SETTER_IMPL(bool, ipmaddr_promiscuous, Ip6, MulticastPromiscuousEnabled);
 #if OPENTHREAD_CONFIG_JOINER_ENABLE
-OT_V_FUNC_1_IMPL(joiner_id, Joiner, GetId, otExtAddress*);
-OTExtAddress OTCMD::joiner_id() { static otExtAddress eaddr; joiner_id(&eaddr); return &eaddr; }
+OTExtAddress OTCMD::joiner_id() { OT_API_CALL_RET(OTExtAddress, otJoinerGetId(otrGetInstance())); }
 //otError OTCMD::joiner_start(const char* pskc, const char* provision, otJoinerCallback cb, void* ctx);
 //otError OTCMD::joiner_start(const char* pskc, const char* provision);
 OT_V_FUNC_0_IMPL(joiner_stop, Joiner, Stop);
@@ -411,7 +409,8 @@ OT_V_SETGET_IMPL(uint32_t, keysequence_counter, Thread, KeySequenceCounter);
 OT_V_SETGET_IMPL(uint32_t, keysequence_guardtime, Thread, KeySwitchGuardTime);
 OT_FUNC_1_IMPL(otError, leaderdata, Thread, GetLeaderData, otLeaderData*);
 #if OPENTHREAD_FTD
-OT_V_SETGET_IMPL(uint32_t, leaderpartitionid, Thread, LocalLeaderPartitionId);
+OT_GETTER_IMPL(uint32_t, partitionid, Thread, PartitionId);
+OT_V_SETGET_IMPL(uint32_t, partitionid_preferred, Thread, PreferredLeaderPartitionId);
 OT_V_SETGET_IMPL(uint8_t, leaderweight, Thread, LocalLeaderWeight);
 #endif
 
@@ -431,18 +430,18 @@ OTMacFilterRssIterator OTCMD::macfilter_rss()
 }
 OT_FUNC_2_IMPL(otError, macfilter_addr_add, LinkFilter, AddRssIn, const otExtAddress*, uint8_t);
 otError OTCMD::macfilter_addr_add(uint8_t rss) { return macfilter_addr_add(nullptr, rss); }
-OT_FUNC_1_IMPL(otError, macfilter_addr_remove, LinkFilter, RemoveAddress, const otExtAddress*);
+OT_V_FUNC_1_IMPL(macfilter_addr_remove, LinkFilter, RemoveAddress, const otExtAddress*);
 OT_V_FUNC_0_IMPL(macfilter_addr_clear, LinkFilter, ClearAddresses);
 
 OT_FUNC_2_IMPL(otError, macfilter_rss_add, LinkFilter, AddRssIn, const otExtAddress*, uint8_t);
 otError OTCMD::macfilter_rss_add(uint8_t rss) { return macfilter_rss_add(NULL, rss); }
-OT_FUNC_1_IMPL(otError, macfilter_rss_remove, LinkFilter, RemoveRssIn, const otExtAddress*);
-OT_V_FUNC_0_IMPL(macfilter_rss_clear, LinkFilter, ClearRssIn);
+OT_V_FUNC_1_IMPL(macfilter_rss_remove, LinkFilter, RemoveRssIn, const otExtAddress*);
+OT_V_FUNC_0_IMPL(macfilter_rss_clear, LinkFilter, ClearAllRssIn);
 
 OT_V_SETGET_IMPL(otMacFilterAddressMode, _macfilter_addr_mode, LinkFilter, AddressMode);
 void OTCMD::macfilter_addr_disable() { _macfilter_addr_mode(OT_MAC_FILTER_ADDRESS_MODE_DISABLED); }
-void OTCMD::macfilter_addr_blacklist() { _macfilter_addr_mode(OT_MAC_FILTER_ADDRESS_MODE_BLACKLIST); }
-void OTCMD::macfilter_addr_whitelist() { _macfilter_addr_mode(OT_MAC_FILTER_ADDRESS_MODE_WHITELIST); }
+void OTCMD::macfilter_addr_denylist() { _macfilter_addr_mode(OT_MAC_FILTER_ADDRESS_MODE_DENYLIST); }
+void OTCMD::macfilter_addr_allowlist() { _macfilter_addr_mode(OT_MAC_FILTER_ADDRESS_MODE_ALLOWLIST); }
 #endif
 
 OT_V_SETGET_IMPL(uint8_t, mac_retries_direct, Link, MaxFrameRetriesDirect);
@@ -476,7 +475,7 @@ OTNeighborIterator OTCMD::neighbor()
 //otError OTCMD::netdatashow(uint8_t*, uint8_t&);
 #endif
 #if OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
-OT_FUNC_3_IMPL(otError, networkdiagnostic_get, Thread, SendDiagnosticGet, const otIp6Address*, uint8_t*, uint8_t);
+OT_FUNC_5_IMPL(otError, networkdiagnostic_get, Thread, SendDiagnosticGet, const otIp6Address*, const uint8_t*, uint8_t, otReceiveDiagnosticGetCallback, void*);
 OT_FUNC_3_IMPL(otError, networkdiagnostic_reset, Thread, SendDiagnosticReset, const otIp6Address*, uint8_t*, uint8_t);
 #endif
 #if OPENTHREAD_FTD
@@ -682,8 +681,8 @@ otError OTCMD::ipaddr_add(const otIp6Address* addr, uint8_t prefixlen, bool pref
 otError OTCMD::joiner_start(const char* pskc, const char* provision, otJoinerCallback cb, void* ctx)
 {
   OT_API_CALL_RET(otError,
-    otJoinerStart(otrGetInstance(), pskc, provision, PACKAGE_NAME, OPENTHREAD_CONFIG_PLATFORM_INFO,
-                      PACKAGE_VERSION, NULL, cb, ctx);
+    otJoinerStart(otrGetInstance(), pskc, provision, OTAPI_PACKAGE_NAME, OPENTHREAD_CONFIG_PLATFORM_INFO,
+                      OTAPI_PACKAGE_VERSION, NULL, cb, ctx);
   );
 }
 
@@ -928,10 +927,9 @@ void OTCMD::dataset_channelmask(otOperationalDataset& dataset, uint32_t channelm
   dataset.mComponents.mIsChannelMaskPresent = true;
 }
 
-void OTCMD::dataset_securitypolicy(otOperationalDataset& dataset, uint16_t rotationtime, uint32_t flags)
+void OTCMD::dataset_securitypolicy(otOperationalDataset& dataset, const otSecurityPolicy* securitypolicy)
 {
-  dataset.mSecurityPolicy.mRotationTime = rotationtime;
-  dataset.mSecurityPolicy.mFlags = flags;
+  dataset.mSecurityPolicy = *securitypolicy;
   dataset.mComponents.mIsSecurityPolicyPresent = true;
 }
 
@@ -983,28 +981,11 @@ otError OTCMD::dataset_mgmtsetcommand_pending(otOperationalDataset& dataset, con
 
 #if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
 
-otError OTCMD::dns_resolve(const char* hostname, const otIp6Address* addr, uint16_t port, otDnsResponseHandler handler, void* context)
+otError OTCMD::dns_resolve(const char* hostname, otDnsAddressCallback handler, void* context, const otDnsQueryConfig* config)
 {
-  otDnsQuery query = { 0 };
-  otMessageInfo msginfo = { 0 };
-
-  msginfo.mPeerAddr = *addr;
-  msginfo.mPeerPort = port;
-
-  query.mHostname = hostname,
-  query.mMessageInfo = &msginfo;
-  query.mNoRecursion = false;
-
   OT_API_CALL_RET(otError,
-    otDnsClientQuery(otrGetInstance(), &query, handler, context);
+    otDnsClientResolveAddress(otrGetInstance(), hostname, handler, context, config);
   );
-}
-
-otError OTCMD::dns_resolve(const char* hostname, otDnsResponseHandler handler, void* context)
-{
-  otIp6Address addr;
-  otIp6AddressFromString(OT_DNS_DEFAULT_SERVER_IP, &addr);
-  return dns_resolve(hostname, &addr, OT_DNS_DEFAULT_SERVER_PORT, handler, context);
 }
 
 #endif
