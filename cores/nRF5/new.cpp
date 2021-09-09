@@ -57,6 +57,7 @@ extern unsigned char __HeapLimit[];
 
 static unsigned char *sbrk_heap_top = __HeapBase;
 
+__attribute__((weak))
 __attribute__((used))
 caddr_t _sbrk( int incr )
 {
@@ -76,12 +77,14 @@ caddr_t _sbrk( int incr )
   return (caddr_t) prev_heap;
 }
 
+ __attribute__((weak))
 void __malloc_lock(struct _reent *ptr)
 {
   (void) ptr;
   vTaskSuspendAll();
 }
 
+ __attribute__((weak))
 void __malloc_unlock(struct _reent *ptr)
 {
   (void) ptr;
