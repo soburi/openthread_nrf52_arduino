@@ -1,0 +1,377 @@
+version: 3
+
+# https://developer.github.com/v3/previews/#draft-pull-requests
+github_api_version: "shadow-cat-preview"
+
+############################################################
+#  Conditions
+############################################################
+
+pullapprove_conditions:
+    ############################################################
+    #  License Checks
+    ############################################################
+    - condition: "'*license/cla*' in statuses.successful"
+      unmet_status: "pending"
+      explanation: "CLA must be agreed to by all contributors"
+
+    ############################################################
+    #  Draft PRs
+    ############################################################
+    - condition: "'WIP' not in title"
+      unmet_status: "pending"
+      explanation: "Work in progress"
+
+    - condition: "not draft"
+      unmet_status: "pending"
+      explanation: "Work in progress"
+
+    ############################################################
+    #  Conditions to Skip Review
+    ############################################################
+    - condition: "base.ref == 'master'"
+      unmet_status: "success"
+      explanation: "Review not required unless merging to master"
+
+    ############################################################
+    #  Bypass reviews
+    ############################################################
+    - "'hotfix' not in labels"
+
+    ############################################################
+    #  Required status checks
+    ############################################################
+    - condition: "'*restyle*' in statuses.successful"
+      unmet_status: "failure"
+      explanation: "Style must be inline before reviewing can be complete"
+
+############################################################
+#  Notifications
+############################################################
+
+notifications:
+    ############################################################
+    #  New contributors
+    ############################################################
+    - when: pull_request.opened
+      if: "author_association == 'FIRST_TIME_CONTRIBUTOR'"
+      comment: |
+          Hey @{{ author }}, thanks for the PR! The review will start once
+          the tests and CI checks have passed. If they don't, please review
+          the logs and try to fix the issues (ask for help if you can't
+          figure it out). A reviewer will be assigned once the tests are
+          passing and they'll walk you through getting the PR finished
+          and merged.
+
+groups:
+    ############################################################
+    #  Shared Reviewer Groups
+    ############################################################
+    shared-reviewers-amazon:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-amazon]
+        reviews:
+            request: 1
+    shared-reviewers-apple:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-apple]
+        reviews:
+            request: 1
+    shared-reviewers-comcast:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-comcast]
+        reviews:
+            request: 1
+    shared-reviewers-google:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-google]
+        reviews:
+            request: 1
+    shared-reviewers-nordic:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-nordic]
+        reviews:
+            request: 1
+    shared-reviewers-samsung:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-samsung]
+        reviews:
+            request: 1
+    shared-reviewers-silabs:
+        type: optional
+        conditions:
+            - files.include('*')
+        reviewers:
+            teams: [reviewers-silabs]
+        reviews:
+            request: 1
+
+    ############################################################
+    #  Base Required Reviewers
+    ############################################################
+    required-reviewers:
+        description: >
+            [Required
+            Reviewers](https://github.com/project-chip/connectedhomeip/blob/master/CONTRIBUTING.md#review-requirements)
+            This is the main group of required reviews for general pull
+            requests.
+        type: required
+        requirements:
+            - len(groups.approved.include('shared-reviewers-*')) >= 3
+        reviews:
+            required: 0
+        labels:
+            approved: "review - approved"
+            pending: "review - pending"
+            rejected: "review - changed requested"
+
+    ############################################################
+    #  Label Based Reviewers
+    ############################################################
+    codeowners-android:
+        type: optional
+        conditions:
+            - "'android' in labels"
+        reviewers:
+            teams:
+                - codeowners-android
+        reviews:
+            request: 1
+
+    codeowners-app:
+        type: optional
+        conditions:
+            - "'app' in labels"
+        reviewers:
+            teams:
+                - codeowners-app
+        reviews:
+            request: 1
+
+    codeowners-ble:
+        type: optional
+        conditions:
+            - "'ble' in labels"
+        reviewers:
+            teams:
+                - codeowners-ble
+        reviews:
+            request: 1
+
+    codeowners-controller:
+        type: optional
+        conditions:
+            - "'controller' in labels"
+        reviewers:
+            teams:
+                - codeowners-controller
+        reviews:
+            request: 1
+
+    codeowners-darwin:
+        type: optional
+        conditions:
+            - "'darwin' in labels"
+        reviewers:
+            teams:
+                - codeowners-darwin
+        reviews:
+            request: 1
+
+    codeowners-crypto:
+        type: optional
+        conditions:
+            - "'crypto' in labels"
+        reviewers:
+            teams:
+                - codeowners-crypto
+        reviews:
+            request: 1
+
+    codeowners-inet:
+        type: optional
+        conditions:
+            - "'inet' in labels"
+        reviewers:
+            teams:
+                - codeowners-inet
+        reviews:
+            request: 2
+
+    codeowners-core:
+        type: optional
+        conditions:
+            - "'core' in labels"
+        reviewers:
+            teams:
+                - codeowners-core
+        reviews:
+            request: 2
+
+    codeowners-protocols:
+        type: optional
+        conditions:
+            - "'protocols' in labels"
+        reviewers:
+            teams:
+                - codeowners-protocols
+        reviews:
+            request: 1
+
+    codeowners-shell:
+        type: optional
+        conditions:
+            - "'shell' in labels"
+        reviewers:
+            teams:
+                - codeowners-shell
+        reviews:
+            request: 1
+
+    codeowners-support:
+        type: optional
+        conditions:
+            - "'support' in labels"
+        reviewers:
+            teams:
+                - codeowners-support
+        reviews:
+            request: 1
+
+    codeowners-platform:
+        type: optional
+        conditions:
+            - "'platform' in labels"
+        reviewers:
+            teams:
+                - codeowners-platform
+        reviews:
+            request: 1
+
+    codeowners-qrcode:
+        type: optional
+        conditions:
+            - "'qrcode' in labels"
+        reviewers:
+            teams:
+                - codeowners-qrcode
+        reviews:
+            request: 1
+
+    codeowners-setup-payload:
+        type: optional
+        conditions:
+            - "'setup payload' in labels"
+        reviewers:
+            teams:
+                - codeowners-setup-payload
+        reviews:
+            request: 1
+
+    codeowners-system:
+        type: optional
+        conditions:
+            - "'system' in labels"
+        reviewers:
+            teams:
+                - codeowners-system
+        reviews:
+            request: 1
+
+    codeowners-test-driver:
+        type: optional
+        conditions:
+            - "'test driver' in labels"
+        reviewers:
+            teams:
+                - codeowners-test-driver
+        reviews:
+            request: 1
+
+    codeowners-github:
+        type: optional
+        conditions:
+            - "'github' in labels"
+        reviewers:
+            teams:
+                - codeowners-github
+        reviews:
+            request: 1
+
+    codeowners-vscode:
+        type: optional
+        conditions:
+            - "'vscode' in labels"
+        reviewers:
+            teams:
+                - codeowners-vscode
+        reviews:
+            request: 2
+
+    codeowners-integrations:
+        type: optional
+        conditions:
+            - "'integrations' in labels"
+        reviewers:
+            teams:
+                - codeowners-integrations
+        reviews:
+            request: 1
+
+    codeowners-transport:
+        type: optional
+        conditions:
+            - "'transport' in labels"
+        reviewers:
+            teams:
+                - codeowners-transport
+        reviews:
+            request: 1
+
+    codeowners-scripts:
+        type: optional
+        conditions:
+            - "'scripts' in labels"
+        reviewers:
+            teams:
+                - codeowners-scripts
+        reviews:
+            request: 1
+
+    codeowners-documentation:
+        type: optional
+        conditions:
+            - "'documentation' in labels"
+        reviewers:
+            teams:
+                - codeowners-documentation
+        reviews:
+            request: 1
+
+    codeowners-gn:
+        type: optional
+        conditions:
+            - "'gn' in labels"
+        reviewers:
+            teams:
+                - codeowners-gn
+        reviews:
+            request: 1
