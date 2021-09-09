@@ -1,0 +1,122 @@
+# Copyright (c) 2020 Project CHIP Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build_overrides/chip.gni")
+import("//build_overrides/nlio.gni")
+
+import("${chip_root}/build/chip/buildconfig_header.gni")
+import("common_flags.gni")
+
+declare_args() {
+  # Enable strict schema checks.
+  chip_enable_schema_check =
+      is_debug && (current_os == "linux" || current_os == "mac")
+}
+
+buildconfig_header("app_buildconfig") {
+  header = "AppBuildConfig.h"
+  header_dir = "app"
+
+  defines = [ "CHIP_CONFIG_IM_ENABLE_SCHEMA_CHECK=${chip_enable_schema_check}" ]
+}
+
+static_library("app") {
+  output_name = "libCHIPDataModel"
+
+  sources = [
+    "Command.cpp",
+    "Command.h",
+    "CommandHandler.cpp",
+    "CommandSender.cpp",
+    "EventManagement.cpp",
+    "InteractionModelEngine.cpp",
+    "MessageDef/AttributeDataElement.cpp",
+    "MessageDef/AttributeDataElement.h",
+    "MessageDef/AttributeDataList.cpp",
+    "MessageDef/AttributeDataList.h",
+    "MessageDef/AttributeDataVersionList.cpp",
+    "MessageDef/AttributeDataVersionList.h",
+    "MessageDef/AttributePath.cpp",
+    "MessageDef/AttributePath.h",
+    "MessageDef/AttributePathList.cpp",
+    "MessageDef/AttributePathList.h",
+    "MessageDef/AttributeStatusElement.cpp",
+    "MessageDef/AttributeStatusElement.h",
+    "MessageDef/AttributeStatusList.cpp",
+    "MessageDef/AttributeStatusList.h",
+    "MessageDef/Builder.cpp",
+    "MessageDef/Builder.h",
+    "MessageDef/CommandDataElement.cpp",
+    "MessageDef/CommandDataElement.h",
+    "MessageDef/CommandList.cpp",
+    "MessageDef/CommandList.h",
+    "MessageDef/CommandPath.cpp",
+    "MessageDef/CommandPath.h",
+    "MessageDef/EventDataElement.cpp",
+    "MessageDef/EventDataElement.h",
+    "MessageDef/EventList.cpp",
+    "MessageDef/EventList.h",
+    "MessageDef/EventPath.cpp",
+    "MessageDef/EventPath.h",
+    "MessageDef/EventPathList.cpp",
+    "MessageDef/EventPathList.h",
+    "MessageDef/InvokeCommand.cpp",
+    "MessageDef/InvokeCommand.h",
+    "MessageDef/ListBuilder.cpp",
+    "MessageDef/ListBuilder.h",
+    "MessageDef/ListParser.cpp",
+    "MessageDef/ListParser.h",
+    "MessageDef/MessageDefHelper.cpp",
+    "MessageDef/MessageDefHelper.h",
+    "MessageDef/Parser.cpp",
+    "MessageDef/Parser.h",
+    "MessageDef/ReadRequest.cpp",
+    "MessageDef/ReadRequest.h",
+    "MessageDef/ReportData.cpp",
+    "MessageDef/ReportData.h",
+    "MessageDef/StatusElement.cpp",
+    "MessageDef/StatusElement.h",
+    "MessageDef/WriteRequest.cpp",
+    "MessageDef/WriteResponse.cpp",
+    "ReadClient.cpp",
+    "ReadHandler.cpp",
+    "WriteClient.cpp",
+    "WriteHandler.cpp",
+    "decoder.cpp",
+    "encoder-common.cpp",
+    "reporting/Engine.cpp",
+    "reporting/Engine.h",
+  ]
+
+  if (chip_ip_commissioning) {
+    defines = [
+      "CONFIG_USE_CLUSTERS_FOR_IP_COMMISSIONING=1",
+      "CONFIG_RENDEZVOUS_WAIT_FOR_COMMISSIONING_COMPLETE=1",
+      "CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY=1",
+      "CHIP_DEVICE_CONFIG_ENABLE_JUST_IN_TIME_PROVISIONING=1",
+    ]
+  }
+
+  public_deps = [
+    ":app_buildconfig",
+    "${chip_root}/src/lib/support",
+    "${chip_root}/src/messaging",
+    "${chip_root}/src/system",
+    "${nlio_root}:nlio",
+  ]
+
+  cflags = [ "-Wconversion" ]
+
+  public_configs = [ "${chip_root}/src:includes" ]
+}

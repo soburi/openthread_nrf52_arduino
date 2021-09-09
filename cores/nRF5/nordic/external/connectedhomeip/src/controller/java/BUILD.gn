@@ -1,0 +1,77 @@
+# Copyright (c) 2020 Project CHIP Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build_overrides/build.gni")
+import("//build_overrides/chip.gni")
+
+import("${build_root}/config/android_abi.gni")
+import("${chip_root}/build/chip/java/rules.gni")
+
+shared_library("jni") {
+  output_name = "libCHIPController"
+
+  sources = [
+    "AndroidBleApplicationDelegate.cpp",
+    "AndroidBleApplicationDelegate.h",
+    "AndroidBleConnectionDelegate.cpp",
+    "AndroidBleConnectionDelegate.h",
+    "AndroidBlePlatformDelegate.cpp",
+    "AndroidBlePlatformDelegate.h",
+    "AndroidDeviceControllerWrapper.cpp",
+    "AndroidDeviceControllerWrapper.h",
+    "AndroidKeyValueStoreManagerImpl.cpp",
+    "AndroidKeyValueStoreManagerImpl.h",
+    "CHIPDeviceController-JNI.cpp",
+    "CHIPJNIError.h",
+    "JniReferences.cpp",
+    "JniReferences.h",
+    "JniTypeWrappers.h",
+    "StackLock.h",
+    "gen/CHIPClusters-JNI.cpp",
+  ]
+
+  deps = [
+    "${chip_root}/src/controller/data_model",
+    "${chip_root}/src/lib",
+  ]
+
+  public_configs = [ "${chip_root}/src:includes" ]
+
+  output_dir = "${root_out_dir}/lib/jni/${android_abi}"
+}
+
+android_library("java") {
+  output_name = "CHIPController.jar"
+
+  data_deps = [
+    ":jni",
+    "${chip_root}/build/chip/java:shared_cpplib",
+  ]
+
+  sources = [
+    "gen/ChipClusters.java",
+    "src/chip/devicecontroller/AndroidChipStack.java",
+    "src/chip/devicecontroller/ChipClusterException.java",
+    "src/chip/devicecontroller/ChipCommandType.java",
+    "src/chip/devicecontroller/ChipDeviceController.java",
+    "src/chip/devicecontroller/ChipDeviceControllerException.java",
+    "src/chip/devicecontroller/KeyValueStoreManager.java",
+    "src/chip/devicecontroller/PreferencesKeyValueStoreManager.java",
+  ]
+
+  javac_flags = [ "-Xlint:deprecation" ]
+
+  # TODO: add classpath support (we likely need to add something like
+  #  ..../platforms/android-21/android.jar to access BLE items)
+}
