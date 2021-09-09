@@ -32,6 +32,7 @@
 #include <openthread/coap_secure.h>
 #include <openthread/commissioner.h>
 #include <openthread/dns.h>
+#include <openthread/dns_client.h>
 #include <openthread/diag.h>
 #include <openthread/heap.h>
 #include <openthread/icmp6.h>
@@ -100,7 +101,7 @@ public:
   otError cancel();
   otError observe(const otIp6Addresss*, const char*, otCoapType);
 #endif
-  otError resource(char const*);
+  void resource(char const*);
   void set(uint8_t*, size_t);
   otError start();
   otError stop();
@@ -120,7 +121,7 @@ class OTCoapSecure {
   otCoapResource mResource;
   otError _request(otCoapCode, const otIp6Address*, char const*, otCoapType, uint8_t*, uint16_t, otCoapResponseHandler, void*);
 public:
-  otError resource(char const*, otCoapRequestHandler, void*);
+  void resource(char const*, otCoapRequestHandler, void*);
   otError start();
   void stop();
   otError connect(const otIp6Address*, uint16_t, otHandleCoapSecureClientConnect, void*);
@@ -244,7 +245,7 @@ void dataset_activetimestamp(otOperationalDataset& dataset, uint64_t timestamp);
 void dataset_pendingtimestamp(otOperationalDataset& dataset, uint64_t timestamp);
 void dataset_channel(otOperationalDataset& dataset, uint16_t channel);
 void dataset_channelmask(otOperationalDataset& dataset, uint32_t channelmask);
-void dataset_securitypolicy(otOperationalDataset& dataset, uint16_t rotationtime, uint32_t flags);
+void dataset_securitypolicy(otOperationalDataset& dataset, const otSecurityPolicy* security);
 
 inline uint32_t dataset_channelmask(otOperationalDataset& dataset) { return dataset.mChannelMask; }
 inline uint16_t dataset_channel(otOperationalDataset& dataset) { return dataset.mChannel; }
@@ -257,7 +258,18 @@ inline otPanId dataset_panid(otOperationalDataset& dataset) { return dataset.mPa
 inline uint64_t dataset_pendingtimestamp(otOperationalDataset& dataset) { return dataset.mPendingTimestamp; }
 inline uint64_t dataset_activetimestamp(otOperationalDataset& dataset) { return dataset.mActiveTimestamp; }
 inline uint16_t dataset_securitypolicy_rotationtime(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mRotationTime; }
-inline uint32_t dataset_securitypolicy_flags(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mFlags; }
+inline bool dataset_securitypolicy_obtain_masterkey_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mObtainMasterKeyEnabled; }
+inline bool dataset_securitypolicy_native_commissioning_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mNativeCommissioningEnabled; }
+inline bool dataset_securitypolicy_routers_enable(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mRoutersEnabled; }
+inline bool dataset_securitypolicy_external_commissioning_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mExternalCommissioningEnabled; }
+inline bool dataset_securitypolicy_beacons_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mBeaconsEnabled; }
+inline bool dataset_securitypolicy_commercial_commissioning_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mCommercialCommissioningEnabled; }
+inline bool dataset_securitypolicy_autonomous_enrollment_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mAutonomousEnrollmentEnabled; }
+inline bool dataset_securitypolicy_masterkey_provisioning_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mMasterKeyProvisioningEnabled; }
+inline bool dataset_securitypolicy_toble_Link_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mTobleLinkEnabled; }
+inline bool dataset_securitypolicy_non_ccm_routers_enabled(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mNonCcmRoutersEnabled; }
+inline uint8_t dataset_securitypolicy_version_threshold_for_routing(otOperationalDataset& dataset) { return dataset.mSecurityPolicy.mVersionThresholdForRouting; }
+
 inline OTSecurityPolicy dataset_securitypolicy(otOperationalDataset& dataset) { return &dataset.mSecurityPolicy; }
 
 inline void dataset_channelmask_present(otOperationalDataset& dataset, bool p) { dataset.mComponents.mIsChannelMaskPresent = p; }
@@ -311,8 +323,7 @@ otError diag(uint8_t, char**, char*, size_t);
 otError discover(uint32_t, otHandleActiveScanResult, void*);
 otError discover(uint32_t, OTActiveScanResultSyncIterator*);
 #if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
-otError dns_resolve(const char*, const otIp6Address*, uint16_t, otDnsResponseHandler, void*);
-otError dns_resolve(const char*, otDnsResponseHandler, void*);
+otError dns_resolve(const char*, otDnsAddressCallback, void*, const otDnsQueryConfig*);
 #endif
 
 #if OPENTHREAD_FTD
@@ -364,8 +375,9 @@ uint32_t keysequence_guardtime();
 void  keysequence_guardtime(uint32_t);
 otError leaderdata(otLeaderData*);
 #if OPENTHREAD_FTD
-uint32_t leaderpartitionid();
-void leaderpartitionid(uint32_t);
+uint32_t partitionid();
+uint32_t partitionid_preferred();
+void partitionid_preferred(uint32_t);
 uint8_t leaderweight();
 void leaderweight(uint8_t);
 #endif
@@ -382,18 +394,18 @@ void _macfilter_addr_mode(otMacFilterAddressMode);
 otMacFilterAddressMode _macfilter_addr_mode();
 OTMacFilterAddrIterator macfilter_addr();
 void macfilter_addr_disable();
-void macfilter_addr_whitelist();
-void macfilter_addr_blacklist();
+void macfilter_addr_allowlist();
+void macfilter_addr_denylist();
 otError macfilter_addr_add(const otExtAddress*, uint8_t);
 otError macfilter_addr_add(uint8_t);
-otError macfilter_addr_remove(const otExtAddress*);
+void macfilter_addr_remove(const otExtAddress*);
 void macfilter_addr_clear();
 OTMacFilterRssIterator macfilter_rss();
 otError macfilter_rss_add(const otExtAddress*, uint8_t);
 otError macfilter_rss_add(uint8_t);
 otError macfilter_rss_add_lqi(const otExtAddress*, uint8_t);
 otError macfilter_rss_add_lqi(uint8_t);
-otError macfilter_rss_remove(const otExtAddress* a=nullptr);
+void macfilter_rss_remove(const otExtAddress* a=nullptr);
 void macfilter_rss_clear();
 #endif
 
@@ -413,7 +425,7 @@ otError netdataregister();
 otError netdatashow(uint8_t*, uint8_t&);
 
 #if OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
-otError networkdiagnostic_get(const otIp6Address*, uint8_t*, uint8_t);
+otError networkdiagnostic_get(const otIp6Address*, const uint8_t*, uint8_t, otReceiveDiagnosticGetCallback, void*);
 otError networkdiagnostic_reset(const otIp6Address*, uint8_t*, uint8_t);
 #endif
 #if OPENTHREAD_FTD

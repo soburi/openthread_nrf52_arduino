@@ -29,6 +29,7 @@
 #include <openthread/coap.h>
 #include <openthread/coap_secure.h>
 #include <openthread/commissioner.h>
+#include <openthread/crypto.h>
 #include <openthread/dns.h>
 #include <openthread/heap.h>
 #include <openthread/icmp6.h>
@@ -159,9 +160,9 @@ namespace OTAPI {
     const uint8_t* MessageGetToken(const otMessage* aMessage);
     otCoapCode MessageGetCode(const otMessage* aMessage);
     otCoapType MessageGetType(const otMessage* aMessage);
-    otError AddResource(otCoapResource* aResource);
-    otError MessageAppendBlock1Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
-    otError MessageAppendBlock2Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSize aSize);
+    void AddResource(otCoapResource* aResource);
+    otError MessageAppendBlock1Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSzx aSize);
+    otError MessageAppendBlock2Option(otMessage* aMessage, uint32_t aNum, bool aMore, otCoapBlockSzx aSize);
     otError MessageAppendContentFormatOption(otMessage* aMessage, otCoapOptionContentFormat aContentFormat);
     otError MessageAppendMaxAgeOption(otMessage* aMessage, uint32_t aMaxAge);
     otError MessageAppendObserveOption(otMessage* aMessage, uint32_t aObserve);
@@ -183,7 +184,7 @@ namespace OTAPI {
     otMessage* NewMessage(const otMessageSettings* aSettings);
     static otError SendRequest(otMessage* aMessage, const otMessageInfo* aMessageInfo, otCoapResponseHandler aHandler, void* aContext);
     static otError SendResponse(otMessage* aMessage, const otMessageInfo* aMessageInfo);
-    uint16_t BlockSizeFromExponent(otCoapBlockSize aSize);
+    uint16_t BlockSizeFromExponent(otCoapBlockSzx aSize);
     uint16_t MessageGetMessageId(const otMessage* aMessage);
     uint8_t MessageGetTokenLength(const otMessage* aMessage);
     void MessageGenerateToken(otMessage* aMessage, uint8_t aTokenLength);
@@ -199,7 +200,7 @@ namespace OTAPI {
   public:
     bool IsConnected();
     bool IsConnectionActive();
-    otError AddResource(otCoapResource* aResource);
+    void AddResource(otCoapResource* aResource);
     otError Connect(const otSockAddr* aSockAddr, otHandleCoapSecureClientConnect aHandler, void* aContext);
     otError GetPeerCertificateBase64(unsigned char* aPeerCert, size_t* aCertLength, size_t aCertBufferSize);
     otError SendRequest(otMessage* aMessage, otCoapResponseHandler aHandler, void* aContext);
@@ -243,7 +244,7 @@ namespace OTAPI {
   public:
     otError EcdsaSign(uint8_t* aOutput, uint16_t* aOutputLength, const uint8_t* aInputHash, uint16_t aInputHashLength, const uint8_t* aPrivateKey, uint16_t aPrivateKeyLength);
     void AesCcm(const uint8_t* aKey, uint16_t aKeyLength, uint8_t aTagLength, const void* aNonce, uint8_t aNonceLength, const void* aHeader, uint32_t aHeaderLength, void* aPlainText, void* aCipherText, uint32_t aLength, bool aEncrypt, void* aTag);
-    void HmacSha256(const uint8_t* aKey, uint16_t aKeyLength, const uint8_t* aBuf, uint16_t aBufLength, uint8_t* aHash);
+    void HmacSha256(const uint8_t* aKey, uint16_t aKeyLength, const uint8_t* aBuf, uint16_t aBufLength, otCryptoSha256Hash* aHash);
   };
 
   class Dataset {
@@ -278,7 +279,7 @@ namespace OTAPI {
   class DnsClient {
   friend class OpenThreadClass;
   public:
-    otError Query(const otDnsQuery* aQuery, otDnsResponseHandler aHandler, void* aContext);
+//    otError Query(const otDnsQuery* aQuery, otDnsResponseHandler aHandler, void* aContext);
   };
 #endif
 
@@ -292,7 +293,6 @@ namespace OTAPI {
   friend class OpenThreadClass;
   public:
     void Free(void* aPointer);
-    void SetCAllocFree(otHeapCAllocFn aCAlloc, otHeapFreeFn aFree);
     void* CAlloc(size_t aCount, size_t aSize);
   };
 
@@ -375,7 +375,7 @@ namespace OTAPI {
   public:
     otError Start(const char* aPskd, const char* aProvisioningUrl, const char* aVendorName, const char* aVendorModel, const char* aVendorSwVersion, const char* aVendorData, otJoinerCallback aCallback, void* aContext);
     otJoinerState GetState();
-    void GetId(otExtAddress* aJoinerId);
+    const otExtAddress* GetId();
     void Stop();
   };
 #endif
@@ -399,9 +399,9 @@ namespace OTAPI {
     otError FilterAddRssIn(const otExtAddress* aExtAddress, int8_t aRss);
     otError FilterGetNextAddress(otMacFilterIterator* aIterator, otMacFilterEntry* aEntry);
     otError FilterGetNextRssIn(otMacFilterIterator* aIterator, otMacFilterEntry* aEntry);
-    otError FilterRemoveAddress(const otExtAddress* aExtAddress);
-    otError FilterRemoveRssIn(const otExtAddress* aExtAddress);
-    otError FilterSetAddressMode(otMacFilterAddressMode aMode);
+    void FilterRemoveAddress(const otExtAddress* aExtAddress);
+    void FilterRemoveRssIn(const otExtAddress* aExtAddress);
+    void FilterSetAddressMode(otMacFilterAddressMode aMode);
     otError OutOfBandTransmitRequest(otRadioFrame* aOobFrame);
     otError SendDataRequest();
     otError SetChannel(uint8_t aChannel);
@@ -422,7 +422,7 @@ namespace OTAPI {
     uint8_t GetMaxFrameRetriesDirect();
     uint8_t GetMaxFrameRetriesIndirect();
     void FilterClearAddresses();
-    void FilterClearRssIn();
+    void FilterClearAllRssIn();
     void GetFactoryAssignedIeeeEui64(otExtAddress* aEui64);
     void ResetCounters();
     void ResetTxRetrySuccessHistogram();
@@ -439,7 +439,7 @@ namespace OTAPI {
     bool IsEnabled();
     int8_t GetRssi();
     otError EnergyScan(uint8_t aScanChannel, uint16_t aScanDuration, otLinkRawEnergyScanDone aCallback);
-    otError Receive(otLinkRawReceiveDone aCallback);
+    otError Receive();
     otError SetEnable(bool aEnabled);
     otError SetPromiscuous(bool aEnable);
     otError SetShortAddress(uint16_t aShortAddress);
@@ -471,11 +471,11 @@ namespace OTAPI {
     int Write(otMessage* aMessage, uint16_t aOffset, const void* aBuf, uint16_t aLength);
     int8_t GetRss(const otMessage* aMessage);
     otError Append(otMessage* aMessage, const void* aBuf, uint16_t aLength);
-    otError QueueDequeue(otMessageQueue* aQueue, otMessage* aMessage);
-    otError QueueEnqueue(otMessageQueue* aQueue, otMessage* aMessage);
-    otError QueueEnqueueAtHead(otMessageQueue* aQueue, otMessage* aMessage);
+    void QueueDequeue(otMessageQueue* aQueue, otMessage* aMessage);
+    void QueueEnqueue(otMessageQueue* aQueue, otMessage* aMessage);
+    void QueueEnqueueAtHead(otMessageQueue* aQueue, otMessage* aMessage);
     otError SetLength(otMessage* aMessage, uint16_t aLength);
-    otError SetOffset(otMessage* aMessage, uint16_t aOffset);
+    void SetOffset(otMessage* aMessage, uint16_t aOffset);
     otMessage* QueueGetHead(otMessageQueue* aQueue);
     otMessage* QueueGetNext(otMessageQueue* aQueue, const otMessage* aMessage);
     uint16_t GetLength(const otMessage* aMessage);
@@ -596,9 +596,8 @@ namespace OTAPI {
   public:
     const char* ErrorToString(otError aError);
     otError GetNextDiagnosticTlv(const otMessage* aMessage, otNetworkDiagIterator* aIterator, otNetworkDiagTlv* aNetworkDiagTlv);
-    otError SendDiagnosticGet(const otIp6Address* aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
+    otError SendDiagnosticGet(const otIp6Address* aDestination, const uint8_t aTlvTypes[], uint8_t aCount, otReceiveDiagnosticGetCallback aCallback, void* aCallbackContext);
     otError SendDiagnosticReset(const otIp6Address* aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
-    void SetReceiveDiagnosticGetCallback(otReceiveDiagnosticGetCallback aCallback, void* aCallbackContext);
     bool IsDiscoverInProgress();
     bool IsSingleton();
     const char* GetNetworkName();
@@ -662,7 +661,7 @@ namespace OTAPI {
     uint16_t GetJoinerUdpPort();
     uint16_t GetMaxAllowedChildren();
     uint32_t GetContextIdReuseDelay();
-    uint32_t GetLocalLeaderPartitionId();
+    uint32_t GetPreferredLeaderPartitionId();
     uint8_t GetLocalLeaderWeight();
     uint8_t GetMaxChildIpAddresses();
     uint8_t GetMaxRouterId();
@@ -673,7 +672,7 @@ namespace OTAPI {
     uint8_t GetRouterUpgradeThreshold();
     void RegisterNeighborTableCallback(otNeighborTableCallback aCallback);
     void SetContextIdReuseDelay(uint32_t aDelay);
-    void SetLocalLeaderPartitionId(uint32_t aPartitionId);
+    void SetPreferredLeaderPartitionId(uint32_t aPartitionId);
     void SetLocalLeaderWeight(uint8_t aWeight);
     void SetNetworkIdTimeout(uint8_t aTimeout);
     void SetRouterDowngradeThreshold(uint8_t aThreshold);

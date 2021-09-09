@@ -19,6 +19,7 @@
 #include <Arduino.h>
 #include <Stream.h>
 #include <RingBuffer.h>
+#include <stdarg.h>
 
 #define OPENTHREAD_CONFIG_CLI_UART_RX_BUFFER_SIZE 1024
 
@@ -39,7 +40,8 @@ public:
   void process();
 
 private:
-  static int consoleCallback(const char *aBuf, uint16_t aBufLength, void *aContext);
+  static ssize_t cookie_write(void *cookie, const char *data, size_t len);
+  static int outputCallback(void *aContext, const char* aFormat, va_list aArguments);
 };
 
 extern OpenThreadCliClass OpenThreadCli;

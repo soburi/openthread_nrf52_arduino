@@ -30,7 +30,7 @@
 #define OT_FREERTOS_UART_LOCK_H_
 
 #include <openthread/openthread-freertos.h>
-#include "openthread/platform/uart.h"
+#include "openthread/platform/utils/uart.h"
 
 #ifdef __cplusplus
 extern "C" {

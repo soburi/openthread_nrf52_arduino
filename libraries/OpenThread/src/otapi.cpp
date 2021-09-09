@@ -163,9 +163,9 @@ const otCoapOption* OTAPI::Coap::OptionIteratorGetNextOptionMatching(otCoapOptio
 const uint8_t* OTAPI::Coap::MessageGetToken(const otMessage* a) { return otCoapMessageGetToken(a); }
 otCoapCode OTAPI::Coap::MessageGetCode(const otMessage* a) { return otCoapMessageGetCode(a); }
 otCoapType OTAPI::Coap::MessageGetType(const otMessage* a) { return otCoapMessageGetType(a); }
-OT_DECL__FUNC(1, Coap, otError, AddResource, otCoapResource*)
-otError OTAPI::Coap::MessageAppendBlock1Option(otMessage* a, uint32_t b, bool c, otCoapBlockSize d) { return otCoapMessageAppendBlock1Option(a,b,c,d); }
-otError OTAPI::Coap::MessageAppendBlock2Option(otMessage* a, uint32_t b, bool c, otCoapBlockSize d) { return otCoapMessageAppendBlock2Option(a,b,c,d); }
+OT_DECL_VFUNC(1, Coap, void, AddResource, otCoapResource*)
+otError OTAPI::Coap::MessageAppendBlock1Option(otMessage* a, uint32_t b, bool c, otCoapBlockSzx d) { return otCoapMessageAppendBlock1Option(a,b,c,d); }
+otError OTAPI::Coap::MessageAppendBlock2Option(otMessage* a, uint32_t b, bool c, otCoapBlockSzx d) { return otCoapMessageAppendBlock2Option(a,b,c,d); }
 otError OTAPI::Coap::MessageAppendContentFormatOption(otMessage* a, otCoapOptionContentFormat b) { return otCoapMessageAppendContentFormatOption(a,b); }
 otError OTAPI::Coap::MessageAppendMaxAgeOption(otMessage* a, uint32_t b) { return otCoapMessageAppendMaxAgeOption(a,b); }
 otError OTAPI::Coap::MessageAppendObserveOption(otMessage* a, uint32_t b) { return otCoapMessageAppendObserveOption(a,b); }
@@ -187,7 +187,7 @@ OT_DECL__FUNC(0, Coap, otError, Stop)
 OT_DECL__FUNC(1, Coap, otMessage*, NewMessage, const otMessageSettings*)
 OT_DECL__FUNC(4, Coap, otError, SendRequest, otMessage*, const otMessageInfo*, otCoapResponseHandler, void*)
 OT_DECL__FUNC(2, Coap, otError, SendResponse, otMessage*, const otMessageInfo*)
-uint16_t OTAPI::Coap::BlockSizeFromExponent(otCoapBlockSize a) { return otCoapBlockSizeFromExponent(a); }
+uint16_t OTAPI::Coap::BlockSizeFromExponent(otCoapBlockSzx a) { return otCoapBlockSizeFromExponent(a); }
 uint16_t OTAPI::Coap::MessageGetMessageId(const otMessage* a) { return otCoapMessageGetMessageId(a); }
 uint8_t OTAPI::Coap::MessageGetTokenLength(const otMessage* a) { return otCoapMessageGetTokenLength(a); }
 void OTAPI::Coap::MessageGenerateToken(otMessage* a, uint8_t b) { return otCoapMessageGenerateToken(a,b); }
@@ -198,7 +198,7 @@ OT_DECL_VFUNC(2, Coap, void, SetDefaultHandler, otCoapRequestHandler, void*)
 #if OPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE
 OT_DECL__FUNC(0, CoapSecure, bool, IsConnected)
 OT_DECL__FUNC(0, CoapSecure, bool, IsConnectionActive)
-OT_DECL__FUNC(1, CoapSecure, otError, AddResource, otCoapResource*)
+OT_DECL_VFUNC(1, CoapSecure, void, AddResource, otCoapResource*)
 OT_DECL__FUNC(3, CoapSecure, otError, Connect, const otSockAddr*, otHandleCoapSecureClientConnect, void*)
 OT_DECL__FUNC(3, CoapSecure, otError, GetPeerCertificateBase64, unsigned char*, size_t*, size_t)
 OT_DECL__FUNC(3, CoapSecure, otError, SendRequest, otMessage*, otCoapResponseHandler, void*)
@@ -232,7 +232,7 @@ OT_DECL__FUNC(0, Commissioner, uint16_t, GetSessionId)
 #endif
 otError OTAPI::Crypto::EcdsaSign(uint8_t* a, uint16_t* b, const uint8_t* c, uint16_t d, const uint8_t* e, uint16_t f) { return otCryptoEcdsaSign(a,b,c,d,e,f); }
 void OTAPI::Crypto::AesCcm(const uint8_t* a, uint16_t b, uint8_t c, const void* d, uint8_t e, const void* f, uint32_t g, void* h, void* i, uint32_t j, bool k, void* l) { otCryptoAesCcm(a,b,c,d,e,f,g,h,i,j,k,l); }
-void OTAPI::Crypto::HmacSha256(const uint8_t* a, uint16_t b, const uint8_t* c, uint16_t d, uint8_t* e) { return otCryptoHmacSha256(a,b,c,d,e); }
+void OTAPI::Crypto::HmacSha256(const uint8_t* a, uint16_t b, const uint8_t* c, uint16_t d, otCryptoSha256Hash* e) { return otCryptoHmacSha256(a,b,c,d,e); }
 OT_DECL__FUNC(0, Dataset, bool, IsCommissioned)
 otError OTAPI::Dataset::GeneratePskc(const char* a, const otNetworkName* b, const otExtendedPanId* c, otPskc* d) { return otDatasetGeneratePskc(a,b,c,d); }
 OT_DECL__FUNC(1, Dataset, otError, GetActive, otOperationalDataset*)
@@ -252,12 +252,11 @@ OT_DECL__FUNC(4, Diag, otError, ProcessCmd, uint8_t, char**, char*, size_t)
 OT_DECL_VFUNC(3, Diag, void, ProcessCmdLine, const char*, char*, size_t)
 #endif
 #if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
-OT_DECL__FUNC(3, DnsClient, otError, Query, const otDnsQuery*, otDnsResponseHandler, void*)
+//OT_DECL__FUNC(3, DnsClient, otError, Query, const otDnsQuery*, otDnsResponseHandler, void*)
 #endif
 mbedtls_entropy_context* OTAPI::Entropy::MbedTlsContextGet() { return otEntropyMbedTlsContextGet(); }
 const char* OTAPI::Thread::ErrorToString(otError a) { return otThreadErrorToString(a); }
 void OTAPI::Heap::Free(void* a) { return otHeapFree(a); }
-void OTAPI::Heap::SetCAllocFree(otHeapCAllocFn a, otHeapFreeFn b) { return otHeapSetCAllocFree(a,b); }
 void* OTAPI::Heap::CAlloc(size_t a, size_t b) { return otHeapCAlloc(a,b); }
 OT_DECL__FUNC(1, Icmp6, otError, RegisterHandler, otIcmp6Handler*)
 OT_DECL__FUNC(3, Icmp6, otError, SendEchoRequest, otMessage*, const otMessageInfo*, uint16_t)
@@ -315,7 +314,7 @@ OT_DECL__FUNC(0, JamDetection, uint8_t, GetWindow)
 #if OPENTHREAD_CONFIG_JOINER_ENABLE
 OT_DECL__FUNC(8, Joiner, otError, Start, const char*, const char*, const char*, const char*, const char*, const char*, otJoinerCallback, void*)
 OT_DECL__FUNC(0, Joiner, otJoinerState, GetState)
-OT_DECL_VFUNC(1, Joiner, void, GetId, otExtAddress*)
+OT_DECL__FUNC(0, Joiner, const otExtAddress*, GetId)
 OT_DECL_VFUNC(0, Joiner, void, Stop)
 #endif
 OT_DECL__FUNC(0, Link, bool, IsActiveScanInProgress)
@@ -334,13 +333,13 @@ OT_DECL__FUNC(1, Link, otError, FilterAddAddress, const otExtAddress*)
 OT_DECL__FUNC(2, Link, otError, FilterAddRssIn, const otExtAddress*, int8_t)
 OT_DECL__FUNC(2, Link, otError, FilterGetNextAddress, otMacFilterIterator*, otMacFilterEntry*)
 OT_DECL__FUNC(2, Link, otError, FilterGetNextRssIn, otMacFilterIterator*, otMacFilterEntry*)
-OT_DECL__FUNC(1, Link, otError, FilterRemoveAddress, const otExtAddress*)
-OT_DECL__FUNC(1, Link, otError, FilterRemoveRssIn, const otExtAddress*)
-OT_DECL__FUNC(1, Link, otError, FilterSetAddressMode, otMacFilterAddressMode)
+OT_DECL_VFUNC(1, Link, void, FilterRemoveAddress, const otExtAddress*)
+OT_DECL_VFUNC(1, Link, void, FilterRemoveRssIn, const otExtAddress*)
+OT_DECL_VFUNC(1, Link, void, FilterSetAddressMode, otMacFilterAddressMode)
 OT_DECL__FUNC(1, Link, otError, OutOfBandTransmitRequest, otRadioFrame*)
 OT_DECL__FUNC(0, Link, otError, SendDataRequest)
 OT_DECL__FUNC(1, Link, otError, SetChannel, uint8_t)
-OT_DECL__FUNC(1, Link, otError, SetEnabled, bool)
+//OT_DECL__FUNC(1, Link, otError, SetEnabled, bool)
 OT_DECL__FUNC(1, Link, otError, SetExtendedAddress, const otExtAddress*)
 OT_DECL__FUNC(1, Link, otError, SetPanId, otPanId)
 OT_DECL__FUNC(1, Link, otError, SetPollPeriod, uint32_t)
@@ -357,7 +356,7 @@ OT_DECL__FUNC(0, Link, uint8_t, GetChannel)
 OT_DECL__FUNC(0, Link, uint8_t, GetMaxFrameRetriesDirect)
 OT_DECL__FUNC(0, Link, uint8_t, GetMaxFrameRetriesIndirect)
 OT_DECL_VFUNC(0, Link, void, FilterClearAddresses)
-OT_DECL_VFUNC(0, Link, void, FilterClearRssIn)
+OT_DECL_VFUNC(0, Link, void, FilterClearAllRssIn)
 OT_DECL_VFUNC(1, Link, void, GetFactoryAssignedIeeeEui64, otExtAddress*)
 OT_DECL_VFUNC(0, Link, void, ResetCounters)
 OT_DECL_VFUNC(0, Link, void, ResetTxRetrySuccessHistogram)
@@ -369,8 +368,8 @@ OT_DECL__FUNC(0, LinkRaw, bool, GetPromiscuous)
 OT_DECL__FUNC(0, LinkRaw, bool, IsEnabled)
 OT_DECL__FUNC(0, LinkRaw, int8_t, GetRssi)
 OT_DECL__FUNC(3, LinkRaw, otError, EnergyScan, uint8_t, uint16_t, otLinkRawEnergyScanDone)
-OT_DECL__FUNC(1, LinkRaw, otError, Receive, otLinkRawReceiveDone)
-OT_DECL__FUNC(1, LinkRaw, otError, SetEnable, bool)
+OT_DECL__FUNC(0, LinkRaw, otError, Receive)
+//OT_DECL__FUNC(1, LinkRaw, otError, SetEnable, bool)
 OT_DECL__FUNC(1, LinkRaw, otError, SetPromiscuous, bool)
 OT_DECL__FUNC(1, LinkRaw, otError, SetShortAddress, uint16_t)
 OT_DECL__FUNC(0, LinkRaw, otError, Sleep)
@@ -386,16 +385,16 @@ OT_DECL__FUNC(0, LinkRaw, otRadioCaps, GetCaps)
 OT_DECL__FUNC(0, LinkRaw, otRadioFrame*, GetTransmitBuffer)
 #endif
 otLogLevel OTAPI::Logging::GetLevel() { return otLoggingGetLevel(); }
-void OTAPI::Logging::SetLevel(otLogLevel a) { return otLoggingSetLevel(a); }
+void OTAPI::Logging::SetLevel(otLogLevel a) { otLoggingSetLevel(a); }
 bool OTAPI::Message::IsLinkSecurityEnabled(const otMessage* a) { return otMessageIsLinkSecurityEnabled(a); }
 int OTAPI::Message::Write(otMessage* a, uint16_t b, const void* c, uint16_t d) { return otMessageWrite(a,b,c,d); }
 int8_t OTAPI::Message::GetRss(const otMessage* a) { return otMessageGetRss(a); }
 otError OTAPI::Message::Append(otMessage* a, const void* b, uint16_t c) { return otMessageAppend(a,b,c); }
-otError OTAPI::Message::QueueDequeue(otMessageQueue* a, otMessage* b) { return otMessageQueueDequeue(a,b); }
-otError OTAPI::Message::QueueEnqueue(otMessageQueue* a, otMessage* b) { return otMessageQueueEnqueue(a,b); }
-otError OTAPI::Message::QueueEnqueueAtHead(otMessageQueue* a, otMessage* b) { return otMessageQueueEnqueueAtHead(a,b); }
+void OTAPI::Message::QueueDequeue(otMessageQueue* a, otMessage* b) { otMessageQueueDequeue(a,b); }
+void OTAPI::Message::QueueEnqueue(otMessageQueue* a, otMessage* b) { otMessageQueueEnqueue(a,b); }
+void OTAPI::Message::QueueEnqueueAtHead(otMessageQueue* a, otMessage* b) { otMessageQueueEnqueueAtHead(a,b); }
 otError OTAPI::Message::SetLength(otMessage* a, uint16_t b) { return otMessageSetLength(a,b); }
-otError OTAPI::Message::SetOffset(otMessage* a, uint16_t b) { return otMessageSetOffset(a,b); }
+void OTAPI::Message::SetOffset(otMessage* a, uint16_t b) { otMessageSetOffset(a,b); }
 otMessage* OTAPI::Message::QueueGetHead(otMessageQueue* a) { return otMessageQueueGetHead(a); }
 otMessage* OTAPI::Message::QueueGetNext(otMessageQueue* a, const otMessage* b) { return otMessageQueueGetNext(a,b); }
 uint16_t OTAPI::Message::GetLength(const otMessage* a) { return otMessageGetLength(a); }
@@ -412,9 +411,8 @@ OT_DECL__FUNC(2, NetData, otError, GetNextService, otNetworkDataIterator*, otSer
 OT_DECL__FUNC(0, NetData, uint8_t, GetStableVersion)
 OT_DECL__FUNC(0, NetData, uint8_t, GetVersion)
 otError OTAPI::Thread::GetNextDiagnosticTlv(const otMessage* a, otNetworkDiagIterator* b, otNetworkDiagTlv* c) { return otThreadGetNextDiagnosticTlv(a,b,c); }
-OT_DECL__FUNC(3, Thread, otError, SendDiagnosticGet, const otIp6Address*, const uint8_t*, uint8_t)
+OT_DECL__FUNC(5, Thread, otError, SendDiagnosticGet, const otIp6Address*, const uint8_t*, uint8_t, otReceiveDiagnosticGetCallback, void*)
 OT_DECL__FUNC(3, Thread, otError, SendDiagnosticReset, const otIp6Address*, const uint8_t*, uint8_t)
-OT_DECL_VFUNC(2, Thread, void, SetReceiveDiagnosticGetCallback, otReceiveDiagnosticGetCallback, void*)
 #if OPENTHREAD_CONFIG_TIME_SYNC_ENABLE
 OT_DECL__FUNC(1, NetworkTime, otError, SetSyncPeriod, uint16_t)
 OT_DECL__FUNC(1, NetworkTime, otError, SetXtalThreshold, uint16_t)
@@ -524,7 +522,7 @@ OT_DECL__FUNC(1, Thread, otError, SetRouterEligible, bool)
 OT_DECL__FUNC(0, Thread, uint16_t, GetJoinerUdpPort)
 OT_DECL__FUNC(0, Thread, uint16_t, GetMaxAllowedChildren)
 OT_DECL__FUNC(0, Thread, uint32_t, GetContextIdReuseDelay)
-OT_DECL__FUNC(0, Thread, uint32_t, GetLocalLeaderPartitionId)
+OT_DECL__FUNC(0, Thread, uint32_t, GetPreferredLeaderPartitionId)
 OT_DECL__FUNC(0, Thread, uint8_t, GetLocalLeaderWeight)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxChildIpAddresses)
 OT_DECL__FUNC(0, Thread, uint8_t, GetMaxRouterId)
@@ -535,7 +533,7 @@ OT_DECL__FUNC(0, Thread, uint8_t, GetRouterSelectionJitter)
 OT_DECL__FUNC(0, Thread, uint8_t, GetRouterUpgradeThreshold)
 OT_DECL_VFUNC(1, Thread, void, RegisterNeighborTableCallback, otNeighborTableCallback)
 OT_DECL_VFUNC(1, Thread, void, SetContextIdReuseDelay, uint32_t)
-OT_DECL_VFUNC(1, Thread, void, SetLocalLeaderPartitionId, uint32_t)
+OT_DECL_VFUNC(1, Thread, void, SetPreferredLeaderPartitionId, uint32_t)
 OT_DECL_VFUNC(1, Thread, void, SetLocalLeaderWeight, uint8_t)
 OT_DECL_VFUNC(1, Thread, void, SetNetworkIdTimeout, uint8_t)
 OT_DECL_VFUNC(1, Thread, void, SetRouterDowngradeThreshold, uint8_t)
@@ -543,12 +541,12 @@ OT_DECL_VFUNC(1, Thread, void, SetRouterSelectionJitter, uint8_t)
 OT_DECL_VFUNC(1, Thread, void, SetRouterUpgradeThreshold, uint8_t)
 OT_DECL_VFUNC(1, Thread, void, SetSteeringData, const otExtAddress*)
 OT_DECL__FUNC(1, Udp, otError, AddReceiver, otUdpReceiver*)
-otError OTAPI::Udp::Bind(otUdpSocket* a, otSockAddr* b) { OT_API_CALL_RET(otError, otUdpBind(a,b); ); }
-otError OTAPI::Udp::Close(otUdpSocket* a) { OT_API_CALL_RET(otError, otUdpClose(a);); }
-otError OTAPI::Udp::Connect(otUdpSocket* a, otSockAddr* b) { OT_API_CALL_RET(otError, otUdpConnect(a,b);); }
+otError OTAPI::Udp::Bind(otUdpSocket* a, otSockAddr* b) { OT_API_CALL_RET(otError, otUdpBind(otrGetInstance(),a,b); ); }
+otError OTAPI::Udp::Close(otUdpSocket* a) { OT_API_CALL_RET(otError, otUdpClose(otrGetInstance(),a);); }
+otError OTAPI::Udp::Connect(otUdpSocket* a, otSockAddr* b) { OT_API_CALL_RET(otError, otUdpConnect(otrGetInstance(),a,b);); }
 OT_DECL__FUNC(3, Udp, otError, Open, otUdpSocket*, otUdpReceive, void*)
 OT_DECL__FUNC(1, Udp, otError, RemoveReceiver, otUdpReceiver*)
-otError OTAPI::Udp::Send(otUdpSocket* a, otMessage* b, const otMessageInfo* c) { OT_API_CALL_RET(otError, otUdpSend(a,b,c); ); }
+otError OTAPI::Udp::Send(otUdpSocket* a, otMessage* b, const otMessageInfo* c) { OT_API_CALL_RET(otError, otUdpSend(otrGetInstance(),a,b,c); ); }
 OT_DECL__FUNC(2, Udp, otError, SendDatagram, otMessage*, otMessageInfo*)
 OT_DECL__FUNC(1, Udp, otMessage*, NewMessage, const otMessageSettings*)
 OT_DECL__FUNC(0, Udp, otUdpSocket*, GetSockets)

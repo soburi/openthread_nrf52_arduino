@@ -21,31 +21,6 @@
 #include <Print.h>
 
 #include <openthread/config.h>
-#include <openthread/commissioner.h>
-#include <openthread/icmp6.h>
-#include <openthread/joiner.h>
-#include <openthread/link.h>
-#if OPENTHREAD_CONFIG_ENABLE_TIME_SYNC
-#include <openthread/network_time.h>
-
-#include <openthread/dns.h>
-
-#if OPENTHREAD_FTD
-#include <openthread/dataset_ftd.h>
-#include <openthread/thread_ftd.h>
-#endif
-
-#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-#include <openthread/border_router.h>
-#endif
-#if OPENTHREAD_CONFIG_SERVICE_ENABLE
-#include <openthread/server.h>
-#endif
-#endif
-
-#include <openthread/heap.h>
-
-#include <openthread/openthread-freertos.h>
 
 #include "Arduino.h"
 
@@ -53,22 +28,8 @@
 #include <Adafruit_TinyUSB.h> // for Serial
 #endif
 
-static void* otCAlloc(size_t n, size_t size)
-{
-  return memset(pvPortMalloc(n * size), 0, n * size);
-}
-
-static void otFree(void *p_ptr)
-{
-  vPortFree(p_ptr);
-}
-
 void OpenThreadClass::init()
 {
-#if OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE
-  otHeapSetCAllocFree(otCAlloc, otFree);
-#endif /* OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE */
-
   otrInit(0, NULL);
   //otCliUartInit(otrGetInstance());
   otrUserInit();

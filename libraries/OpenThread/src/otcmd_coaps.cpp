@@ -127,12 +127,11 @@ void OTCMD::OTCoapSecure::disconnect()
   otCoapSecureDisconnect(otrGetInstance());
 }
 
-otError OTCMD::OTCoapSecure::resource(const char* url, otCoapRequestHandler handler, void* context)
+void OTCMD::OTCoapSecure::resource(const char* url, otCoapRequestHandler handler, void* context)
 {
   mResource.mUriPath = url;
   mResource.mContext = context;
   mResource.mHandler = handler;
 
-  return otCoapSecureAddResource(otrGetInstance(), &mResource);
+  otCoapSecureAddResource(otrGetInstance(), &mResource);
 }
-

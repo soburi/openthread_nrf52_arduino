@@ -134,8 +134,6 @@ size_t OTChildInfo::printTo(Print& p) const
 	n += p.print(value->mMessageErrorRate);
 	n += p.print(", mRxOnWhenIdle: ");
 	n += p.print(value->mRxOnWhenIdle);
-	n += p.print(", mSecureDataRequest: ");
-	n += p.print(value->mSecureDataRequest);
 	n += p.print(", mFullThreadDevice: ");
 	n += p.print(value->mFullThreadDevice);
 	n += p.print(", mFullNetworkData: ");
@@ -263,8 +261,6 @@ size_t OTNeighborInfo::printTo(Print& p) const
 	n += p.print(value->mMessageErrorRate);
 	n += p.print(", mRxOnWhenIdle: ");
 	n += p.print(value->mRxOnWhenIdle);
-	n += p.print(", mSecureDataRequest: ");
-	n += p.print(value->mSecureDataRequest);
 	n += p.print(", mFullThreadDevice: ");
 	n += p.print(value->mFullThreadDevice);
 	n += p.print(", mFullNetworkData: ");
@@ -369,8 +365,28 @@ size_t OTSecurityPolicy::printTo(Print& p) const
 
 	n += p.print("{ mRotationTime: \"");
 	n += p.print(value->mRotationTime);
-	n += p.print("\", mFlags: ");
-	n += p.print(value->mFlags);
+	n += p.print("\", mObtainMasterKeyEnabled: \"");
+	n += p.print(value->mObtainMasterKeyEnabled);
+	n += p.print("\", mNativeCommissioningEnabled: \"");
+	n += p.print(value->mNativeCommissioningEnabled);
+	n += p.print("\", mRoutersEnabled: \"");
+	n += p.print(value->mRoutersEnabled);
+	n += p.print("\", mExternalCommissioningEnabled: \"");
+	n += p.print(value->mExternalCommissioningEnabled);
+	n += p.print("\", mBeaconsEnabled: \"");
+	n += p.print(value->mBeaconsEnabled);
+	n += p.print("\", mCommercialCommissioningEnabled: \"");
+	n += p.print(value->mCommercialCommissioningEnabled);
+	n += p.print("\", mAutonomousEnrollmentEnabled: \"");
+	n += p.print(value->mAutonomousEnrollmentEnabled);
+	n += p.print("\", mMasterKeyProvisioningEnabled: \"");
+	n += p.print(value->mMasterKeyProvisioningEnabled);
+	n += p.print("\", mTobleLinkEnabled: \"");
+	n += p.print(value->mTobleLinkEnabled);
+	n += p.print("\", mNonCcmRoutersEnabled: \"");
+	n += p.print(value->mNonCcmRoutersEnabled);
+	n += p.print("\", mVersionThresholdForRouting: \"");
+	n += p.print(value->mVersionThresholdForRouting);
 	n += p.print("}");
 
 	return n;
@@ -451,6 +467,8 @@ OTNeighborInfo OTNeighborIterator::next() {
 }
 #endif
 
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
+
 OTExternalRouteConfig OTRouteIterator::next() {
   OT_API_CALL(
     error = otBorderRouterGetNextRoute(otrGetInstance(), &iter, &entry);
@@ -464,6 +482,7 @@ OTBorderRouterConfig OTPrefixIterator::next() {
   );
   return get();
 }
+#endif //OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 
 OTMacFilterEntry OTMacFilterAddrIterator::next() {
   OT_API_CALL(
@@ -478,6 +497,8 @@ OTMacFilterEntry OTMacFilterRssIterator::next() {
   );
   return get();
 }
+
+#if OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
 
 void OTMacFilterIterator::_next() {
   if(!addr_end) {
@@ -499,6 +520,7 @@ OTMacFilterEntry OTMacFilterIterator::next() {
 
   return get();
 }
+#endif //OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
 
 OTIpaddrIterator::OTIpaddrIterator() {
   OT_API_CALL(

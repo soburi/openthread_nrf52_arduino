@@ -112,13 +112,13 @@ otError OTCMD::OTCoap::stop()
   return otCoapStop(otrGetInstance());
 }
 
-otError OTCMD::OTCoap::resource(const char* url)
+void OTCMD::OTCoap::resource(const char* url)
 {
   mResource.mUriPath = url;
   mResource.mContext = this;
   mResource.mHandler = OTCMD::OTCoap::HandleRequest;
 
-  return otCoapAddResource(otrGetInstance(), &mResource);
+  otCoapAddResource(otrGetInstance(), &mResource);
 }
 
 void OTCMD::OTCoap::parameters_request_default()

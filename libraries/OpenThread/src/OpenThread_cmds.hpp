@@ -285,7 +285,7 @@ public:
     );
     CLSDS_PUB_SUB(securitypolicy,
       CLS_DECL(
-        void operator()(uint16_t a0, uint32_t a1) { OTCMD::dataset_securitypolicy(mDataset, a0, a1); };
+        void operator()(const otSecurityPolicy* a0) { OTCMD::dataset_securitypolicy(mDataset, a0); };
         OTSecurityPolicy operator()() { return OTCMD::dataset_securitypolicy(mDataset); };
         CLSDS_PUB(present,
           void operator()(bool a0) { OTCMD::dataset_securitypolicy_present(mDataset, a0); }
@@ -345,8 +345,10 @@ public:
 #if OPENTHREAD_CONFIG_DNS_CLIENT_ENABLE
   CLS_PUB(dns,
     CLS_PUB(resolve,
-      otError operator()(const char* a0, const otIp6Address* a1, uint16_t a2, otDnsResponseHandler a3, void* a4) { return OTCMD::dns_resolve(a0, a1, a2, a3, a4); }
-      otError operator()(const char* a0, otDnsResponseHandler a1, void* a2) { return OTCMD::dns_resolve(a0, a1, a2); }
+      otError operator()(const char* a0, otDnsAddressCallback a1, void* a2, const otDnsQueryConfig* a3=nullptr)
+      {
+        return OTCMD::dns_resolve(a0, a1, a2, a3);
+      }
     );
   );
 #endif
@@ -433,9 +435,12 @@ public:
   CLS_PUB(leaderdata,     otError operator()(otLeaderData* a0) { return OTCMD::leaderdata(a0); });
 
 #if OPENTHREAD_FTD
-  CLS_PUB(leaderpartitionid,
-    uint32_t operator()() const { return OTCMD::leaderpartitionid(); }
-    void operator()(uint32_t a0) { return OTCMD::leaderpartitionid(a0); }
+  CLS_PUB(partitionid,
+    uint32_t operator()() const { return OTCMD::partitionid(); }
+    CLS_PUB(preferred,
+      void operator()(uint32_t a0) { return OTCMD::partitionid_preferred(a0); }
+      uint32_t operator()() const { return OTCMD::partitionid_preferred(); }
+    );
   );
   CLS_PUB(leaderweight,
     uint8_t operator()() const { return OTCMD::leaderweight(); }
@@ -458,12 +463,13 @@ public:
     );
   );
 
+#if OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
   CLS_PUB(macfilter,
     const OTMacFilterIterator operator()() const { return OTCMD::macfilter(); }
     CLS_PUB(addr,
       const OTMacFilterAddrIterator operator()() const { return OTCMD::macfilter_addr(); }
-      CLS_PUB(whitelist, void operator()() const { return OTCMD::macfilter_addr_whitelist(); });
-      CLS_PUB(blacklist, void operator()() const { return OTCMD::macfilter_addr_blacklist(); });
+      CLS_PUB(allowlist, void operator()() const { return OTCMD::macfilter_addr_allowlist(); });
+      CLS_PUB(denylist, void operator()() const { return OTCMD::macfilter_addr_denylist(); });
       CLS_PUB(add,
         void operator()(const otExtAddress* a0, uint8_t a1) const { OTCMD::macfilter_addr_add(a0, a1); }
         void operator()(uint8_t a0) const { OTCMD::macfilter_addr_add(a0); }
@@ -481,10 +487,11 @@ public:
           void operator()(uint8_t a0) const { OTCMD::macfilter_rss_add_lqi(a0); }
         );
       );
-      CLS_PUB(remove, otError operator()(const otExtAddress* a0=nullptr) { return OTCMD::macfilter_rss_remove(a0); });
+      CLS_PUB(remove, void operator()(const otExtAddress* a0=nullptr) { OTCMD::macfilter_rss_remove(a0); });
       CLS_PUB(clear, void operator()() const { OTCMD::macfilter_rss_clear(); });
     );
   );
+#endif
 
   CLS_PUB(masterkey,
     OTMasterKey operator()() const { return OTCMD::masterkey(); }
@@ -509,7 +516,7 @@ public:
 
 #if OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
   CLS_PUB(networkdiagnostic,
-    CLS_PUB(get,       otError operator()(const otIp6Address* a0, uint8_t* a1, uint8_t a2) { return OTCMD::networkdiagnostic_get(a0, a1, a2); });
+    CLS_PUB(get,       otError operator()(const otIp6Address* a0, const uint8_t* a1, uint8_t a2, otReceiveDiagnosticGetCallback a3, void* a4) { return OTCMD::networkdiagnostic_get(a0, a1, a2, a3, a4); });
     CLS_PUB(reset,       otError operator()(const otIp6Address* a0, uint8_t* a1, uint8_t a2) { return OTCMD::networkdiagnostic_reset(a0, a1, a2); });
   );
 #endif

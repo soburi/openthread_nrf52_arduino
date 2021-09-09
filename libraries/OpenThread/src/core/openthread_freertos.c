@@ -96,6 +96,7 @@ void otrTaskNotifyGiveFromISR()
 #endif
 }
 
+__attribute__((weak))
 void otTaskletsSignalPending(otInstance *aInstance)
 {
     (void)aInstance;
@@ -151,6 +152,7 @@ void otrUnlock(void)
     }
 }
 
+__attribute__((weak))
 void otSysEventSignalPending(void)
 {
     if (otrPortIsInsideInterrupt())
