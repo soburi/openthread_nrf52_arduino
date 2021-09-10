@@ -148,21 +148,21 @@ int MatterClass::begin(void)
 
     // Initialize logging component
     //ret = NRF_LOG_INIT(LOG_TIMESTAMP_FUNC, LOG_TIMESTAMP_FREQ);
-//    APP_ERROR_CHECK(ret);
+    //APP_ERROR_CHECK(ret);
 
     // Initialize logging backends
     //NRF_LOG_DEFAULT_BACKENDS_INIT();
 
 #endif
 
-    NRF_LOG_INFO("==================================================");
-    NRF_LOG_INFO("chip-nrf52840-lock-example starting");
+    //NRF_LOG_INFO("==================================================");
+    //NRF_LOG_INFO("chip-nrf52840-lock-example starting");
 #if BUILD_RELEASE
-    NRF_LOG_INFO("*** PSEUDO-RELEASE BUILD ***");
+    //NRF_LOG_INFO("*** PSEUDO-RELEASE BUILD ***");
 #else
-    NRF_LOG_INFO("*** DEVELOPMENT BUILD ***");
+    //NRF_LOG_INFO("*** DEVELOPMENT BUILD ***");
 #endif
-    NRF_LOG_INFO("==================================================");
+    //NRF_LOG_INFO("==================================================");
     //NRF_LOG_FLUSH();
 
 #ifndef NDEBUG
@@ -172,7 +172,7 @@ int MatterClass::begin(void)
 
 #if defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
 
-    NRF_LOG_INFO("Enabling SoftDevice");
+    //NRF_LOG_INFO("Enabling SoftDevice");
 
     ret = nrf_sdh_enable_request();
     if (ret != NRF_SUCCESS)
@@ -181,7 +181,7 @@ int MatterClass::begin(void)
         APP_ERROR_HANDLER(ret);
     }
 
-    NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
+    //NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
 
     while (!nrf_sdh_is_enabled())
     {
