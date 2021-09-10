@@ -112,13 +112,13 @@ void button_isr(uint32_t btnno)
 			mp_buttons->button_handler(btnno, APP_BUTTON_PUSH);
 		}
 		else {
-			btn_state ^= (1<<btnno);
+			btn_state &= ~(1<<btnno);
 			mp_buttons->button_handler(btnno, APP_BUTTON_RELEASE);
 		}
 	}
 	else {
 		if(mp_buttons->active_state == APP_BUTTON_ACTIVE_HIGH) {
-			btn_state ^= (1<<btnno);
+			btn_state &= ~(1<<btnno);
 			mp_buttons->button_handler(btnno, APP_BUTTON_RELEASE);
 		}
 		else {
