@@ -30,7 +30,7 @@
 #include <app/common/gen/cluster-id.h>
 #include <app/util/attribute-storage.h>
 
-//#include "app_button.h"
+#include "app_button.h"
 #include "app_config.h"
 #include "app_timer.h"
 #include "boards.h"
@@ -120,7 +120,7 @@ int AppTask::Init()
 
     sUnusedLED.Init(BSP_LED_2);
     sUnusedLED_1.Init(BSP_LED_3);
-#if 0
+
     // Initialize buttons
     static app_button_cfg_t sButtons[] = {
         { LOCK_BUTTON, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, ButtonEventHandler },
@@ -142,9 +142,9 @@ int AppTask::Init()
         LOG_INF("app_button_enable() failed");
         APP_ERROR_HANDLER(ret);
     }
-#endif
+
     // Initialize Timer for Function Selection
-    ret_code_t ret = app_timer_init();
+    ret = app_timer_init();
     if (ret != NRF_SUCCESS)
     {
         LOG_INF("app_timer_init() failed");
@@ -290,7 +290,7 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
 {
     AppEvent button_event;
     button_event.Type = AppEvent::kEventType_Button;
-#if 0
+
     if (pin_no == LOCK_BUTTON && button_action == APP_BUTTON_PUSH)
     {
         button_event.ButtonEvent.PinNo  = LOCK_BUTTON;
@@ -322,7 +322,6 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
         button_event.Handler            = StartBLEAdvertisementHandler;
         sAppTask.PostEvent(&button_event);
     }
-#endif
 }
 
 void AppTask::TimerEventHandler(void * p_context)
@@ -385,7 +384,6 @@ void AppTask::FunctionHandler(AppEvent * aEvent)
     // All LEDs start blinking after FACTORY_RESET_TRIGGER_TIMEOUT to signal factory reset has been initiated.
     // To cancel factory reset: release the FUNCTION_BUTTON once all LEDs start blinking within the
     // FACTORY_RESET_CANCEL_WINDOW_TIMEOUT
-#if 0
     if (aEvent->ButtonEvent.Action == APP_BUTTON_PUSH)
     {
         if (!sAppTask.mFunctionTimerActive && sAppTask.mFunction == kFunction_NoneSelected)
@@ -420,7 +418,6 @@ void AppTask::FunctionHandler(AppEvent * aEvent)
             LOG_INF("Factory Reset has been Canceled");
         }
     }
-#endif
 }
 
 void AppTask::StartThreadHandler(AppEvent * aEvent)
