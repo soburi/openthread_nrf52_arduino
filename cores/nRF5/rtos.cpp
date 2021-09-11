@@ -75,7 +75,7 @@ extern "C"
 void yield(void)
 {
 #ifdef USE_TINYUSB
-  TinyUSB_Device_FlushCDC();
+//  TinyUSB_Device_FlushCDC();
 #endif
 
   taskYIELD();
