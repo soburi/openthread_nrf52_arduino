@@ -20,12 +20,9 @@ NOTICE: This file has been modified by Nordic Semiconductor ASA.
 
 */
 
-#ifdef NRF52840_XXAA
-
     .syntax unified
     .arch armv7e-m
-/* Adafruit define stack & heap inside linker script */
-/*
+
 #ifdef __STARTUP_CONFIG
 #include "startup_config.h"
 #ifndef __STARTUP_CONFIG_STACK_ALIGNEMENT
@@ -70,7 +67,7 @@ __HeapBase:
     .size __HeapBase, . - __HeapBase
 __HeapLimit:
     .size __HeapLimit, . - __HeapLimit
-*/
+
     .section .isr_vector
     .align 2
     .globl __isr_vector
@@ -244,16 +241,6 @@ Reset_Handler:
 
 .L_loop1_done:
 
-/* Adafruit fill stack region with pattern 0xADADADAD */
-    ldr     r0, =__StackLimit
-    ldr     r1, =__StackSize
-    ldr     r2, =0xADADADAD
-.L_fill:
-    str     r2, [r0]
-    adds    r0, 4
-    subs    r1, 4
-    bne     .L_fill
-
 /* This part of work usually is done in C library startup code. Otherwise,
  * define __STARTUP_CLEAR_BSS to enable it in this startup. This section
  * clears the RAM where BSS data is located.
@@ -421,5 +408,3 @@ Default_Handler:
     IRQ  SPIM3_IRQHandler
 
   .end
-
-#endif
