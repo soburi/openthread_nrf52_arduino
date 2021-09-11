@@ -28,7 +28,7 @@
 
 #ifndef PORTMACRO_CMSIS_H
 #define PORTMACRO_CMSIS_H
-//#include "app_util.h"
+#include "app_util.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,14 +97,7 @@ typedef unsigned long UBaseType_t;
     __ISB();                                                                    \
 }while (0)
 
-#define portEND_SWITCHING_ISR( xSwitchRequired ) do { \
-    if( xSwitchRequired != pdFALSE ) {                \
-        traceISR_EXIT_TO_SCHEDULER();                 \
-        portYIELD();                                  \
-    } else {                                          \
-        traceISR_EXIT();                              \
-    }                                                 \
-} while (0)
+#define portEND_SWITCHING_ISR( xSwitchRequired ) if ( (xSwitchRequired) != pdFALSE ) portYIELD()
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/
 

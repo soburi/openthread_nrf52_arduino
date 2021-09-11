@@ -29,32 +29,90 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-//#include "app_util.h"
-//#include "nrf_log.h"
-#include "nrf_nvic.h"
-
-#define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
+#include "app_util.h"
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_soc.h"
-#include "nrf_sdm.h"
+#include "nrf_sdh.h"
+#include "app_error.h"
+#include "app_util_platform.h"
 #endif
 
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the ARM CM4F port.
  * CMSIS compatible layer to menage SysTick ticking source.
  *----------------------------------------------------------*/
-#if configUSE_16_BIT_TICKS == 1
-#error This port does not support 16 bit ticks.
+
+#if configTICK_SOURCE == FREERTOS_USE_SYSTICK
+
+
+#ifndef configSYSTICK_CLOCK_HZ
+    #define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
+    /* Ensure the SysTick is clocked at the same frequency as the core. */
+    #define portNVIC_SYSTICK_CLK_BIT    ( SysTick_CTRL_CLKSOURCE_Msk )
+#else
+    /* The way the SysTick is clocked is not modified in case it is not the same
+    as the core. */
+    #define portNVIC_SYSTICK_CLK_BIT    ( 0 )
 #endif
 
-#include "nrf_rtc.h"
+
+#if configUSE_TICKLESS_IDLE == 1
+    #error SysTick port for RF52 does not support tickless idle. Use RTC mode instead.
+#endif /* configUSE_TICKLESS_IDLE */
 
 /*-----------------------------------------------------------*/
 
 void xPortSysTickHandler( void )
 {
-    traceISR_ENTER();
+    /* The SysTick runs at the lowest interrupt priority, so when this interrupt
+    executes all interrupts must be unmasked.  There is therefore no need to
+    save and then restore the interrupt mask value as its value is already
+    known. */
+    ( void ) portSET_INTERRUPT_MASK_FROM_ISR();
+    {
+        /* Increment the RTOS tick. */
+        if ( xTaskIncrementTick() != pdFALSE )
+        {
+            /* A context switch is required.  Context switching is performed in
+            the PendSV interrupt.  Pend the PendSV interrupt. */
+            SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+            __SEV();
+        }
+    }
+    portCLEAR_INTERRUPT_MASK_FROM_ISR( 0 );
+}
+
+/*-----------------------------------------------------------*/
+
+/*
+ * Setup the systick timer to generate the tick interrupts at the required
+ * frequency.
+ */
+void vPortSetupTimerInterrupt( void )
+{
+    /* Set interrupt priority */
+    NVIC_SetPriority(SysTick_IRQn, configKERNEL_INTERRUPT_PRIORITY);
+    /* Configure SysTick to interrupt at the requested rate. */
+    SysTick->LOAD = ROUNDED_DIV(configSYSTICK_CLOCK_HZ, configTICK_RATE_HZ) - 1UL;
+    SysTick->CTRL = ( portNVIC_SYSTICK_CLK_BIT | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk );
+}
+
+/*-----------------------------------------------------------*/
+
+#elif configTICK_SOURCE == FREERTOS_USE_RTC
+
+#if configUSE_16_BIT_TICKS == 1
+#error This port does not support 16 bit ticks.
+#endif
+
+#include "nrf_rtc.h"
+#include "nrf_drv_clock.h"
+
+/*-----------------------------------------------------------*/
+
+void xPortSysTickHandler( void )
+{
 #if configUSE_TICKLESS_IDLE == 1
     nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
 #endif
@@ -90,15 +148,10 @@ void xPortSysTickHandler( void )
     /* Increment the RTOS tick as usual which checks if there is a need for rescheduling */
     if ( switch_req != pdFALSE )
     {
-        traceISR_EXIT_TO_SCHEDULER();
         /* A context switch is required.  Context switching is performed in
         the PendSV interrupt.  Pend the PendSV interrupt. */
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
         __SEV();
-    }
-    else
-    {
-        traceISR_EXIT();
     }
 
     portCLEAR_INTERRUPT_MASK_FROM_ISR( isrstate );
@@ -111,7 +164,7 @@ void xPortSysTickHandler( void )
 void vPortSetupTimerInterrupt( void )
 {
     /* Request LF clock */
-    // nrf_drv_clock_lfclk_request(NULL);
+    nrf_drv_clock_lfclk_request(NULL);
 
     /* Configure SysTick to interrupt at the requested rate. */
     nrf_rtc_prescaler_set(portNRF_RTC_REG, portNRF_RTC_PRESCALER);
@@ -150,7 +203,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     do{
         uint8_t dummy = 0;
         uint32_t err_code = sd_nvic_critical_region_enter(&dummy);
-        (void) err_code; //APP_ERROR_CHECK(err_code);
+        APP_ERROR_CHECK(err_code);
     }while (0);
 #else
     __disable_irq();
@@ -182,25 +235,11 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
         configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
         if ( xModifiableIdleTime > 0 )
         {
-#if (__FPU_USED == 1)
-            // nRF52832 errata 87: prevent FPU from keeping CPU on
-            // https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_87.html?cp=4_2_1_0_1_24
-            __set_FPSCR(__get_FPSCR() & ~(0x0000009F));
-            (void) __get_FPSCR();
-            NVIC_ClearPendingIRQ(FPU_IRQn);
-#endif
-
-#ifdef NRF_CRYPTOCELL
-            // manually clear CryptoCell else it could prevent low power mode
-            NVIC_ClearPendingIRQ(CRYPTOCELL_IRQn);
-#endif
-
-#ifdef SOFTDEVICE_PRESENT // TODO
-            uint8_t sd_en = 0;
-            (void) sd_softdevice_is_enabled(&sd_en);
-            if (sd_en) // (softdevice_handler_is_enabled())
+#ifdef SOFTDEVICE_PRESENT
+            if (nrf_sdh_is_enabled())
             {
-                (void) sd_app_evt_wait();
+                uint32_t err_code = sd_app_evt_wait();
+                APP_ERROR_CHECK(err_code);
             }
             else
 #endif
@@ -237,43 +276,22 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
                 diff = xExpectedIdleTime;
             }
 
-            // nRF-provided fix for delay() wakeup 1ms spin-loop power waste
-            // See https://devzone.nordicsemi.com/f/nordic-q-a/63828/vtaskdelay-on-nrf52-freertos-port-wastes-cpu-power
-            BaseType_t switch_req = pdFALSE;
-
-            if (diff > 1)
+            if (diff > 0)
             {
-                vTaskStepTick(diff - 1);
-               
-                // If dwt cycle count is enable, adjust it as welll
-                if ( (CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) && (DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) )
-                {
-                  DWT->CYCCNT += (((diff-1) * 1000000) / configTICK_RATE_HZ) * 64;
-                }
-              
-                switch_req = xTaskIncrementTick();
-            }
-            else if (diff == 1)
-            {
-                switch_req = xTaskIncrementTick();
-            }
-
-            /* Increment the RTOS tick as usual which checks if there is a need for rescheduling */
-            if ( switch_req != pdFALSE )
-            {
-                /* A context switch is required.  Context switching is performed in
-                   the PendSV interrupt.  Pend the PendSV interrupt. */
-                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-                __SEV();
+                vTaskStepTick(diff);
             }
         }
     }
 #ifdef SOFTDEVICE_PRESENT
     uint32_t err_code = sd_nvic_critical_region_exit(0);
-    (void) err_code; //APP_ERROR_CHECK(err_code);
+    APP_ERROR_CHECK(err_code);
 #else
     __enable_irq();
 #endif
 }
 
 #endif // configUSE_TICKLESS_IDLE
+
+#else // configTICK_SOURCE
+    #error  Unsupported configTICK_SOURCE value
+#endif // configTICK_SOURCE == FREERTOS_USE_SYSTICK

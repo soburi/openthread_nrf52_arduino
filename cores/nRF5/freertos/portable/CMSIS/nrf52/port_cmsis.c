@@ -35,8 +35,8 @@
 #include "task.h"
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_soc.h"
-//#include "app_util.h"
-//#include "app_util_platform.h"
+#include "app_util.h"
+#include "app_util_platform.h"
 #endif
 
 #if !(__FPU_USED) && !(__LINT__)

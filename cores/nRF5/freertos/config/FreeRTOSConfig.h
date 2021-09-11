@@ -35,7 +35,10 @@
 #endif
 #include "app_util_platform.h"
 
-// This port of nrf52 use RTC for freeRTOS tick
+#define FREERTOS_USE_RTC 0     /**< Use real time clock for the system */
+#define FREERTOS_USE_SYSTICK 1 /**< Use SysTick timer for system */
+
+#define configTICK_SOURCE FREERTOS_USE_RTC
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -180,8 +183,16 @@ standard names - or at least those used in the unmodified vector table. */
  * Settings that are generated automatically
  * basing on the settings above
  */
-#define configSYSTICK_CLOCK_HZ  ( 32768UL )
-#define xPortSysTickHandler     RTC1_IRQHandler
+#if (configTICK_SOURCE == FREERTOS_USE_SYSTICK)
+// do not define configSYSTICK_CLOCK_HZ for SysTick to be configured automatically
+// to CPU clock source
+#define xPortSysTickHandler SysTick_Handler
+#elif (configTICK_SOURCE == FREERTOS_USE_RTC)
+#define configSYSTICK_CLOCK_HZ (32768UL)
+#define xPortSysTickHandler RTC1_IRQHandler
+#else
+#error Unsupported configTICK_SOURCE value
+#endif
 
 /** Implementation note:  Use this with caution and set this to 1 ONLY for debugging
  * ----------------------------------------------------------
