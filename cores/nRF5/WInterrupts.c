@@ -150,7 +150,7 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   // Finally, indicate to caller the allocated / updated channel
   return (1 << ch);
 }
-
+#if 0
 /*
  * \brief Turns off the given interrupt.
  */
@@ -219,3 +219,4 @@ void GPIOTE_IRQHandler()
   SEGGER_SYSVIEW_RecordExitISR();
 #endif
 }
+#endif
