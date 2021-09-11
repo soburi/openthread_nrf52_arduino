@@ -125,7 +125,7 @@ extern "C" void JLINK_MONITOR_OnPoll(void) {}
 
 MatterClass Matter;
 
-int MatterClass::begin(void)
+int main(void)
 {
     ret_code_t ret;
 
@@ -240,7 +240,7 @@ int MatterClass::begin(void)
 //    NRF_LOG_INFO("Starting FreeRTOS scheduler");
 
     /* Start FreeRTOS scheduler. */
-//    vTaskStartScheduler();
+    vTaskStartScheduler();
 
     // Should never get here
 //    NRF_LOG_INFO("vTaskStartScheduler() failed");
