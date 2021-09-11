@@ -120,7 +120,7 @@ int AppTask::Init()
 
     sUnusedLED.Init(BSP_LED_2);
     sUnusedLED_1.Init(BSP_LED_3);
-
+#if 0
     // Initialize buttons
     static app_button_cfg_t sButtons[] = {
         { LOCK_BUTTON, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, ButtonEventHandler },
@@ -136,14 +136,15 @@ int AppTask::Init()
         APP_ERROR_HANDLER(ret);
     }
 
-    ret = app_button_enable();
+    //ret = app_button_enable();
     if (ret != NRF_SUCCESS)
     {
         LOG_INF("app_button_enable() failed");
         APP_ERROR_HANDLER(ret);
     }
-
+#endif
     // Initialize Timer for Function Selection
+    ret_code_t
     ret = app_timer_init();
     if (ret != NRF_SUCCESS)
     {

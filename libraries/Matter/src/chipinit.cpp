@@ -15,7 +15,7 @@
 #endif
 #include "nrf_drv_clock.h"
 #if NRF_CRYPTO_ENABLED
-//#include "nrf_crypto.h"
+#include "nrf_crypto.h"
 #endif
 #include "mem_manager.h"
 #if CHIP_ENABLE_OPENTHREAD
@@ -29,9 +29,9 @@ extern "C" {
 #endif // CHIP_ENABLE_OPENTHREAD
 
 #if NRF_LOG_ENABLED
-//#include "nrf_log_backend_uart.h"
-//#include "nrf_log_ctrl.h"
-//#include "nrf_log_default_backends.h"
+#include "nrf_log_backend_uart.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 #endif // NRF_LOG_ENABLED
 
 #if CHIP_ENABLE_OPENTHREAD
