@@ -29,7 +29,7 @@ compiler.warning_flags.more=-Wall
 compiler.warning_flags.all=-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-pointer-arith -Wno-expansion-to-defined
 
 # Allow changing optimization settings via platform.local.txt / boards.local.txt
-compiler.optimization_flag=-Ofast
+compiler.optimization_flag=-Og
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
@@ -58,10 +58,10 @@ build.debug_flags=-DCFG_DEBUG=0
 build.logger_flags=-DCFG_LOGGER=1
 build.sysview_flags=-DCFG_SYSVIEW=0
 
-build.flags.openthread_project_core_config="openthread-project-core-config.h"
+build.flags.openthread_project_core_config="OpenThreadConfig.h"
 build.flags.mbedtls_config="nrf-config.h"
 build.flags.mbedtls_user_config="nrf52840-mbedtls-config.h"
-build.flags.openthread= -DUSE_APP_CONFIG -DOPENTHREAD_FTD=1 -DMBEDTLS_CONFIG_FILE={build.flags.mbedtls_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DOPENTHREAD_PROJECT_CORE_CONFIG_FILE={build.flags.openthread_project_core_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DCONFIG_GPIO_AS_PINRESET -D__HEAP_SIZE=8192 -D__STACK_SIZE=8192 -DFREERTOS -DNRF52840_XXAA -DBOARD_PCA10056 {build.flags.nordic_includes} -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_PARSE_C -DMBEDTLS_X509_CSR_WRITE_C
+build.flags.openthread= -DBSP_DEFINES_ONLY -DNRF_PRS_ENABLED=0 -DBUILD_RELEASE=0 -DUSE_APP_CONFIG -DOPENTHREAD_FTD=1 -DMBEDTLS_CONFIG_FILE={build.flags.mbedtls_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DOPENTHREAD_PROJECT_CORE_CONFIG_FILE={build.flags.openthread_project_core_config} -DMBEDTLS_USER_CONFIG_FILE={build.flags.mbedtls_user_config} -DCONFIG_GPIO_AS_PINRESET -D__HEAP_SIZE=40960 -D__STACK_SIZE=8192 -DENABLE_FEM -DFREERTOS -DFLOAT_ABI_HARD -DS140 -DNRF52840_XXAA -DBOARD_PCA10056 -DNRF_SD_BLE_API_VERSION=7 {build.flags.nordic_includes} -DMBEDTLS_X509_CREATE_C -DMBEDTLS_X509_CSR_PARSE_C -DMBEDTLS_X509_CSR_WRITE_C
 build.flags.nordic_includes= -I{nordic.path}/config/nrf52840/config -I{nordic.path}/softdevice/common -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include -I{nordic.path}/softdevice/s140_nrf52_7.0.1_API/include/nrf52 -I{nordic.path}/nrfx -I{nordic.path}/nrfx/legacy -I{nordic.path}/nrfx/drivers/include -I{nordic.path}/nrfx/hal -I{nordic.path}/nrfx/mdk -I{nordic.path}/components/ble/common -I{nordic.path}/components/ble/nrf_ble_gatt -I{nordic.path}/components/libraries/atomic -I{nordic.path}/components/libraries/atomic_fifo -I{nordic.path}/components/libraries/balloc -I{nordic.path}/components/libraries/button -I{nordic.path}/components/libraries/fds -I{nordic.path}/components/libraries/fstorage -I{nordic.path}/components/libraries/mem_manager -I{nordic.path}/components/libraries/memobj -I{nordic.path}/components/libraries/ringbuf -I{nordic.path}/components/libraries/timer -I{nordic.path}/components/boards -I{nordic.path}/components/libraries/delay -I{nordic.path}/components/libraries/experimental_section_vars -I{nordic.path}/components/libraries/log -I{nordic.path}/components/libraries/strerror -I{nordic.path}/components/libraries/util -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/fem/three_pin_gpio -I{nordic.path}/external/nRF-IEEE-802.15.4-radio-driver/src/rsch/raal/softdevice -I{nordic.path}/external/nrf_security/config -I{nordic.path}/external/nrf_security/include -I{nordic.path}/external/nrf_security/mbedtls_plat_config -I{nordic.path}/external/nrf_security/nrf_cc310_plat/include -I{nordic.path}/external/openthread/include -I{nordic.path}/external/nlassert/include -I{nordic.path}/external/nlunit-test/src -I{nordic.path}/external/nlio/include -I{nordic.path}/external/nlfaultinjection/include -I{nordic.path}/examples/multiprotocol/app_utils/
 
 chip_dir={build.core.path}/nordic/external/connectedhomeip
@@ -122,7 +122,7 @@ libopenthread.path={nordic.path}/external/openthread/lib/nrf52840/gcc
 
 build.libnrf_cc310= {libnrf_cc310.path}/libmbedcrypto_cc310_backend.a {libnrf_cc310.path}/libmbedcrypto_glue.a {libnrf_cc310.path}/libmbedcrypto_glue_cc310.a {libnrf_cc310.path}/libmbedcrypto_glue_vanilla.a {libnrf_cc310.path}/libmbedcrypto_vanilla_backend.a {libnrf_cc310.path}/libmbedtls_base_vanilla.a {libnrf_cc310.path}/libmbedtls_tls_vanilla.a {libnrf_cc310.path}/libmbedtls_x509_vanilla.a {libnrf_cc310.path}/libnrf_cc310_platform_0.9.2.a
 
-build.libopenthread={libopenthread.path}/libopenthread-cli-ftd.a {libopenthread.path}/libopenthread-ftd.a {libopenthread.path}/libopenthread-platform-utils.a {libopenthread.path}/libopenthread-nrf52840-softdevice-sdk.a {libopenthread.path}/libnordicsemi_nrf52840_radio_driver_softdevice.a {libopenthread.path}/libopenthread-nrf52840-transport.a
+build.libopenthread= {libopenthread.path}/libopenthread-cli-ftd.a {libopenthread.path}/libopenthread-ftd.a {libopenthread.path}/libopenthread-platform-utils.a {libopenthread.path}/libopenthread-nrf52840-softdevice-sdk.a {libopenthread.path}/libnordicsemi_nrf52840_radio_driver_softdevice.a {libopenthread.path}/libopenthread-nrf52840-transport.a
 
 # USB flags
 build.flags.usb= -DUSBCON -DUSE_TINYUSB -DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
@@ -146,7 +146,7 @@ nordic.path={build.core.path}/nordic
 
 # build.logger_flags and build.sysview_flags are intentionally empty,
 # to allow modification via a user's own boards.local.txt or platform.local.txt files.
-build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {compiler.optimization_flag} {build.debug_flags} {build.logger_flags} {build.sysview_flags} {compiler.arm.cmsis.c.flags} "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include/nrf52" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino"
+build.flags.nrf= -DSOFTDEVICE_PRESENT=1 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {compiler.optimization_flag} {build.debug_flags} {build.logger_flags} {build.sysview_flags} {compiler.arm.cmsis.c.flags} "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include/nrf52" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino"
 
 # Compile patterns
 # ----------------

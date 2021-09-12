@@ -21,3 +21,11 @@ bool ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
 {
 	return true;
 }
+
+
+void nrf_log_default_backends_init(void) { }
+
+int m_nrf_log_app_logs_data_const;
+typedef uint32_t (*nrf_log_timestamp_func_t)(void);
+typedef uint32_t ret_code_t;
+ret_code_t nrf_log_init(nrf_log_timestamp_func_t timestamp_func, uint32_t timestamp_freq) { return 0; }

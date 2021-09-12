@@ -29,6 +29,7 @@
 #include "nrf_sdh.h"
 #include "nrf_sdh_ble.h"
 #include "nrf_sdh_soc.h"
+#include "nrf_sdh_freertos.h"
 #endif
 #include "nrf_drv_clock.h"
 #if NRF_CRYPTO_ENABLED
@@ -167,6 +168,7 @@ int main(void)
 #endif
 
 #if defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
+    nrf_sdh_freertos_init(NULL, NULL);
 
     NRF_LOG_INFO("Enabling SoftDevice");
 
