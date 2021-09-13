@@ -76,18 +76,18 @@ caddr_t _sbrk( int incr )
   return (caddr_t) prev_heap;
 }
 
- __attribute__((weak))
 void __malloc_lock(struct _reent *ptr)
 {
   (void) ptr;
-  vTaskSuspendAll();
+  //vTaskSuspendAll();
+  taskENTER_CRITICAL();
 }
 
- __attribute__((weak))
 void __malloc_unlock(struct _reent *ptr)
 {
   (void) ptr;
-  xTaskResumeAll();
+  //xTaskResumeAll();
+  taskEXIT_CRITICAL();
 }
 
 }
