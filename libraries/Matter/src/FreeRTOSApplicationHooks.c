@@ -1,4 +1,4 @@
-#include "FreeRTOSApplicationHooks.h"
+#include <FreeRTOS.h>
 
 __attribute__((weak))
 void vApplicationIdleHook( void )
