@@ -29,10 +29,11 @@
 #include "nrf_sdh.h"
 #include "nrf_sdh_ble.h"
 #include "nrf_sdh_soc.h"
+#include "nrf_sdh_freertos.h"
 #endif
 #include "nrf_drv_clock.h"
 #if NRF_CRYPTO_ENABLED
-//#include "nrf_crypto.h"
+#include "nrf_crypto.h"
 #endif
 #include "mem_manager.h"
 #if CHIP_ENABLE_OPENTHREAD
@@ -52,7 +53,7 @@ extern "C" {
 #endif // NRF_LOG_ENABLED
 
 #include "chipinit.h"
-//#include "nrf5/app/support/FreeRTOSNewlibLockSupport_test.h"
+#include "FreeRTOSNewlibLockSupport_test.h"
 #include <AppTask.h>
 #include <platform/CHIPDeviceLayer.h>
 
@@ -125,54 +126,55 @@ extern "C" void JLINK_MONITOR_OnPoll(void) {}
 
 MatterClass Matter;
 
-int MatterClass::begin(void)
+int main(void)
 {
     ret_code_t ret;
 
 #if JLINK_MMD
-//    NVIC_SetPriority(DebugMonitor_IRQn, _PRIO_SD_LOWEST);
+    NVIC_SetPriority(DebugMonitor_IRQn, _PRIO_SD_LOWEST);
 #endif
 
     // Initialize clock driver.
-//    ret = nrf_drv_clock_init();
-//    APP_ERROR_CHECK(ret);
+    ret = nrf_drv_clock_init();
+    APP_ERROR_CHECK(ret);
 
-//    nrf_drv_clock_lfclk_request(NULL);
+    nrf_drv_clock_lfclk_request(NULL);
 
     // Wait for the clock to be ready.
-//    while (!nrf_clock_lf_is_running(NRF_CLOCK))
-//    {
-//    }
+    while (!nrf_clock_lf_is_running(NRF_CLOCK))
+    {
+    }
 
 #if NRF_LOG_ENABLED
 
     // Initialize logging component
-    //ret = NRF_LOG_INIT(LOG_TIMESTAMP_FUNC, LOG_TIMESTAMP_FREQ);
-    //APP_ERROR_CHECK(ret);
+//    ret = NRF_LOG_INIT(LOG_TIMESTAMP_FUNC, LOG_TIMESTAMP_FREQ);
+    APP_ERROR_CHECK(ret);
 
     // Initialize logging backends
-    //NRF_LOG_DEFAULT_BACKENDS_INIT();
+//    NRF_LOG_DEFAULT_BACKENDS_INIT();
 
 #endif
 
-    //NRF_LOG_INFO("==================================================");
-    //NRF_LOG_INFO("chip-nrf52840-lock-example starting");
+    NRF_LOG_INFO("==================================================");
+    NRF_LOG_INFO("chip-nrf52840-lock-example starting");
 #if BUILD_RELEASE
-    //NRF_LOG_INFO("*** PSEUDO-RELEASE BUILD ***");
+    NRF_LOG_INFO("*** PSEUDO-RELEASE BUILD ***");
 #else
-    //NRF_LOG_INFO("*** DEVELOPMENT BUILD ***");
+    NRF_LOG_INFO("*** DEVELOPMENT BUILD ***");
 #endif
-    //NRF_LOG_INFO("==================================================");
-    //NRF_LOG_FLUSH();
+    NRF_LOG_INFO("==================================================");
+//    NRF_LOG_FLUSH();
 
 #ifndef NDEBUG
     // TODO: Move this into a standalone test.
-    //freertos_newlib_lock_test();
+    freertos_newlib_lock_test();
 #endif
 
 #if defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
+    nrf_sdh_freertos_init(NULL, NULL);
 
-    //NRF_LOG_INFO("Enabling SoftDevice");
+    NRF_LOG_INFO("Enabling SoftDevice");
 
     ret = nrf_sdh_enable_request();
     if (ret != NRF_SUCCESS)
@@ -181,7 +183,7 @@ int MatterClass::begin(void)
         APP_ERROR_HANDLER(ret);
     }
 
-    //NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
+    NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
 
     while (!nrf_sdh_is_enabled())
     {
@@ -237,12 +239,12 @@ int MatterClass::begin(void)
     }
 #endif // CHIP_CONFIG_MEMORY_MGMT_MALLOC && __GNU_LIBRARY__
 
-//    NRF_LOG_INFO("Starting FreeRTOS scheduler");
+    NRF_LOG_INFO("Starting FreeRTOS scheduler");
 
     /* Start FreeRTOS scheduler. */
-//    vTaskStartScheduler();
+    vTaskStartScheduler();
 
     // Should never get here
-//    NRF_LOG_INFO("vTaskStartScheduler() failed");
-//    APP_ERROR_HANDLER(0);
+    NRF_LOG_INFO("vTaskStartScheduler() failed");
+    APP_ERROR_HANDLER(0);
 }

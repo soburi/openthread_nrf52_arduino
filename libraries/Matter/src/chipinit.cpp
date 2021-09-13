@@ -15,7 +15,7 @@
 #endif
 #include "nrf_drv_clock.h"
 #if NRF_CRYPTO_ENABLED
-//#include "nrf_crypto.h"
+#include "nrf_crypto.h"
 #endif
 #include "mem_manager.h"
 #if CHIP_ENABLE_OPENTHREAD
