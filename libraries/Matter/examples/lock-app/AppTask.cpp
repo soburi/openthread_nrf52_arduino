@@ -63,7 +63,7 @@
 
 static SemaphoreHandle_t sCHIPEventLock;
 static TaskHandle_t sAppTaskHandle;
-static QueueHandle_t sAppEventQueue;
+QueueHandle_t sAppEventQueue;
 
 constexpr uint32_t kPublishServicePeriodUs = 5000000;
 
@@ -184,7 +184,6 @@ int AppTask::StartApp()
 {
     AppEvent event;
     int ret                            = Init();
-    uint64_t mLastPublishServiceTimeUS = 0;
 
     if (ret)
     {
@@ -193,7 +192,10 @@ int AppTask::StartApp()
     }
 
     SetDeviceName("LockDemo._chip._udp.local.");
+}
 
+
+#if 0
     while (true)
     {
         BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, pdMS_TO_TICKS(10));
@@ -203,7 +205,11 @@ int AppTask::StartApp()
             sAppTask.DispatchEvent(&event);
             eventReceived = xQueueReceive(sAppEventQueue, &event, 0);
         }
+#endif
 
+void AppTask::Process()
+{
+    uint64_t mLastPublishServiceTimeUS = 0;
         // Collect connectivity and configuration state from the CHIP stack.  Because the
         // CHIP event loop is being run in a separate task, the stack must be locked
         // while these values are queried.  However we use a non-blocking lock request
@@ -264,7 +270,6 @@ int AppTask::StartApp()
             PublishService();
             mLastPublishServiceTimeUS = nowUS;
         }
-    }
 }
 
 void AppTask::LockActionEventHandler(AppEvent * aEvent)

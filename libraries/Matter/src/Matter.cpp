@@ -189,11 +189,11 @@ int MatterClass::begin()
     }
 
     NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
-#endif
+
     while (!nrf_sdh_is_enabled())
     {
     }
-
+#endif
     // Register a handler for SOC events.
     NRF_SDH_SOC_OBSERVER(m_soc_observer, NRF_SDH_SOC_STACK_OBSERVER_PRIO, OnSoCEvent, NULL);
 

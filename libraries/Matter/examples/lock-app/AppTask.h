@@ -38,7 +38,10 @@ public:
     void PostEvent(AppEvent * event);
     void UpdateClusterState();
 
-private:
+    void DispatchEvent(AppEvent * event);
+    void Process();
+
+//private:
     friend AppTask & GetAppTask(void);
 
     int Init();
@@ -48,7 +51,6 @@ private:
 
     void CancelTimer(void);
 
-    void DispatchEvent(AppEvent * event);
 
     static void FunctionTimerEventHandler(AppEvent * aEvent);
     static void FunctionHandler(AppEvent * aEvent);
