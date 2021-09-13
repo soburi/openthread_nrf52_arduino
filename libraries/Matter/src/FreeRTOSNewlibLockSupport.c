@@ -129,19 +129,3 @@ void __retarget_lock_release_recursive(_LOCK_T lock)
     xSemaphoreGiveRecursive(lock->semaphore);
 }
 
-/*
- * Overrides for newlib's malloc locking functions.
- *
- * These are overridden specially to use critical sections rather than FreeRTOS semaphores
- * to improve speed.
- */
-
-void __malloc_lock(struct _reent * r)
-{
-    taskENTER_CRITICAL();
-}
-
-void __malloc_unlock(struct _reent * r)
-{
-    taskEXIT_CRITICAL();
-}
