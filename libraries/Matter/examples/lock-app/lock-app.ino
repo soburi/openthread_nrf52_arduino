@@ -29,7 +29,8 @@ void loop() {
 
   while (eventReceived == pdTRUE)
   {
-      AppTask::sAppTask.DispatchEvent(&event);
+      //AppTask::sAppTask.DispatchEvent(&event);
+      event.Handler(&event);
       eventReceived = xQueueReceive(sAppEventQueue, &event, 0);
   }
 

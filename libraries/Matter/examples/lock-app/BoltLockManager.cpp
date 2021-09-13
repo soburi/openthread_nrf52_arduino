@@ -26,6 +26,8 @@
 #include "AppTask.h"
 #include "FreeRTOS.h"
 
+#include "Matter.h"
+
 APP_TIMER_DEF(sLockTimer);
 
 
@@ -149,7 +151,7 @@ void BoltLockManager::TimerEventHandler(void * p_context)
     event.Type               = AppEvent::kEventType_Timer;
     event.TimerEvent.Context = p_context;
     event.Handler            = lock->mAutoLockTimerArmed ? AutoReLockTimerEventHandler : ActuatorMovementTimerEventHandler;
-    GetAppTask().PostEvent(&event);
+    Matter.postEvent(&event);
 }
 
 void BoltLockManager::AutoReLockTimerEventHandler(AppEvent * aEvent)

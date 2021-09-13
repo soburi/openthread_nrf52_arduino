@@ -52,6 +52,8 @@
 
 #include <lib/support/logging/CHIPLogging.h>
 
+#include <Matter.h>
+
 #define FACTORY_RESET_TRIGGER_TIMEOUT 3000
 #define FACTORY_RESET_CANCEL_WINDOW_TIMEOUT 3000
 #define APP_TASK_STACK_SIZE (4096)
@@ -62,7 +64,7 @@
 #define LOG_INF NRF_LOG_INFO
 
 static SemaphoreHandle_t sCHIPEventLock;
-TaskHandle_t sAppTaskHandle;
+//TaskHandle_t sAppTaskHandle;
 QueueHandle_t sAppEventQueue;
 
 constexpr uint32_t kPublishServicePeriodUs = 5000000;
@@ -293,7 +295,7 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
         button_event.ButtonEvent.PinNo  = LOCK_BUTTON;
         button_event.ButtonEvent.Action = APP_BUTTON_PUSH;
         button_event.Handler            = LockActionEventHandler;
-        sAppTask.PostEvent(&button_event);
+        Matter.postEvent(&button_event);
     }
 
     if (pin_no == FUNCTION_BUTTON)
@@ -301,7 +303,7 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
         button_event.ButtonEvent.PinNo  = FUNCTION_BUTTON;
         button_event.ButtonEvent.Action = button_action;
         button_event.Handler            = FunctionHandler;
-        sAppTask.PostEvent(&button_event);
+        Matter.postEvent(&button_event);
     }
 
     if (pin_no == THREAD_START_BUTTON && button_action == APP_BUTTON_PUSH)
@@ -309,7 +311,7 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
         button_event.ButtonEvent.PinNo  = THREAD_START_BUTTON;
         button_event.ButtonEvent.Action = APP_BUTTON_PUSH;
         button_event.Handler            = StartThreadHandler;
-        sAppTask.PostEvent(&button_event);
+        Matter.postEvent(&button_event);
     }
 
     if (pin_no == BLE_ADVERTISEMENT_START_BUTTON && button_action == APP_BUTTON_PUSH)
@@ -317,7 +319,7 @@ void AppTask::ButtonEventHandler(uint8_t pin_no, uint8_t button_action)
         button_event.ButtonEvent.PinNo  = BLE_ADVERTISEMENT_START_BUTTON;
         button_event.ButtonEvent.Action = APP_BUTTON_PUSH;
         button_event.Handler            = StartBLEAdvertisementHandler;
-        sAppTask.PostEvent(&button_event);
+        Matter.postEvent(&button_event);
     }
 }
 
@@ -327,7 +329,7 @@ void AppTask::TimerEventHandler(void * p_context)
     event.Type               = AppEvent::kEventType_Timer;
     event.TimerEvent.Context = p_context;
     event.Handler            = FunctionTimerEventHandler;
-    sAppTask.PostEvent(&event);
+    Matter.postEvent(&event);
 }
 
 void AppTask::FunctionTimerEventHandler(AppEvent * aEvent)
@@ -560,10 +562,10 @@ void AppTask::PostLockActionRequest(int32_t aActor, BoltLockManager::Action_t aA
     event.LockEvent.Actor  = aActor;
     event.LockEvent.Action = aAction;
     event.Handler          = LockActionEventHandler;
-    PostEvent(&event);
+    Matter.postEvent(&event);
 }
-
-void AppTask::PostEvent(AppEvent * aEvent)
+#if 0
+void AppTask::postEvent(AppEvent * aEvent)
 {
     if (sAppEventQueue != NULL && !xQueueSend(sAppEventQueue, aEvent, 1))
     {
@@ -582,7 +584,7 @@ void AppTask::DispatchEvent(AppEvent * aEvent)
         LOG_INF("Event received with no handler. Dropping event.");
     }
 }
-
+#endif
 void AppTask::UpdateClusterState()
 {
     uint8_t newValue = !BoltLockMgr().IsUnlocked();

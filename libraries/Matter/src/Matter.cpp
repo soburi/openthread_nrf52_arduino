@@ -269,7 +269,7 @@ int MatterClass::begin()
 {
 
     ret_code_t ret = NRF_SUCCESS;
-/*
+
     sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AppEvent));
     if (sAppEventQueue == NULL)
     {
@@ -277,7 +277,7 @@ int MatterClass::begin()
         ret = NRF_ERROR_NULL;
         APP_ERROR_HANDLER(ret);
     }
-
+/*
     // Start App task.
     if (xTaskCreate(AppTaskMain, "APP", APP_TASK_STACK_SIZE / sizeof(StackType_t), this, APP_TASK_PRIORITY, &sAppTaskHandle) !=
         pdPASS)
@@ -288,3 +288,12 @@ int MatterClass::begin()
     return ret;
 
 }
+
+void MatterClass::postEvent(AppEvent * aEvent)
+{
+    if (sAppEventQueue != NULL && !xQueueSend(sAppEventQueue, aEvent, 1))
+    {
+        LOG_INF("Failed to post event to app task event queue");
+    }
+}
+
