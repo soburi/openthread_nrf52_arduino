@@ -57,7 +57,7 @@ extern "C" {
 #endif // NRF_LOG_ENABLED
 
 //#include "chipinit.h"
-#include <AppTask.h>
+//#include <AppTask.h>
 #include <platform/CHIPDeviceLayer.h>
 
 #include "Matter.h"
