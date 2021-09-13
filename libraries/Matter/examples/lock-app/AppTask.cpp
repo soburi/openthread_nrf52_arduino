@@ -62,7 +62,7 @@
 #define LOG_INF NRF_LOG_INFO
 
 static SemaphoreHandle_t sCHIPEventLock;
-static TaskHandle_t sAppTaskHandle;
+TaskHandle_t sAppTaskHandle;
 QueueHandle_t sAppEventQueue;
 
 constexpr uint32_t kPublishServicePeriodUs = 5000000;
@@ -82,7 +82,7 @@ APP_TIMER_DEF(sFunctionTimer);
 using namespace ::chip::DeviceLayer;
 
 AppTask AppTask::sAppTask;
-
+#if 0
 int AppTask::StartAppTask()
 {
     ret_code_t ret = NRF_SUCCESS;
@@ -109,7 +109,9 @@ void AppTask::AppTaskMain(void * pvParameter)
 {
     reinterpret_cast<AppTask*>(pvParameter)->StartApp();
 }
-
+#endif
+//int AppTask::Init()
+//{
 int AppTask::Init()
 {
     // Initialize LEDs
@@ -177,21 +179,10 @@ int AppTask::Init()
 #ifdef CONFIG_CHIP_NFC_COMMISSIONING
     PlatformMgr().AddEventHandler(ThreadProvisioningHandler, 0);
 #endif
-    return 0;
-}
-
-int AppTask::StartApp()
-{
-    AppEvent event;
-    int ret                            = Init();
-
-    if (ret)
-    {
-        LOG_ERR("AppTask.Init() failed: %s", chip::ErrorStr(ret));
-        APP_ERROR_HANDLER(ret);
-    }
 
     SetDeviceName("LockDemo._chip._udp.local.");
+    return 0;
+
 }
 
 

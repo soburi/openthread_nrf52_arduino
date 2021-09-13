@@ -7,12 +7,17 @@
 
 #include <FreeRTOS.h>
 
+#include "chipinit.h"
+
 extern QueueHandle_t sAppEventQueue;
 
 
 
 void setup() {
   // put your setup code here, to run once:
+  Matter.init();
+  ChipInit();
+  AppTask::sAppTask.Init();
   Matter.begin();
 }
 

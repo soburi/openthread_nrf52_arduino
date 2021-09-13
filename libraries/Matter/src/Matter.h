@@ -1,6 +1,7 @@
 class MatterClass
 {
 public:
+	int init();
 	int begin();
 };
 

@@ -56,7 +56,7 @@ extern "C" {
 //#include "nrf_log_default_backends.h"
 #endif // NRF_LOG_ENABLED
 
-#include "chipinit.h"
+//#include "chipinit.h"
 #include <AppTask.h>
 #include <platform/CHIPDeviceLayer.h>
 
@@ -128,9 +128,20 @@ extern "C" void JLINK_MONITOR_OnPoll(void) {}
 // ================================================================================
 
 MatterClass Matter;
+extern QueueHandle_t sAppEventQueue;
+extern TaskHandle_t sAppTaskHandle;
+
+#define FACTORY_RESET_TRIGGER_TIMEOUT 3000
+#define FACTORY_RESET_CANCEL_WINDOW_TIMEOUT 3000
+#define APP_TASK_STACK_SIZE (4096)
+#define APP_TASK_PRIORITY 3
+#define APP_EVENT_QUEUE_SIZE 10
+
+#define LOG_ERR NRF_LOG_ERROR
+#define LOG_INF NRF_LOG_INFO
 
 //int main(void)
-int MatterClass::begin()
+int MatterClass::init()
 {
     ret_code_t ret;
 #if 0
@@ -218,7 +229,7 @@ int MatterClass::begin()
     }
 
 #endif // defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
-
+#if 0
     ret = ChipInit();
     if (ret != NRF_SUCCESS)
     {
@@ -232,16 +243,16 @@ int MatterClass::begin()
         NRF_LOG_INFO("GetAppTask().Init() failed");
         APP_ERROR_HANDLER(ret);
     }
-
+#endif
     // Activate deep sleep mode
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
 #if CHIP_CONFIG_MEMORY_MGMT_MALLOC && __GNU_LIBRARY__
-    {
-        struct mallinfo minfo = mallinfo();
-        NRF_LOG_INFO("System Heap Utilization: heap size %" PRId32 ", arena size %" PRId32 ", in use %" PRId32 ", free %" PRId32,
-                     GetHeapTotalSize(), minfo.arena, minfo.uordblks, minfo.fordblks);
-    }
+//    {
+//        struct mallinfo minfo = mallinfo();
+//        NRF_LOG_INFO("System Heap Utilization: heap size %" PRId32 ", arena size %" PRId32 ", in use %" PRId32 ", free %" PRId32,
+//                     GetHeapTotalSize(), minfo.arena, minfo.uordblks, minfo.fordblks);
+//    }
 #endif // CHIP_CONFIG_MEMORY_MGMT_MALLOC && __GNU_LIBRARY__
 
 //    NRF_LOG_INFO("Starting FreeRTOS scheduler");
@@ -252,4 +263,28 @@ int MatterClass::begin()
     // Should never get here
 //    NRF_LOG_INFO("vTaskStartScheduler() failed");
 //    APP_ERROR_HANDLER(0);
+}
+
+int MatterClass::begin()
+{
+
+    ret_code_t ret = NRF_SUCCESS;
+/*
+    sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AppEvent));
+    if (sAppEventQueue == NULL)
+    {
+        LOG_INF("Failed to allocate app event queue");
+        ret = NRF_ERROR_NULL;
+        APP_ERROR_HANDLER(ret);
+    }
+
+    // Start App task.
+    if (xTaskCreate(AppTaskMain, "APP", APP_TASK_STACK_SIZE / sizeof(StackType_t), this, APP_TASK_PRIORITY, &sAppTaskHandle) !=
+        pdPASS)
+    {
+        ret = NRF_ERROR_NULL;
+    }
+*/
+    return ret;
+
 }
