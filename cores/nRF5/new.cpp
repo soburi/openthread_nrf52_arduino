@@ -57,7 +57,6 @@ extern unsigned char __HeapLimit[];
 
 static unsigned char *sbrk_heap_top = __HeapBase;
 
-__attribute__((weak))
 __attribute__((used))
 caddr_t _sbrk( int incr )
 {
