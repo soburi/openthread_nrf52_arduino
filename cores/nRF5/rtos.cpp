@@ -81,14 +81,12 @@ void yield(void)
   taskYIELD();
 }
 
-__attribute__ ((weak))
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
 {
   LOG_LV1("RTOS", "Task %s: stack Overflow !!!", pcTaskName);
   while(CFG_DEBUG) yield();
 }
 
-__attribute__ ((weak))
 void vApplicationMallocFailedHook(void)
 {
   LOG_LV1("RTOS", "Task %s: failed to Malloc", pcTaskGetName(xTaskGetCurrentTaskHandle()));
@@ -98,7 +96,6 @@ void vApplicationMallocFailedHook(void)
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
  * implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
  * used by the Idle task. */
-__attribute__ ((weak))
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
 {
   /* If the buffers to be provided to the Idle task are declared inside this
@@ -123,7 +120,6 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
  * application must provide an implementation of vApplicationGetTimerTaskMemory()
  * to provide the memory that is used by the Timer service task. */
-__attribute__ ((weak))
 void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
 {
   /* If the buffers to be provided to the Timer task are declared inside this
