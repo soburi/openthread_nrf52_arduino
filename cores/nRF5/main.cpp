@@ -73,7 +73,7 @@ static void loop_task(void* arg)
     if (serialEvent && serialEventRun) serialEventRun();
   }
 }
-#if 0
+
 // \brief Main entry point of Arduino application
 int main( void )
 {
@@ -97,7 +97,7 @@ int main( void )
 
   return 0;
 }
-#endif
+
 void suspendLoop(void)
 {
   vTaskSuspend(_loopHandle);

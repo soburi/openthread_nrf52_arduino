@@ -17,6 +17,10 @@
  *    limitations under the License.
  */
 
+#if defined(ARDUINO_NRF52_ADAFRUIT)
+#include <Adafruit_TinyUSB.h> // for Serial
+#endif
+
 #include <platform/CHIPDeviceConfig.h>
 
 #include <stdbool.h>
@@ -125,10 +129,11 @@ extern "C" void JLINK_MONITOR_OnPoll(void) {}
 
 MatterClass Matter;
 
-int main(void)
+//int main(void)
+int MatterClass::begin()
 {
     ret_code_t ret;
-
+#if 0
 #if JLINK_MMD
     NVIC_SetPriority(DebugMonitor_IRQn, _PRIO_SD_LOWEST);
 #endif
@@ -169,8 +174,9 @@ int main(void)
     // TODO: Move this into a standalone test.
     //freertos_newlib_lock_test();
 #endif
-
+#endif
 #if defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
+#if 0
     nrf_sdh_freertos_init(NULL, NULL);
 
     NRF_LOG_INFO("Enabling SoftDevice");
@@ -183,7 +189,7 @@ int main(void)
     }
 
     NRF_LOG_INFO("Waiting for SoftDevice to be enabled");
-
+#endif
     while (!nrf_sdh_is_enabled())
     {
     }
@@ -238,12 +244,12 @@ int main(void)
     }
 #endif // CHIP_CONFIG_MEMORY_MGMT_MALLOC && __GNU_LIBRARY__
 
-    NRF_LOG_INFO("Starting FreeRTOS scheduler");
+//    NRF_LOG_INFO("Starting FreeRTOS scheduler");
 
     /* Start FreeRTOS scheduler. */
-    vTaskStartScheduler();
+//    vTaskStartScheduler();
 
     // Should never get here
-    NRF_LOG_INFO("vTaskStartScheduler() failed");
-    APP_ERROR_HANDLER(0);
+//    NRF_LOG_INFO("vTaskStartScheduler() failed");
+//    APP_ERROR_HANDLER(0);
 }
