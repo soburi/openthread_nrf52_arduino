@@ -53,7 +53,6 @@ extern "C" {
 #endif // NRF_LOG_ENABLED
 
 #include "chipinit.h"
-#include "FreeRTOSNewlibLockSupport_test.h"
 #include <AppTask.h>
 #include <platform/CHIPDeviceLayer.h>
 
@@ -168,7 +167,7 @@ int main(void)
 
 #ifndef NDEBUG
     // TODO: Move this into a standalone test.
-    freertos_newlib_lock_test();
+    //freertos_newlib_lock_test();
 #endif
 
 #if defined(SOFTDEVICE_PRESENT) && SOFTDEVICE_PRESENT
