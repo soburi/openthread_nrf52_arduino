@@ -37,8 +37,8 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (15)
-#define NUM_DIGITAL_PINS     (11)
+#define PINS_COUNT           (14)
+#define NUM_DIGITAL_PINS     (14)
 #define NUM_ANALOG_INPUTS    (4)
 #define NUM_ANALOG_OUTPUTS   (0)
 
@@ -50,7 +50,7 @@ extern "C"
 #define LED_BUILTIN          PIN_LED2
 #define LED_CONN             PIN_LED1
 
-#define LED_GREEN
+#define LED_GREEN            PIN_LED1
 #define LED_RED              PIN_LED2
 #define LED_BLUE             PIN_LED3
 
@@ -59,7 +59,7 @@ extern "C"
 /*
  * Buttons
  */
-//#define PIN_BUTTON1          18
+#define PIN_BUTTON1          18
 
 /*
  * Analog pins
@@ -68,11 +68,19 @@ extern "C"
 #define PIN_A1               (3)
 #define PIN_A2               (4)
 #define PIN_A3               (5)
+#define PIN_A4               (0xff)
+#define PIN_A5               (0xff)
+#define PIN_A6               (0xff)
+#define PIN_A7               (0xff)
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
 static const uint8_t A2  = PIN_A2 ;
 static const uint8_t A3  = PIN_A3 ;
+static const uint8_t A4  = PIN_A0 ;
+static const uint8_t A5  = PIN_A1 ;
+static const uint8_t A6  = PIN_A2 ;
+static const uint8_t A7  = PIN_A3 ;
 #define ADC_RESOLUTION    14
 
 // Other pins
@@ -82,12 +90,13 @@ static const uint8_t A3  = PIN_A3 ;
 // Bad things happen if the serial pins aren't defined. Instead
 // define them with an invalid pin number
 // Serial
-#define PIN_SERIAL1_RX       (11)
-#define PIN_SERIAL1_TX       (11)
+#define PIN_SERIAL1_RX       (42)
+#define PIN_SERIAL1_TX       (42)
 
 /*
  * SPI Interfaces
  */
+ /*
 #define SPI_INTERFACES_COUNT 1
 
 #define PIN_SPI_MISO         (6)
@@ -98,14 +107,17 @@ static const uint8_t SS   = 19 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
+*/
 
 /*
  * Wire Interfaces
  */
+ 
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (20)
-#define PIN_WIRE_SCL         (21)
+#define PIN_WIRE_SDA         (8)
+#define PIN_WIRE_SCL         (7)
+
 
 #ifdef __cplusplus
 }
