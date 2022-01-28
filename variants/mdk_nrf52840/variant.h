@@ -37,8 +37,8 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (14)
-#define NUM_DIGITAL_PINS     (14)
+#define PINS_COUNT           (25)
+#define NUM_DIGITAL_PINS     (25)
 #define NUM_ANALOG_INPUTS    (4)
 #define NUM_ANALOG_OUTPUTS   (0)
 
@@ -115,8 +115,8 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (8)
-#define PIN_WIRE_SCL         (7)
+#define PIN_WIRE_SDA         (7)
+#define PIN_WIRE_SCL         (8)
 
 
 #ifdef __cplusplus

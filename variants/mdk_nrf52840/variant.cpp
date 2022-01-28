@@ -27,6 +27,8 @@
 const uint32_t g_ADigitalPinMap[] =
 {
   // D0 .. D1
+  0,
+  1,
   2,   
   3,
   4,
@@ -36,8 +38,17 @@ const uint32_t g_ADigitalPinMap[] =
   8,
   9,
   10,
-  18,   // Reset Pin
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,  // RST
   19,
+  20,
+  21,
   22,  // is P0.22 (LED1 GREEN)
   23,  // is P0.23 (LED2 RED)
   24,  // is P0.24 (LED3 BLUE)
