@@ -96,18 +96,17 @@ static const uint8_t A7  = PIN_A3 ;
 /*
  * SPI Interfaces
  */
- /*
+
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (6)
-#define PIN_SPI_MOSI         (7)
-#define PIN_SPI_SCK          (8)
+#define PIN_SPI_MISO         (4)
+#define PIN_SPI_MOSI         (5)
+#define PIN_SPI_SCK          (6)
 
-static const uint8_t SS   = 19 ;
+static const uint8_t SS   = 10 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
-*/
 
 /*
  * Wire Interfaces
