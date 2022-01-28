@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     rtos.h
+    @file     BLEHidAdafruit.h
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -33,59 +33,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef RTOS_H_
-#define RTOS_H_
+#ifndef BLEHID_GAMEPAD_H_
+#define BLEHID_GAMEPAD_H_
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include "bluefruit_common.h"
 
-#include "common_func.h"
+#include "BLECharacteristic.h"
+#include "BLEHidGeneric.h"
+#include "BLEService.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "queue.h"
-#include "semphr.h"
-
-#define DELAY_FOREVER   portMAX_DELAY
-
-enum
+class BLEHidGamepad : public BLEHidGeneric
 {
-  TASK_PRIO_LOWEST  = 0, // Idle task, should not be used
-  TASK_PRIO_LOW     = 1, // Loop
-  TASK_PRIO_NORMAL  = 2, // Timer Task, Callback Task
-  TASK_PRIO_HIGH    = 3, // Bluefruit Task
-  TASK_PRIO_HIGHEST = 4,
+  public:
+
+    BLEHidGamepad(void);
+
+    virtual err_t begin(void);
+
+    // Single connection
+    bool report(hid_gamepad_report_t const* report);
+    bool reportButtons(uint32_t button_mask);
+    bool reportHat(uint8_t hat);
+    bool reportJoystick(int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry);
+
+    // Multiple connections
+    bool report(uint16_t conn_hdl, hid_gamepad_report_t const* report);
+    bool reportButtons(uint16_t conn_hdl, uint32_t button_mask);
+    bool reportHat(uint16_t conn_hdl, uint8_t hat);
+    bool reportJoystick(uint16_t conn_hdl, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry);
+
+  protected:
+
 };
 
-#define ms2tick       pdMS_TO_TICKS
-#define tick2ms(tck)  ( ( ((uint64_t)(tck)) * 1000) / configTICK_RATE_HZ )
-#define tick2us(tck)  ( ( ((uint64_t)(tck)) * 1000000) / configTICK_RATE_HZ )
-
-// legacy thread-safe malloc/free
-#define rtos_malloc   malloc
-#define rtos_free     free
-
-// Visible only with C++
-#ifdef __cplusplus
-
-#define SCHEDULER_STACK_SIZE_DFLT   (512*2)
-
-class SchedulerRTOS
-{
-public:
-  typedef void (*taskfunc_t)(void);
-
-  SchedulerRTOS(void);
-
-  bool startLoop(taskfunc_t task, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT, uint32_t prio = TASK_PRIO_LOW, const char* name = NULL);
-};
-
-extern SchedulerRTOS Scheduler;
-
-#endif // __cplusplus
-
-#endif /* RTOS_H_ */
+#endif /* BLEHID_GAMEPAD_H_ */
