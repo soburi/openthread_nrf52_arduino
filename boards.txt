@@ -57,7 +57,7 @@ feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v7=0.3.2 SoftDevice s140 7.0.1
+feather52840.menu.softdevice.s140v7=SoftDevice s140 7.0.1
 feather52840.menu.softdevice.s140v7.build.sd_name=s140
 feather52840.menu.softdevice.s140v7.build.sd_version=7.0.1
 feather52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
@@ -515,13 +515,9 @@ mdk52840.name=Makerdiary nRF52840 MDK Dongle
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 mdk52840.vid.0=0x239A
-mdk52840.pid.0=0x80DD
+mdk52840.pid.0=0x8029
 mdk52840.vid.1=0x239A
 mdk52840.pid.1=0x0029
-mdk52840.vid.2=0x239A
-mdk52840.pid.2=0x002A
-mdk52840.vid.3=0x239A
-mdk52840.pid.3=0x802A
 
 # Upload
 mdk52840.bootloader.tool=bootburn
@@ -543,10 +539,10 @@ mdk52840.build.usb_product="Makerdiary nRF52840 MDK"
 mdk52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 mdk52840.build.ldscript=nrf52840_s140_v7.ld
 mdk52840.build.vid=0x239A
-mdk52840.build.pid=0x80DD
+mdk52840.build.pid=0x8029
 
 # SofDevice Menu
-mdk52840.menu.softdevice.s140v7=0.6.3 SoftDevice s140 7.0.1
+mdk52840.menu.softdevice.s140v7=s140 7.0.1
 mdk52840.menu.softdevice.s140v7.build.sd_name=s140
 mdk52840.menu.softdevice.s140v7.build.sd_version=7.0.1
 mdk52840.menu.softdevice.s140v7.build.sd_fwid=0x00CA
